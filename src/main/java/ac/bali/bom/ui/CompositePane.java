@@ -4,6 +4,7 @@ import ac.bali.bom.support.Ignore;
 import ac.bali.bom.support.PropertyOrderComparator;
 import javafx.scene.Node;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.entity.EntityReference;
@@ -92,14 +93,19 @@ public class CompositePane<T> extends VBox
                 this.controls.put(entry.getKey(), entry.getValue());
             });
         vbox.setFillWidth(true);
-        return new AnchorPane(vbox);
+//        vbox.setStyle("-fx-border-color: blue;");
+        return vbox;
     }
 
     @Override
     public void initialize() throws Exception
     {
         setFillWidth(true);
-        getChildren().add(createForm());
+        Node form = createForm();
+        getChildren().add(form);
+//        form.setStyle("-fx-border-color: green;");
+        VBox.setVgrow(form, Priority.ALWAYS);
+//        setStyle("-fx-border-color: red;");
     }
 
     public T toValue()

@@ -157,7 +157,7 @@ public interface PropertyCtrlFactory
         {
             factories.put(ValueType.STRING, (property, withLabel) -> objectFactory.newObject(StringPropertyControl.class, property, withLabel));
             factories.put(ValueType.IDENTITY, (property, withLabel) -> objectFactory.newObject(IdentityPropertyControl.class, property, withLabel));
-//            factories.put(ValueType.ENTITY_REFERENCE, (property, withLabel) -> objectFactory.newObject(EntityReferenceControl.class, property, withLabel));
+            factories.put(ValueType.ENTITY_REFERENCE, (property, withLabel) -> objectFactory.newObject(EntityReferenceControl.class, property, withLabel));
             factories.put(ValueType.LONG, (property, withLabel) -> objectFactory.newObject(LongPropertyControl.class, property, withLabel));
             factories.put(ValueType.ZONED_DATE_TIME, (property, withLabel) -> objectFactory.newObject(ZonedDateTimePropertyControl.class, property, withLabel));
             factories.put(ValueType.OFFSET_DATE_TIME, (property, withLabel) -> objectFactory.newObject(OffsetDateTimePropertyControl.class, property, withLabel));

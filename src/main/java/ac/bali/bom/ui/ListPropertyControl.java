@@ -34,7 +34,6 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
     {
         super(factory, false, null);
         listView = new ListView<>();
-        listView.setPrefHeight(300);
         listView.setPadding(PADDING);
         if( descriptor != null )
         {
@@ -45,12 +44,15 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
         {
             listView.setCellFactory(param -> (ListCell<T>) obf.newObject(NameListCell.class));
         }
-        setFillWidth(true);
-
-        ScrollPane scrollPane = new ScrollPane(listView);
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
+        ScrollPane scrollPane2 = new ScrollPane(listView);
+        scrollPane2.setFitToWidth(true);
+        scrollPane2.setFitToHeight(true);
+        VBox scrollPane = new VBox(scrollPane2);
+        HBox.setHgrow(scrollPane, Priority.ALWAYS);
+        scrollPane.setFillWidth(true);
+        VBox.setVgrow(scrollPane2,Priority.ALWAYS);
+//        scrollPane2.setStyle("-fx-border-color: blue; ");
+//        scrollPane.setStyle("-fx-border-color: purple; ");
 
         HBox box;
         if( descriptor == null )
@@ -65,10 +67,13 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
             label.setPadding(PADDING);
             box = new HBox(label, scrollPane);
         }
+//        box.setStyle("-fx-border-color: red;");
         box.setPadding(PADDING);
         box.setFillHeight(true);
+        VBox.setVgrow(box, Priority.ALWAYS);
         getChildren().add(box);
         setFillWidth(true);
+//        setStyle("-fx-border-color: green;");
     }
 
     @Override

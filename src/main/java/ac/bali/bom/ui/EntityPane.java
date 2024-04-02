@@ -1,6 +1,7 @@
 package ac.bali.bom.ui;
 
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -34,6 +35,18 @@ public class EntityPane<T extends HasIdentity> extends VBox
         controller = obf.newObject(EntityListController.class, entityType, compositeForm, actionBar, entityList);
         SplitPane split = new SplitPane(entityList, compositeForm);
         split.setDividerPosition(0, 0.25);
+        split.widthProperty().addListener((obs, oldVal, newVal) -> {
+            double totalWidth = newVal.doubleValue();
+            // At 1920, divider = 0.2
+            // At 500, divider = 0.5
+            // y = k*x + m
+            // 0.2 = k * 1920 + m
+            // 0.5 = k * 500 + m
+            // k = (0.2-0.5) / (1920-500 ) = 0.0002112576
+            // m = 0.5 - k*500 = 0.605629
+            double dividerPosition = -0.0002112576 * totalWidth + 0.605629;
+            split.setDividerPositions(dividerPosition);
+        });
         HBox hBox = new HBox(split);
         HBox.setHgrow(split, Priority.ALWAYS);
         VBox.setVgrow(hBox, Priority.ALWAYS);
@@ -41,7 +54,6 @@ public class EntityPane<T extends HasIdentity> extends VBox
         getChildren().add(actionBar);
         getChildren().add(hBox);
         setFillWidth(true);
-//        setStyle("-fx-border-style: solid; -fx-border-color: green; -fx-border-width: 2px");
     }
 
     public void loadAll()

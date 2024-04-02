@@ -61,6 +61,14 @@ public abstract class PropertyControl<T> extends VBox
         return box;
     }
 
+    protected VBox wrapInVBox(Control... controls)
+    {
+        VBox box = new VBox(controls);
+        box.setPadding(PADDING);
+        box.setDisable(immutable);
+        return box;
+    }
+
     public T valueOf()
     {
         return currentValue();

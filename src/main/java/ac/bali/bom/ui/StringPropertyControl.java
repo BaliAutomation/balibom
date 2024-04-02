@@ -1,11 +1,14 @@
 package ac.bali.bom.ui;
 
 import ac.bali.bom.support.RenderAsDescription;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.property.PropertyDescriptor;
@@ -24,19 +27,30 @@ public class StringPropertyControl extends PropertyControl<String>
             field = new TextField();
         } else
         {
-            field = new TextArea();
+            TextArea ta = new TextArea();
+            ta.setWrapText(true);
+            field = ta;
         }
-//        field.setPadding(PADDING);
-        HBox box;
+        Pane box;
         if (withLabel)
         {
             Label label = labelOf();
-            box = wrapInHBox(label, field);
+            if (field instanceof TextArea)
+            {
+                label.setAlignment(Pos.CENTER_LEFT);
+                box = wrapInVBox(label, field);
+            } else
+                box = wrapInHBox(label, field);
         } else
         {
             box = wrapInHBox(field);
         }
+        HBox.setHgrow(field, Priority.ALWAYS);
+        setAlignment(Pos.TOP_LEFT);
+        setFillWidth(true);
         getChildren().add(box);
+//        setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
+
     }
 
     @Override
@@ -45,7 +59,8 @@ public class StringPropertyControl extends PropertyControl<String>
         field.setText(value.toString());
     }
 
-    protected String currentValue() {
+    protected String currentValue()
+    {
         return field.getText();
     }
 
