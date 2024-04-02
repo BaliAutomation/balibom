@@ -1,0 +1,14 @@
+logs/*
+!.gitkeep
+node_modules/
+bower_components/
+tmp
+.DS_Store
+*.iml
+build/
+out/
+.idea/
+.gradle/
+junk.*
+.directory
+hs_err*log

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Scene xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.bali.bom.ui.ProductsController">
+    <BorderPane>
+        <center>
+            <VBox alignment="CENTER" prefHeight="332.0" prefWidth="307.0" spacing="20.0">
+                <padding>
+                    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                </padding>
+
+                <Label alignment="TOP_LEFT" prefHeight="18.0" prefWidth="354.0" text="Products" />
+                <HBox>
+                    <children>
+                        <ScrollPane prefHeight="202.0" prefWidth="138.0">
+                            <content>
+                                <ListView fx:id="products" prefHeight="200.0" prefWidth="125.0" />
+                            </content>
+                        </ScrollPane>
+                        <VBox>
+                            <children>
+                                <Label alignment="TOP_LEFT" prefHeight="18.0" prefWidth="354.0" text="Manufacturer" />
+                                <TextField />
+                                <Label alignment="TOP_LEFT" prefHeight="18.0" prefWidth="354.0" text="MPN" />
+                                <TextField />
+                                <Label alignment="TOP_LEFT" prefHeight="18.0" prefWidth="354.0" text="MPN" />
+                                <ListView fx:id="products" prefHeight="200.0" prefWidth="125.0" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+                <HBox>
+                    <children>
+                        <Button onAction="#onAddProductClick"  mnemonicParsing="false" text="Add..." />
+                        <Button onAction="#onRemoveProductClick" mnemonicParsing="false" text="Remove" />
+                    </children>
+                </HBox>
+            </VBox>
+        </center>
+      <top>
+          <fx:include source="navigation.fxml" />
+      </top>
+    </BorderPane>
+</Scene>
