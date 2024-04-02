@@ -12,8 +12,10 @@ import ac.bali.bom.products.Product;
 import ac.bali.bom.ui.EntityPane;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.apache.polygene.api.object.ObjectFactory;
@@ -29,7 +31,7 @@ public class Main extends Application
     @Override
     public void start(Stage stage) throws Exception
     {
-        System.out.println("java version: "+System.getProperty("java.version"));
+        System.out.println("java version: " + System.getProperty("java.version"));
         System.out.println("javafx.version: " + System.getProperty("javafx.version"));
 
         qi4jApplication = new Qi4jApplicationAssembler("Bill Of Materials", "1.0", development);
@@ -45,13 +47,23 @@ public class Main extends Application
         EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class);
         EntityPane<PartsInventory> partsInventoryPane = objectFactory.newObject(EntityPane.class, PartsInventory.class);
         EntityPane<Manufacturer> manufacturersPane = objectFactory.newObject(EntityPane.class, Manufacturer.class);
-        VBox inventoryPanel = new VBox(partsInventoryPane, productsInventoryPane);
+        VBox inventoryPanel = new VBox(new Label("Parts"), partsInventoryPane, new Label("Products"), productsInventoryPane);
+        VBox.setVgrow(inventoryPanel, Priority.ALWAYS);
         Tab products = new Tab("Products", productsPane);
         Tab parts = new Tab("Parts", partsPane);
         Tab orders = new Tab("Orders", ordersPane);
         Tab inventory = new Tab("Inventory", inventoryPanel);
         Tab manufacturers = new Tab("Manufacturers", manufacturersPane);
         TabPane tabs = new TabPane(products, parts, orders, inventory, manufacturers);
+        products.setOnSelectionChanged(evt -> productsPane.loadAll());
+        parts.setOnSelectionChanged(evt -> partsPane.loadAll());
+        orders.setOnSelectionChanged(evt -> ordersPane.loadAll());
+        inventory.setOnSelectionChanged(evt ->
+        {
+            productsInventoryPane.loadAll();
+            partsInventoryPane.loadAll();
+        });
+        manufacturers.setOnSelectionChanged(evt -> manufacturersPane.loadAll());
 
         productsPane.prefWidthProperty().bind(tabs.widthProperty());
         productsPane.prefHeightProperty().bind(tabs.heightProperty());
@@ -63,13 +75,6 @@ public class Main extends Application
         inventoryPanel.prefHeightProperty().bind(tabs.heightProperty());
         manufacturersPane.prefWidthProperty().bind(tabs.widthProperty());
         manufacturersPane.prefHeightProperty().bind(tabs.heightProperty());
-
-        productsPane.loadAll();
-        partsPane.loadAll();
-        ordersPane.loadAll();
-        productsInventoryPane.loadAll();
-        partsInventoryPane.loadAll();
-        manufacturersPane.loadAll();
 
         Scene mainScene = new Scene(tabs, 800, 600);
         stage.setScene(mainScene);

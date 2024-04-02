@@ -98,6 +98,7 @@ public class CompositePane<T> extends VBox
     @Override
     public void initialize() throws Exception
     {
+        setFillWidth(true);
         getChildren().add(createForm());
     }
 
