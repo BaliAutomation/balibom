@@ -22,7 +22,7 @@ public class ProductsModule
         module.services(BomReader.class).visibleIn(Visibility.application);
         module.entities(Product.class).visibleIn(application);
         module.values(Product.class).visibleIn(application);
-        module.values(Bom.class,BomItem.class);
+        module.values(Bom.class,BomItem.class).visibleIn(application);
         return module;
     }
 }

@@ -17,7 +17,7 @@ javafx {
 
 application {
     mainClass = "ac.bali.bom.Main"
-    mainModule = "ac.bali.bom"
+//    mainModule = "ac.bali.bom"
 }
 
 
@@ -29,7 +29,6 @@ jlink {
 }
 
 test {
-    useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
@@ -40,6 +39,7 @@ dependencies {
     implementation "org.apache.polygene.core:org.apache.polygene.core.spi:3.0.0"
     implementation "org.apache.polygene.core:org.apache.polygene.core.bootstrap:3.0.0"
     implementation "org.apache.polygene.core:org.apache.polygene.core.runtime:3.0.0"
+    implementation "org.apache.polygene.core:org.apache.polygene.core.testsupport:3.0.0"
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.entitystore-memory:3.0.0"
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.serialization-javaxjson:3.0.0"
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.entitystore-file:3.0.0"
@@ -51,9 +51,4 @@ dependencies {
     implementation 'org.apache.johnzon:johnzon-core:1.2.20'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
-    testImplementation(platform('org.junit:junit-bom:5.10.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
-    testImplementation 'org.hamcrest:hamcrest-core:2.2'
-    testImplementation 'org.hamcrest:hamcrest-library:2.2'
 }

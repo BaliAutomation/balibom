@@ -1,7 +1,7 @@
 package ac.bali.bom.inventory;
 
 import ac.bali.bom.products.Product;
-import ac.bali.bom.support.RenderAsName;
+import ac.bali.bom.ui.support.RenderAsName;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Immutable;

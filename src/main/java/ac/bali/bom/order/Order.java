@@ -1,10 +1,9 @@
 package ac.bali.bom.order;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
-import ac.bali.bom.parts.Supplier;
+import ac.bali.bom.suppliers.Supplier;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Property;

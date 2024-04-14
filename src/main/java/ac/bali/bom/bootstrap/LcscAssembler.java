@@ -1,7 +1,11 @@
 package ac.bali.bom.bootstrap;
 
 import ac.bali.bom.connectivity.PartSupplyConnector;
-import ac.bali.bom.lcsc.*;
+import ac.bali.bom.suppliers.lcsc.Lcsc;
+import ac.bali.bom.suppliers.lcsc.LcscParameter;
+import ac.bali.bom.suppliers.lcsc.LcscPart;
+import ac.bali.bom.suppliers.lcsc.LcscPartPrice;
+import ac.bali.bom.suppliers.lcsc.LcscPartResponse;
 import org.apache.polygene.api.common.Visibility;
 import org.apache.polygene.bootstrap.Assembler;
 import org.apache.polygene.bootstrap.AssemblyException;
@@ -16,7 +20,7 @@ public class LcscAssembler
                         LcscParameter.class,
                         LcscPart.class,
                         LcscPartPrice.class,
-                        LcscResponse.class
+                        LcscPartResponse.class
                 )
                 .visibleIn(Visibility.module);
 

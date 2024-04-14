@@ -1,6 +1,7 @@
 package ac.bali.bom.bootstrap;
 
 import ac.bali.bom.ui.*;
+import ac.bali.bom.view.ResolveParts;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
@@ -24,6 +25,7 @@ public class JavaFxModule
             BooleanPropertyControl.class,
             BytePropertyControl.class,
             CharacterPropertyControl.class,
+            CompositeDialog.class,
             CompositePane.class,
             DoublePropertyControl.class,
             DurationPropertyControl.class,
@@ -47,6 +49,7 @@ public class JavaFxModule
             PeriodPropertyControl.class,
             ShortPropertyControl.class,
             StringPropertyControl.class,
+            ValueLinkControl.class,
             ZonedDateTimePropertyControl.class
         );
         return module;

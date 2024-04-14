@@ -150,28 +150,33 @@ public class EntityListController<T extends HasIdentity>
     {
         if (stateMachine == editing || stateMachine == adding)
         {
-            // TODO; if it is dirty, ask to Save
-            String SAVE = "Save changes";
-            List<String> choices = List.of(SAVE, "Discard changes", "Cancel");
-            ChoiceDialog<String> cd = new ChoiceDialog<>(SAVE, choices);
-            String choice = cd.showAndWait().orElse(null);
-            if (choice != null)
-            {
-                if (choice.equals(SAVE))
-                {
-                    Usecase usecase = UsecaseBuilder.newUsecase("onSelection -> Save after Prompt");
-                    try(UnitOfWork uow = uowf.newUnitOfWork(usecase))
-                    {
-                        save(uow);
-                    }
-                    stateMachine = stateMachine.save();
-                } else
-                {
-                    stateMachine = stateMachine.cancel();
-                }
-            }
+            askToSaveOrAbandonChanges(newValue);
         }
         compositePane.updateWith(newValue);
+    }
+
+    private void askToSaveOrAbandonChanges(T newValue)
+    {
+        // TODO; if it is dirty, ask to Save
+        String SAVE = "Save changes";
+        List<String> choices = List.of(SAVE, "Discard changes", "Cancel");
+        ChoiceDialog<String> cd = new ChoiceDialog<>(SAVE, choices);
+        String choice = cd.showAndWait().orElse(null);
+        if (choice != null)
+        {
+            if (choice.equals(SAVE))
+            {
+                Usecase usecase = UsecaseBuilder.newUsecase("onSelection -> Save after Prompt");
+                try(UnitOfWork uow = uowf.newUnitOfWork(usecase))
+                {
+                    save(uow);
+                }
+                stateMachine = stateMachine.save();
+            } else
+            {
+                stateMachine = stateMachine.cancel();
+            }
+        }
     }
 
     enum StateMachine

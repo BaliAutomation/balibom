@@ -1,7 +1,9 @@
 package ac.bali.bom.ui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -30,8 +32,17 @@ public class EntityPane<T extends HasIdentity> extends VBox
     public void initialize() throws Exception
     {
         actionBar = obf.newObject(ActionBar.class, entityType);
-        compositeForm = obf.newObject(CompositePane.class, entityType);
+        actionBar.addEventHandler(ActionEvent.ANY, event -> loadAll());
+        compositeForm = obf.newObject(CompositePane.class, entityType, false);
         entityList = obf.newObject(ListPropertyControl.class, entityType);
+        entityList.addSelectionHandler(new ChangeListener<T>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue)
+            {
+                actionBar.onSelected(entityList.listView.getSelectionModel().getSelectedItems());
+            }
+        });
         controller = obf.newObject(EntityListController.class, entityType, compositeForm, actionBar, entityList);
         SplitPane split = new SplitPane(entityList, compositeForm);
         split.setDividerPosition(0, 0.25);

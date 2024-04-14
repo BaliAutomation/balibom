@@ -1,6 +1,8 @@
 package ac.bali.bom.ui;
 
-import ac.bali.bom.support.ListRenderer;
+import ac.bali.bom.ui.support.Height;
+import ac.bali.bom.ui.support.ListRenderer;
+import java.util.Collection;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -13,6 +15,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
@@ -22,31 +25,38 @@ import org.apache.polygene.api.property.PropertyDescriptor;
 
 import java.util.List;
 import java.util.function.Consumer;
+import org.apache.polygene.api.structure.MetaInfoHolder;
 
-public class ListPropertyControl<T> extends PropertyControl<List<T>>
+public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
 {
     ListView<T> listView;
 
     @SuppressWarnings("unchecked")
     public ListPropertyControl(@Service PropertyCtrlFactory factory,
-                               @Uses @Optional PropertyDescriptor descriptor,
-                               @Structure ObjectFactory obf)
+                               @Uses @Optional MetaInfoHolder meta,
+                               @Uses @Optional PropertyDescriptor propDescriptor,
+                               @Uses @Optional AssociationDescriptor assocDescriptor,
+                               @Structure ObjectFactory obf, @Uses @Optional Boolean withLabel)
     {
         super(factory, false, null);
         listView = new ListView<>();
         listView.setPadding(PADDING);
-        if( descriptor != null )
+        ScrollPane scrollPane2 = new ScrollPane(listView);
+        scrollPane2.setFitToWidth(true);
+        scrollPane2.setFitToHeight(true);
+        if( meta != null )
         {
-            ListRenderer renderer = descriptor.metaInfo(ListRenderer.class);
-            listView.setCellFactory(param -> (ListCell<T>) obf.newObject(renderer.value()));
+            Height height = meta.metaInfo(Height.class);
+            if( height != null )
+                scrollPane2.setMaxHeight(height.value());
+            ListRenderer renderer = meta.metaInfo(ListRenderer.class);
+            Class<?> cls = renderer == null ? NameListCell.class : renderer.value();
+            listView.setCellFactory(param -> (ListCell<T>) obf.newObject(cls));
         }
         else
         {
             listView.setCellFactory(param -> (ListCell<T>) obf.newObject(NameListCell.class));
         }
-        ScrollPane scrollPane2 = new ScrollPane(listView);
-        scrollPane2.setFitToWidth(true);
-        scrollPane2.setFitToHeight(true);
         VBox scrollPane = new VBox(scrollPane2);
         HBox.setHgrow(scrollPane, Priority.ALWAYS);
         scrollPane.setFillWidth(true);
@@ -55,12 +65,12 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
 //        scrollPane.setStyle("-fx-border-color: purple; ");
 
         HBox box;
-        if( descriptor == null )
+        if( (propDescriptor == null && assocDescriptor == null) || !withLabel)
         {
             box = new HBox(scrollPane);
         } else
         {
-            String name = factory.nameOf(descriptor);
+            String name = factory.nameOf(propDescriptor, assocDescriptor);
             Label label = new Label(name);
             label.setPrefWidth(150);
             label.setAlignment(Pos.CENTER_RIGHT);
@@ -97,12 +107,9 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
         listView.getSelectionModel().getSelectedItems().forEach(selected);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected void updateTo(List<T> value)
+    protected void updateTo(Collection<T> value)
     {
-        ObservableList<T> list = listView.getItems();
-        list.clear();
         ObservableList<T> items;
         if (value instanceof ObservableList<T>)
         {

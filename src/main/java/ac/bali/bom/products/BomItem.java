@@ -1,8 +1,7 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.parts.Manufacturer;
-import ac.bali.bom.support.RenderAsName;
-import org.apache.polygene.api.association.Association;
+import ac.bali.bom.ui.support.RenderAsName;
+import java.util.Map;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.property.Property;
@@ -10,7 +9,7 @@ import org.apache.polygene.api.property.Property;
 public interface BomItem
 {
     @Optional
-    Association<Manufacturer> manufacturer();
+    Property<String> mf();
 
     @UseDefaults
     Property<String> mpn();
@@ -24,5 +23,9 @@ public interface BomItem
     @RenderAsName
     Property<String> designator();
 
+    @UseDefaults
     Property<Integer> quantity();
+
+    @UseDefaults
+    Property<Map<String,String>> attributes();
 }

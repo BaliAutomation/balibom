@@ -1,16 +1,17 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.support.HasViewController;
-import ac.bali.bom.support.Order;
-import ac.bali.bom.support.RenderAsDescription;
-import ac.bali.bom.support.RenderAsName;
+import ac.bali.bom.ui.support.HasListViewController;
+import ac.bali.bom.ui.support.Order;
+import ac.bali.bom.ui.support.RenderAsDescription;
+import ac.bali.bom.ui.support.RenderAsName;
+import ac.bali.bom.view.ResolveParts;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.entity.Queryable;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.Property;
 
-@HasViewController({ProductsService.class})
+@HasListViewController({ProductsService.class, ResolveParts.class})
 public interface Product extends HasIdentity
 {
     @Order(1)

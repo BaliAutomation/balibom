@@ -1,7 +1,7 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.parts.PartsService;
-import ac.bali.bom.support.Action;
+import ac.bali.bom.ui.support.Action;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
 import org.apache.polygene.api.identity.Identity;
@@ -20,9 +20,9 @@ import java.io.File;
 @Concerns(UnitOfWorkConcern.class)
 public interface ProductsService
 {
-    @UnitOfWorkPropagation(usecase = "Read BOM")
+    @UnitOfWorkPropagation(usecase = "Import BOM")
     @Action(label="Import BOM...")
-    Product readBom(File bomFile) throws Exception;
+    Product importBom(File bomFile) throws Exception;
 
     @SuppressWarnings("resource")
     class Mixin
@@ -38,7 +38,7 @@ public interface ProductsService
         private BomReader bomReader;
 
         @Override
-        public Product readBom(File bomFile) throws Exception
+        public Product importBom(File bomFile) throws Exception
         {
             String product = parseNameFromFile(bomFile);
             String revision = parseRevisionFromFile(bomFile);

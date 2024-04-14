@@ -17,7 +17,11 @@ public class NameListCell<T> extends ListCell<T>
     public void updateItem(T item, boolean empty)
     {
         super.updateItem(item, empty);
-        if (item != null)
+        if( item instanceof String)
+        {
+            setText((String) item);
+        }
+        else if (item != null)
         {
             setText(factory.nameOf(item));
         }

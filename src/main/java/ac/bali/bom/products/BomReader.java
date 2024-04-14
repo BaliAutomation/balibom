@@ -1,18 +1,5 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.parts.Manufacturer;
-import ac.bali.bom.parts.ManufacturersService;
-import ac.bali.bom.parts.Part;
-import ac.bali.bom.parts.PartsService;
-import org.apache.polygene.api.concern.Concerns;
-import org.apache.polygene.api.injection.scope.Service;
-import org.apache.polygene.api.injection.scope.Structure;
-import org.apache.polygene.api.mixin.Mixins;
-import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
-import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
-import org.apache.polygene.api.value.ValueBuilder;
-import org.apache.polygene.api.value.ValueBuilderFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -20,14 +7,23 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.polygene.api.concern.Concerns;
+import org.apache.polygene.api.injection.scope.Structure;
+import org.apache.polygene.api.mixin.Mixins;
+import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
+import org.apache.polygene.api.value.ValueBuilder;
+import org.apache.polygene.api.value.ValueBuilderFactory;
 
 @Mixins(BomReader.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface BomReader
 {
-    @UnitOfWorkPropagation
     Bom load(String product, String revision, File bomFile) throws Exception;
+
+    Bom load(String product, String revision, List<String> lines);
 
     abstract class Mixin
         implements BomReader
@@ -35,24 +31,20 @@ public interface BomReader
         @Structure
         private ValueBuilderFactory vbf;
 
-        @Service
-        private ManufacturersService manufacturers;
-
-        @Service
-        PartsService parts;
-
-        private ArrayList<String> errors = new ArrayList<>();
-
         public Bom load(String product, String revision, File bomFile)
             throws Exception
         {
-            Columns columns = new Columns();
+            List<String> lines = Files.readAllLines(bomFile.toPath());
+            return load(product, revision, lines);
+        }
 
+        public Bom load(String product, String revision, List<String> lines)
+        {
+            Columns columns = new Columns();
             ValueBuilder<Bom> builder = vbf.newValueBuilder(Bom.class);
             Bom bomP = builder.prototype();
             bomP.product().set(product);
             bomP.revision().set(revision);
-            List<String> lines = Files.readAllLines(bomFile.toPath());
             findColumns(lines.get(0), columns);
             ValueBuilder<BomItem> builder2 = vbf.newValueBuilder(BomItem.class);
             BomItem bomItemP = builder2.prototype();
@@ -73,36 +65,34 @@ public interface BomReader
                         else
                             quantity = Integer.parseInt(parts[columns.quantityColumn]);
 
-                        String value = parts[columns.valueColumn];
-                        String mf = parts[columns.mfColumn];
-                        String mpn = parts[columns.mpnColumn];
+                        String value = parts[columns.valueColumn].trim();
+                        String mf = parts[columns.mfColumn].trim();
+                        String mpn = parts[columns.mpnColumn].trim();
                         String footprint = parts[columns.footprintColumn];
-                        if (footprint != null && mpn != null && mf != null)
+                        bomItemP.designator().set(designator);
+                        bomItemP.mf().set(mf);
+                        bomItemP.mpn().set(mpn);
+                        bomItemP.value().set(value);
+                        bomItemP.footprint().set(footprint);
+                        bomItemP.quantity().set(quantity);
+                        Map<String,String> attributes = new HashMap<>();
+                        for( Map.Entry<String, Integer> attr : columns.attributes.entrySet())
                         {
-                            bomItemP.designator().set(designator);
-                            Manufacturer manufacturer = manufacturers.findManufacturer(mf);
-                            bomItemP.manufacturer().set(manufacturer);
-                            bomItemP.mpn().set(mpn);
-                            bomItemP.value().set(value);
-                            bomItemP.footprint().set(footprint);
-                            bomItemP.quantity().set(quantity);
-                            BomItem item = builder2.newInstance();
-                            if( validatePart( manufacturer, mpn) != null )
-                                items.add(item);
+                            String attrName = attr.getKey();
+                            int attrColumn = attr.getValue();
+                            attributes.put(attrName, parts[attrColumn]);
                         }
+                        bomItemP.attributes().set(attributes);
+                        BomItem item = builder2.newInstance();
+                        items.add(item);
                     } catch (Exception e)
                     {
-                        errors.add(e.getMessage());
+                        bomP.errors().get().add(e.getMessage());
                     }
                 }
             }
             bomP.items().set(items);
             return builder.newInstance();
-        }
-
-        private Part validatePart(Manufacturer manufacturer, String mpn)
-        {
-            return parts.findOrCreatePart( manufacturer, mpn );
         }
 
         private void validateParts(String[] parts, Columns columns)
@@ -158,25 +148,27 @@ public interface BomReader
                 {
                     columns.mfColumn = index;
                 }
-                if (part.equalsIgnoreCase("MPN"))
+                else if (part.equalsIgnoreCase("MPN"))
                 {
                     columns.mpnColumn = index;
                 }
-                if (part.equalsIgnoreCase("Designator") || part.equalsIgnoreCase("Reference"))
+                else if (part.equalsIgnoreCase("Designator") || part.equalsIgnoreCase("Reference"))
                 {
                     columns.designatorColumn = index;
                 }
-                if ((part.equalsIgnoreCase("Comment") && columns.valueColumn == -1) || part.equalsIgnoreCase("Value"))
+                else if ((part.equalsIgnoreCase("Comment") && columns.valueColumn == -1) || part.equalsIgnoreCase("Value"))
                 {
                     columns.valueColumn = index;
                 }
-                if (part.equalsIgnoreCase("Footprint"))
+                else if (part.equalsIgnoreCase("Footprint"))
                 {
                     columns.footprintColumn = index;
                 }
-                if (part.equalsIgnoreCase("Qty") || part.equalsIgnoreCase("Quantity"))
+                else if (part.equalsIgnoreCase("Qty") || part.equalsIgnoreCase("Quantity"))
                 {
                     columns.quantityColumn = index;
+                } else {
+                    columns.attributes.put(part, index);
                 }
                 index++;
             }
@@ -185,8 +177,8 @@ public interface BomReader
         private String trim(String part)
         {
             part = part.trim();
-            if( part.startsWith("\"") || part.startsWith("'"))
-                part = part.substring(1, part.length()-1 );
+            if (part.startsWith("\"") || part.startsWith("'"))
+                part = part.substring(1, part.length() - 1);
             return part;
         }
 
@@ -198,6 +190,7 @@ public interface BomReader
             private int mpnColumn = -1;
             private int mfColumn = -1;
             private int quantityColumn = -1;
+            private Map<String, Integer> attributes = new HashMap<>();
         }
 
     }

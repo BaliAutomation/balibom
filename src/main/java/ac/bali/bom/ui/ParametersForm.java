@@ -1,17 +1,24 @@
 package ac.bali.bom.ui;
 
+import java.io.File;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Control;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
-
-import java.io.File;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
+import org.apache.polygene.api.composite.Composite;
 
 public class ParametersForm extends Dialog<Object[]>
 {
@@ -54,7 +61,8 @@ public class ParametersForm extends Dialog<Object[]>
         int[] index = new int[1];
         Arrays.stream(parameters).forEach(p ->
         {
-            Region field = selectControl(p.getType(), index[0]);
+            Class<?> parameterType = p.getType();
+            Region field = selectControl(parameterType, index[0]);
             field.setMaxWidth(Double.MAX_VALUE);
             GridPane.setHgrow(field, Priority.ALWAYS);
             GridPane.setFillWidth(field, true);
@@ -67,7 +75,6 @@ public class ParametersForm extends Dialog<Object[]>
             index[0] += 1;
         });
         getDialogPane().setContent(grid);
-
         Platform.runLater(() -> controls[0].requestFocus());
     }
 
@@ -78,18 +85,23 @@ public class ParametersForm extends Dialog<Object[]>
             TextField tf = new TextField();
             tf.setUserData(index);
             return tf;
-        }
-        if (type.equals(File.class))
+        } else if (type.equals(File.class))
         {
             TextField tf = new TextField();
             tf.setUserData(index);
             Button button = new Button("...");
-            button.setOnAction( evt -> {
+            button.setOnAction(evt ->
+            {
                 FileChooser fileChooser = new FileChooser();
                 File f = fileChooser.showOpenDialog(button.getScene().getWindow());
                 tf.setText(f.getAbsolutePath());
             });
             return new HBox(tf, button);
+        } else if (Composite.class.isAssignableFrom(type))
+        {
+            Label label = new Label();
+            label.setUserData(index);
+            return label;
         }
         throw new IllegalArgumentException("Does not support arguments of type " + type.getName());
     }

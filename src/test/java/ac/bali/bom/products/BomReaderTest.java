@@ -1,22 +1,22 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.bootstrap.*;
-import ac.bali.bom.parts.Manufacturer;
-import ac.bali.bom.parts.ManufacturersService;
-import org.apache.polygene.api.structure.Application;
-import org.apache.polygene.api.structure.Module;
-import org.apache.polygene.api.value.ValueBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
+import ac.bali.bom.bootstrap.ModelLayer;
+import ac.bali.bom.bootstrap.ProductsModule;
+import ac.bali.bom.bootstrap.Qi4jApplicationAssembler;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.polygene.api.structure.Application;
+import org.apache.polygene.api.structure.Module;
+import org.apache.polygene.api.unitofwork.UnitOfWork;
+import org.apache.polygene.api.usecase.Usecase;
+import org.apache.polygene.api.usecase.UsecaseBuilder;
+import org.apache.polygene.api.value.ValueBuilder;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @SuppressWarnings("DataFlowIssue")
@@ -26,8 +26,8 @@ public class BomReaderTest
     private static BomReader underTest;
     private static Module module;
 
-    @BeforeAll
-    static void setup() throws Exception
+    @BeforeClass
+    public static void setup() throws Exception
     {
         Qi4jApplicationAssembler app = new Qi4jApplicationAssembler("Bill of Material", "1.0", Application.Mode.test);
         app.initialize();
@@ -37,37 +37,45 @@ public class BomReaderTest
     }
 
     @Test
-    void readBomTest1() throws Exception
+    public void readBomTest1() throws Exception
     {
-        URL url = getClass().getClassLoader().getResource("colibri-3/RevC/colibri-3-RevC-bom.csv");
-        File f = new File(url.toURI());
-        Bom bom = underTest.load("colibri-3", "C", f);
-        assertThat(bom.product().get(), equalTo("colibri-3"));
-        assertThat(bom.revision().get(), equalTo("C"));
-
-        List<BomItem> expected = expected1();
-        List<BomItem> actual = bom.items().get();
-        assertThat(actual.size(), equalTo(expected.size()));
-        for( int i = 0; i < expected.size(); i++)
+        Usecase usecase = UsecaseBuilder.newUsecase("readBomTest1");
+        try(UnitOfWork uow = module.unitOfWorkFactory().newUnitOfWork(usecase))
         {
-            assertThat(actual.get(i), equalTo(expected.get(i)));
+            URL url = getClass().getClassLoader().getResource("colibri-3/RevC/colibri-3-RevC-bom.csv");
+            File f = new File(url.toURI());
+            Bom bom = underTest.load("colibri-3", "C", f);
+            assertThat(bom.product().get(), equalTo("colibri-3"));
+            assertThat(bom.revision().get(), equalTo("C"));
+
+            List<BomItem> expected = expected1();
+            List<BomItem> actual = bom.items().get();
+            assertThat(actual.size(), equalTo(expected.size()));
+            for (int i = 0; i < expected.size(); i++)
+            {
+                assertThat(actual.get(i), equalTo(expected.get(i)));
+            }
         }
     }
 
     @Test
-    void readBomTest2() throws Exception
+    public void readBomTest2() throws Exception
     {
-        File f = new File("build/resources/test/gasautomat1/RevA/gasautomat1.csv");
-        Bom bom = underTest.load("gasautomat1", "C", f);
-        assertThat(bom.product().get(), equalTo("gasautomat1"));
-        assertThat(bom.revision().get(), equalTo("C"));
-
-        List<BomItem> expected = expected2();
-        List<BomItem> actual = bom.items().get();
-        assertThat(actual.size(), equalTo(expected.size()));
-        for( int i = 0; i < expected.size(); i++)
+        Usecase usecase = UsecaseBuilder.newUsecase("readBomTest2");
+        try(UnitOfWork uow = module.unitOfWorkFactory().newUnitOfWork(usecase))
         {
-            assertThat(actual.get(i), equalTo(expected.get(i)));
+            File f = new File("build/resources/test/gasautomat1/RevA/gasautomat1.csv");
+            Bom bom = underTest.load("gasautomat1", "C", f);
+            assertThat(bom.product().get(), equalTo("gasautomat1"));
+            assertThat(bom.revision().get(), equalTo("C"));
+
+            List<BomItem> expected = expected2();
+            List<BomItem> actual = bom.items().get();
+            assertThat(actual.size(), equalTo(expected.size()));
+            for (int i = 0; i < expected.size(); i++)
+            {
+                assertThat(actual.get(i), equalTo(expected.get(i)));
+            }
         }
     }
 
@@ -214,16 +222,11 @@ public class BomReaderTest
         BomItem prototype = builder.prototype();
         prototype.designator().set(designators);
         prototype.quantity().set(Integer.parseInt(quantity));
-        prototype.manufacturer().set(findManufacturer(mf));
+        prototype.mf().set(mf);
         prototype.mpn().set(mpn);
         prototype.footprint().set(footprint);
         prototype.value().set(value);
         return builder.newInstance();
-    }
-
-    private Manufacturer findManufacturer(String mf)
-    {
-        return module.findService(ManufacturersService.class).get().findManufacturer(mf);
     }
 
     private BomItem createBomItem(String value, String designators, String footprint, String lcsc, String digikey, String mpn, String mf, String comment)
@@ -231,7 +234,7 @@ public class BomReaderTest
         ValueBuilder<BomItem> builder = module.valueBuilderFactory().newValueBuilder(BomItem.class);
         BomItem prototype = builder.prototype();
         prototype.quantity().set(BomReader.Mixin.countDesignators(designators));
-        prototype.manufacturer().set(findManufacturer(mf));
+        prototype.mf().set(mf);
         prototype.mpn().set(mpn);
         prototype.footprint().set(footprint);
         prototype.value().set(value);

@@ -16,7 +16,7 @@ public abstract class PropertyControl<T> extends VBox
     protected final PropertyCtrlFactory factory;
     private final boolean immutable;
     private final String labelText;
-    protected Object value;
+    protected T value;
 
     public PropertyControl(PropertyCtrlFactory factory, boolean immutable, String labelText)
     {
@@ -87,7 +87,7 @@ public abstract class PropertyControl<T> extends VBox
         }
     }
 
-    private static class PropertyDataEvent extends Event
+    public static class PropertyDataEvent extends Event
     {
         public static final EventType<Event> PROPERTY_DATA_CHANGED = new EventType<>(ANY, "PROPERTY_DATA_CHANGED");
         private final Object oldValue;

@@ -1,12 +1,12 @@
 package ac.bali.bom.ui;
 
-import ac.bali.bom.support.PropertyOrderComparator;
-import ac.bali.bom.support.RenderAsName;
+import ac.bali.bom.ui.support.RenderAsName;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.AssociationStateHolder;
+import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.composite.StatefulCompositeDescriptor;
-import org.apache.polygene.api.composite.TransientComposite;
 import org.apache.polygene.api.entity.EntityComposite;
+import org.apache.polygene.api.entity.EntityReference;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.object.ObjectFactory;
@@ -14,21 +14,27 @@ import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.property.PropertyDescriptor;
 import org.apache.polygene.api.type.*;
 import org.apache.polygene.api.value.ValueComposite;
+import org.apache.polygene.api.value.ValueDescriptor;
 import org.apache.polygene.spi.PolygeneSPI;
+import org.apache.polygene.spi.module.ModuleSpi;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static ac.bali.bom.ui.CompositePane.MEMBER_COMPARATOR;
+
 @Mixins(PropertyCtrlFactory.Mixin.class)
 public interface PropertyCtrlFactory
 {
-    <T> CompositePane<T> createPane(T composite);
+    PropertyControl<?> createPropertyControl(PropertyDescriptor descriptor, boolean withLabel);
 
-    PropertyControl createPropertyControl(PropertyDescriptor descriptor, boolean withLabel);
+    PropertyControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
+    PropertyControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
+    PropertyControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
 
-    void registerPropertyControlFactory(ValueType type, BiFunction<PropertyDescriptor, Boolean, PropertyControl> factory);
+    void registerPropertyControlFactory(ValueType type, BiFunction<PropertyDescriptor, Boolean, PropertyControl<?>> factory);
 
     String nameOf(Object composite);
 
@@ -36,9 +42,18 @@ public interface PropertyCtrlFactory
 
     String nameOf(PropertyDescriptor property);
 
+    String nameOf(
+        @Optional
+        PropertyDescriptor propDescriptor,
+        @Optional
+        AssociationDescriptor assocDescriptor);
+
     class Mixin
         implements PropertyCtrlFactory
     {
+        @Structure
+        ModuleSpi module;
+
         @Structure
         PolygeneSPI spi;
 
@@ -46,44 +61,57 @@ public interface PropertyCtrlFactory
         ObjectFactory objectFactory;
 
         @Override
-        public <T> CompositePane<T> createPane(T composite)
-        {
-            return null;
-        }
-
-        @Override
-        public PropertyControl createPropertyControl(PropertyDescriptor descriptor, boolean withLabel)
+        public PropertyControl<?> createPropertyControl(PropertyDescriptor descriptor, boolean withLabel)
         {
             ValueType propertyType = descriptor.valueType();
-            BiFunction<PropertyDescriptor, Boolean, PropertyControl> factory = factories.get(propertyType);
+            BiFunction<PropertyDescriptor, Boolean, PropertyControl<?>> factory = factories.get(propertyType);
             if (factory != null)
                 return factory.apply(descriptor, withLabel);
-//        if (propertyType instanceof ValueCompositeType)
-//        {
-//        } else if (propertyType instanceof EntityCompositeType)
-//        {
-//        } else
             if (propertyType instanceof StatefulAssociationValueType<?>)
             {
-                return objectFactory.newObject(EntityReferencePropertyControl.class, descriptor);
+                return objectFactory.newObject(EntityReferencePropertyControl.class, descriptor, withLabel);
             } else if (propertyType instanceof CollectionType)
             {
-                return objectFactory.newObject(ListPropertyControl.class, descriptor);
+                return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
             } else if (propertyType instanceof MapType)
             {
-                return objectFactory.newObject(MapPropertyControl.class, descriptor);
+                return objectFactory.newObject(MapPropertyControl.class, descriptor, withLabel);
             } else if (propertyType instanceof EnumType)
             {
-                return objectFactory.newObject(EnumPropertyControl.class, descriptor);
+                return objectFactory.newObject(EnumPropertyControl.class, descriptor, withLabel);
             } else if (propertyType instanceof ArrayType)
             {
-                return objectFactory.newObject(ArrayPropertyControl.class, descriptor);
+                return objectFactory.newObject(ArrayPropertyControl.class, descriptor, withLabel);
+            }
+            // We are here when a Property<X> is encountered, where X is a custom type.
+            ValueDescriptor valueDescriptor = module.typeLookup().lookupValueModel(propertyType.primaryType());
+            if (valueDescriptor != null)
+            {
+                return objectFactory.newObject(ValueLinkControl.class, descriptor);
             }
             return null;
         }
 
         @Override
-        public void registerPropertyControlFactory(ValueType type, BiFunction<PropertyDescriptor, Boolean, PropertyControl> factory)
+        public PropertyControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        {
+            return objectFactory.newObject(EntityReferencePropertyControl.class, descriptor, withLabel);
+        }
+
+        @Override
+        public PropertyControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        {
+            return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+       }
+
+        @Override
+        public PropertyControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        {
+            return objectFactory.newObject(MapPropertyControl.class, descriptor, withLabel);
+        }
+
+        @Override
+        public void registerPropertyControlFactory(ValueType type, BiFunction<PropertyDescriptor, Boolean, PropertyControl<?>> factory)
         {
             factories.put(type, factory);
         }
@@ -93,31 +121,49 @@ public interface PropertyCtrlFactory
         {
             if (composite == null)
                 return "<no object>";
-            StatefulCompositeDescriptor descriptor;
             if (ValueComposite.class.isAssignableFrom(composite.getClass()))
             {
-                descriptor = spi.valueDescriptorFor(composite);
+                StatefulCompositeDescriptor descriptor = spi.valueDescriptorFor(composite);
+                return descriptor.state()
+                    .properties()
+                    .filter(p -> p.metaInfo(RenderAsName.class) != null)
+                    .sorted(MEMBER_COMPARATOR)
+                    .map(p ->
+                    {
+                        AssociationStateHolder state = spi.stateOf((ValueComposite) composite);
+                        Property<?> property = state.propertyFor(p.accessor());
+                        return property.get().toString();
+                    }).collect(Collectors.joining(" - "));
             } else if (EntityComposite.class.isAssignableFrom(composite.getClass()))
             {
-                descriptor = spi.entityDescriptorFor(composite);
-            } else if (TransientComposite.class.isAssignableFrom(composite.getClass()))
+                StatefulCompositeDescriptor descriptor = spi.entityDescriptorFor(composite);
+                return descriptor.state()
+                    .properties()
+                    .filter(p -> p.metaInfo(RenderAsName.class) != null)
+                    .sorted(MEMBER_COMPARATOR)
+                    .map(p ->
+                    {
+                        AssociationStateHolder state = spi.stateOf((EntityComposite) composite);
+                        Property<?> property = state.propertyFor(p.accessor());
+                        return property.get().toString();
+                    }).collect(Collectors.joining(" - "));
+            } else if (composite instanceof EntityReference)
             {
-                descriptor = spi.transientDescriptorFor(composite);
+                return ((EntityReference) composite).identity().toString();
             } else
             {
                 throw new IllegalArgumentException("Only Stateful Composites can be used as PropertyControl");
             }
+        }
 
-            return descriptor.state()
-                .properties()
-                .sorted(new PropertyOrderComparator())
-                .filter(p -> p.metaInfo(RenderAsName.class) != null)
-                .map(p ->
-                {
-                    AssociationStateHolder state = spi.stateOf((ValueComposite) composite);
-                    Property<?> property = state.propertyFor(p.accessor());
-                    return property.get().toString();
-                }).collect(Collectors.joining(" - "));
+        @Override
+        public String nameOf(PropertyDescriptor propDescriptor, AssociationDescriptor assocDescriptor)
+        {
+            if( propDescriptor != null )
+                return nameOf(propDescriptor);
+            if( assocDescriptor != null)
+                return nameOf(assocDescriptor);
+            return null;
         }
 
         @Override
@@ -152,7 +198,7 @@ public interface PropertyCtrlFactory
             return humanName.toString();
         }
 
-        private final Map<ValueType, BiFunction<PropertyDescriptor, Boolean, PropertyControl>> factories = new HashMap<>();
+        private final Map<ValueType, BiFunction<PropertyDescriptor, Boolean, PropertyControl<?>>> factories = new HashMap<>();
 
         {
             factories.put(ValueType.STRING, (property, withLabel) -> objectFactory.newObject(StringPropertyControl.class, property, withLabel));
