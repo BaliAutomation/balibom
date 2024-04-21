@@ -1,7 +1,8 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.parts.PartsService;
-import ac.bali.bom.ui.support.Action;
+import org.qi4j.library.javafx.support.Action;
+import java.io.File;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
 import org.apache.polygene.api.identity.Identity;
@@ -14,8 +15,7 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 
-import java.io.File;
-
+@SuppressWarnings("unused")
 @Mixins(ProductsService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface ProductsService

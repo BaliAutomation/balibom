@@ -1,6 +1,6 @@
 package ac.bali.bom.order;
 
-import ac.bali.bom.parts.Supply;
+import ac.bali.bom.suppliers.Supply;
 
 public interface Rule
 {

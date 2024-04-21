@@ -18,6 +18,7 @@ public class ModelLayer extends LayeredLayerAssembler
         createModule(layer, ProductsModule.class);
         createModule(layer, SuppliersModule.class);
         createModule(layer, ViewModelModule.class);
+        createModule(layer, IssuesModule.class);
         return layer;
     }
 }

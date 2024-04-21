@@ -1,9 +1,9 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.ui.support.HasListViewController;
-import ac.bali.bom.ui.support.Order;
-import ac.bali.bom.ui.support.RenderAsDescription;
-import ac.bali.bom.ui.support.RenderAsName;
+import org.qi4j.library.javafx.support.HasListViewController;
+import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.javafx.support.RenderAsDescription;
+import org.qi4j.library.javafx.support.RenderAsName;
 import ac.bali.bom.view.ResolveParts;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.entity.Queryable;

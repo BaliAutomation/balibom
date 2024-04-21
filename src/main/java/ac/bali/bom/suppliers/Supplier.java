@@ -1,13 +1,20 @@
 package ac.bali.bom.suppliers;
 
-import ac.bali.bom.ui.support.Order;
-import ac.bali.bom.ui.support.RenderAsName;
 import java.util.List;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Property;
+import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.javafx.support.RenderAsName;
 
 public interface Supplier extends HasIdentity {
+
+    Supply searchSupplierPartNumber(String supplierPartNumber);
+
+    Supply searchManufacturerPartNumber(String mf, String mpn);
+
+    List<Supply> searchKeywords(String keywords);
+
 
     @RenderAsName
     @Order(1)

@@ -1,14 +1,13 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.ui.support.RenderAsName;
+import org.qi4j.library.javafx.support.RenderAsName;
 import java.util.Map;
-import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.property.Property;
 
 public interface BomItem
 {
-    @Optional
+    @UseDefaults
     Property<String> mf();
 
     @UseDefaults

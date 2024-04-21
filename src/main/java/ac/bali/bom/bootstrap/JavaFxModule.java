@@ -1,7 +1,40 @@
 package ac.bali.bom.bootstrap;
 
-import ac.bali.bom.ui.*;
-import ac.bali.bom.view.ResolveParts;
+import org.qi4j.library.javafx.ui.ActionBar;
+import org.qi4j.library.javafx.ui.ArrayPropertyControl;
+import org.qi4j.library.javafx.ui.BigDecimalPropertyControl;
+import org.qi4j.library.javafx.ui.BigIntegerPropertyControl;
+import org.qi4j.library.javafx.ui.BooleanPropertyControl;
+import org.qi4j.library.javafx.ui.BytePropertyControl;
+import org.qi4j.library.javafx.ui.CharacterPropertyControl;
+import org.qi4j.library.javafx.ui.CompositeDialog;
+import org.qi4j.library.javafx.ui.CompositePane;
+import org.qi4j.library.javafx.ui.DoublePropertyControl;
+import org.qi4j.library.javafx.ui.DurationPropertyControl;
+import org.qi4j.library.javafx.ui.EntityListController;
+import org.qi4j.library.javafx.support.EntityNameComparator;
+import org.qi4j.library.javafx.ui.EntityPane;
+import org.qi4j.library.javafx.ui.EntityReferenceControl;
+import org.qi4j.library.javafx.ui.EntityReferencePropertyControl;
+import org.qi4j.library.javafx.ui.EnumPropertyControl;
+import org.qi4j.library.javafx.ui.FloatPropertyControl;
+import org.qi4j.library.javafx.ui.IdentityPropertyControl;
+import org.qi4j.library.javafx.ui.InstantPropertyControl;
+import org.qi4j.library.javafx.ui.IntegerPropertyControl;
+import org.qi4j.library.javafx.ui.ListPropertyControl;
+import org.qi4j.library.javafx.ui.LocalDatePropertyControl;
+import org.qi4j.library.javafx.ui.LocalDateTimePropertyControl;
+import org.qi4j.library.javafx.ui.LocalTimePropertyControl;
+import org.qi4j.library.javafx.ui.LongPropertyControl;
+import org.qi4j.library.javafx.ui.MapPropertyControl;
+import org.qi4j.library.javafx.ui.NameListCell;
+import org.qi4j.library.javafx.ui.OffsetDateTimePropertyControl;
+import org.qi4j.library.javafx.ui.PeriodPropertyControl;
+import org.qi4j.library.javafx.ui.PropertyCtrlFactory;
+import org.qi4j.library.javafx.ui.ShortPropertyControl;
+import org.qi4j.library.javafx.ui.StringPropertyControl;
+import org.qi4j.library.javafx.ui.ValueLinkControl;
+import org.qi4j.library.javafx.ui.ZonedDateTimePropertyControl;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
@@ -29,9 +62,9 @@ public class JavaFxModule
             CompositePane.class,
             DoublePropertyControl.class,
             DurationPropertyControl.class,
+            EntityNameComparator.class,
             EntityListController.class,
             EntityPane.class,
-            NameListCell.class,
             EntityReferenceControl.class,
             EntityReferencePropertyControl.class,
             EnumPropertyControl.class,
@@ -45,6 +78,7 @@ public class JavaFxModule
             LocalTimePropertyControl.class,
             LongPropertyControl.class,
             MapPropertyControl.class,
+            NameListCell.class,
             OffsetDateTimePropertyControl.class,
             PeriodPropertyControl.class,
             ShortPropertyControl.class,

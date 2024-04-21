@@ -1,11 +1,10 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.ui.support.Order;
-import ac.bali.bom.ui.support.RenderAsName;
+import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.javafx.support.RenderAsName;
+import java.util.List;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.property.Property;
-
-import java.util.List;
 
 public interface Bom
 {

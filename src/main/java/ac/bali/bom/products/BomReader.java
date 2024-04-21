@@ -17,6 +17,7 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
+@SuppressWarnings("unused")
 @Mixins(BomReader.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface BomReader
@@ -61,20 +62,35 @@ public interface BomReader
                         String designator = parts[columns.designatorColumn];
                         int quantity;
                         if (columns.quantityColumn == -1)
+                        {
                             quantity = countDesignators(parts[columns.designatorColumn]);
+                        }
                         else
+                        {
                             quantity = Integer.parseInt(parts[columns.quantityColumn]);
-
-                        String value = parts[columns.valueColumn].trim();
-                        String mf = parts[columns.mfColumn].trim();
-                        String mpn = parts[columns.mpnColumn].trim();
-                        String footprint = parts[columns.footprintColumn];
+                        }
                         bomItemP.designator().set(designator);
-                        bomItemP.mf().set(mf);
-                        bomItemP.mpn().set(mpn);
-                        bomItemP.value().set(value);
-                        bomItemP.footprint().set(footprint);
                         bomItemP.quantity().set(quantity);
+                        if( columns.valueColumn >= 0 )
+                        {
+                            String value = parts[columns.valueColumn].trim();
+                            bomItemP.value().set(value);
+                        }
+                        if( columns.mfColumn >= 0 )
+                        {
+                            String mf = parts[columns.mfColumn].trim();
+                            bomItemP.mf().set(mf);
+                        }
+                        if( columns.mpnColumn >= 0 )
+                        {
+                            String mpn = parts[columns.mpnColumn].trim();
+                            bomItemP.mpn().set(mpn);
+                        }
+                        if( columns.footprintColumn >= 0)
+                        {
+                            String footprint = parts[columns.footprintColumn];
+                            bomItemP.footprint().set(footprint);
+                        }
                         Map<String,String> attributes = new HashMap<>();
                         for( Map.Entry<String, Integer> attr : columns.attributes.entrySet())
                         {

@@ -1,10 +1,10 @@
 package ac.bali.bom.suppliers.lcsc;
 
+import java.math.BigDecimal;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.property.Property;
 
-import java.math.BigDecimal;
-
+@SuppressWarnings("unused")
 public interface LcscPartPrice {
     Property<Integer> ladder();
     @Optional

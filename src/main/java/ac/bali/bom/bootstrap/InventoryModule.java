@@ -2,7 +2,6 @@ package ac.bali.bom.bootstrap;
 
 import ac.bali.bom.inventory.PartsInventory;
 import ac.bali.bom.inventory.ProductsInventory;
-import org.apache.polygene.api.common.Visibility;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;

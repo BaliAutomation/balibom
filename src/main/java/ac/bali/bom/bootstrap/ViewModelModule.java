@@ -1,7 +1,6 @@
 package ac.bali.bom.bootstrap;
 
 import ac.bali.bom.view.ResolveParts;
-import org.apache.polygene.api.common.Visibility;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;

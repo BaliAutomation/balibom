@@ -1,15 +1,13 @@
 package ac.bali.bom.suppliers.lcsc;
 
-import ac.bali.bom.connectivity.PartSupplyConnector;
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.parts.PartsService;
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.Supplier;
-import ac.bali.bom.parts.Supply;
+import ac.bali.bom.suppliers.Supply;
 import org.apache.polygene.api.common.Visibility;
-import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.entitystore.memory.assembly.MemoryEntityStoreAssembler;
@@ -19,9 +17,6 @@ import org.junit.Ignore;
 @Ignore
 public class LcscModelTest extends AbstractPolygeneTest
 {
-    @Service
-    PartSupplyConnector underTest;
-
     @Override
     public void assemble(ModuleAssembly module) throws AssemblyException
     {
@@ -42,8 +37,7 @@ public class LcscModelTest extends AbstractPolygeneTest
             )
             .visibleIn(Visibility.module);
 
-        module.services(PartSupplyConnector.class)
-            .withMixins(Lcsc.class)
+        module.services(LcscSupplier.class)
             .identifiedBy("lcsc-connection")
             .instantiateOnStartup()
             .visibleIn(Visibility.application)
