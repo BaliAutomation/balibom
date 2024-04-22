@@ -44,6 +44,7 @@ dependencies {
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.serialization-javaxjson:3.0.0"
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.entitystore-file:3.0.0"
     implementation "org.apache.polygene.extensions:org.apache.polygene.extension.indexing-rdf:3.0.0"
+    implementation "org.apache.polygene.libraries:org.apache.polygene.library.constraints:3.0.0"
     implementation "org.apache.polygene.libraries:org.apache.polygene.library.fileconfig:3.0.0"
     implementation "org.apache.polygene.libraries:org.apache.polygene.library.uowfile:3.0.0"
 
