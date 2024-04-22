@@ -57,7 +57,7 @@ public interface ProductsService
         static String parseNameFromFile(File bomFile)
         {
             String path = bomFile.getAbsolutePath();
-            String[] parts = path.split(File.pathSeparator);
+            String[] parts = path.split(File.separator);
             return parts[parts.length - 3];
         }
 
