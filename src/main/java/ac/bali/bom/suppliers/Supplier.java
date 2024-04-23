@@ -1,9 +1,11 @@
 package ac.bali.bom.suppliers;
 
 import java.util.List;
+import java.util.Map;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.injection.scope.Service;
+import org.apache.polygene.api.injection.scope.This;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.service.ServiceReference;
@@ -38,28 +40,34 @@ public interface Supplier extends HasIdentity
     @UseDefaults
     Property<List<String>> bomColumns();
 
+    @UseDefaults
+    Property<Map<String,String>> authArguments();
+
     abstract class Mixin
         implements Supplier
     {
+        @This
+        Supplier meAsSupplier;
+
         @Service
         Iterable<ServiceReference<SupplierProvider>> providers;
 
         @Override
         public Supply searchSupplierPartNumber(String supplierPartNumber)
         {
-            return provider().searchSupplierPartNumber(supplierPartNumber);
+            return provider().searchSupplierPartNumber(meAsSupplier, supplierPartNumber);
         }
 
         @Override
         public Supply searchManufacturerPartNumber(String mf, String mpn)
         {
-            return provider().searchManufacturerPartNumber(mf, mpn);
+            return provider().searchManufacturerPartNumber(meAsSupplier, mf, mpn);
         }
 
         @Override
         public List<Supply> searchKeywords(String keywords)
         {
-            return provider().searchKeywords(keywords);
+            return provider().searchKeywords(meAsSupplier, keywords);
         }
 
         private SupplierProvider provider()

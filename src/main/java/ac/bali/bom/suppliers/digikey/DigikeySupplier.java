@@ -2,6 +2,7 @@ package ac.bali.bom.suppliers.digikey;
 
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.Supplier;
+import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
 import ac.bali.bom.suppliers.digikey.model.FilterOptionsRequest;
 import ac.bali.bom.suppliers.digikey.model.KeywordRequest;
@@ -29,7 +30,7 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
-public interface DigikeySupplier extends Supplier, OAuth2Authentication
+public interface DigikeySupplier extends SupplierProvider
 {
     abstract class Mixin
         implements DigikeySupplier
@@ -49,17 +50,17 @@ public interface DigikeySupplier extends Supplier, OAuth2Authentication
         ProductSearchApi products;
 
         @Override
-        public Supply searchSupplierPartNumber(String supplierPartNumber)
+        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
         {
             ProductDetails prodDetails = products.productDetails(supplierPartNumber);
             if (prodDetails == null)
                 return null;
             Product product = prodDetails.Product().get();
-            return createSupply(product);
+            return createSupply(supplier, product);
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
         {
             if (mf == null || mf.trim().length() == 0)
             {
@@ -86,24 +87,24 @@ public interface DigikeySupplier extends Supplier, OAuth2Authentication
             if (exactMatches.size() == 1)
             {
                 Product product = exactMatches.get(0);
-                return createSupply(product);
+                return createSupply(supplier, product);
             }
             return null;
         }
 
         @Override
-        public List<Supply> searchKeywords(String keywords)
+        public List<Supply> searchKeywords(Supplier supplier, String keywords)
         {
             return null;
         }
 
-        private Supply createSupply(Product product)
+        private Supply createSupply(Supplier supplier, Product product)
         {
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.mf().set(product.Manufacturer().get().Name().get());
             p.mpn().set(product.ManufacturerProductNumber().get() );
-            p.supplier().set(this);
+            p.supplier().set(supplier);
             p.supplierPartNumber().set(product.ProductVariations().get().get(0).DigiKeyProductNumber().get());
             p.productIntro().set(product.Description().get().ProductDescription().get());
             p.availableSupply().set( product.QuantityAvailable().get().intValue() );

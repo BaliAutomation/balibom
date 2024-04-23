@@ -83,8 +83,7 @@ public interface OAuth2Service
             try
             {
                 System.out.println(content);
-                OAuth2AccessToken oAuth2AccessTokenResponse = serializer.deserialize(module, OAuth2AccessToken.class, content.toString());
-                return oAuth2AccessTokenResponse;
+                return serializer.deserialize(module, OAuth2AccessToken.class, content.toString());
             } finally
             {
                 http.disconnect();

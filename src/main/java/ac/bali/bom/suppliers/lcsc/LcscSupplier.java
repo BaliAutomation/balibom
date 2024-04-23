@@ -2,6 +2,7 @@ package ac.bali.bom.suppliers.lcsc;
 
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.Supplier;
+import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +34,7 @@ import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
 @Mixins( LcscSupplier.Mixin.class)
-public interface LcscSupplier extends Supplier
+public interface LcscSupplier extends SupplierProvider
 {
 
     abstract class Mixin
@@ -61,14 +62,15 @@ public interface LcscSupplier extends Supplier
         @Structure
         private UnitOfWorkFactory uowf;
 
+
         @Override
-        public Supply searchSupplierPartNumber(String spn)
+        public Supply searchSupplierPartNumber(Supplier supplier, String spn)
         {
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
                 final HttpGet httpget = new HttpGet(String.format(PRODUCT_FETCH_URL, spn.trim()));
                 LcscPart lcscPart = httpclient.execute(httpget, this::convertToPart);
-                return createSupply(lcscPart);
+                return createSupply(supplier, lcscPart);
             } catch (IOException e)
             {
                 throw new UndeclaredThrowableException(e);
@@ -76,26 +78,26 @@ public interface LcscSupplier extends Supplier
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
         {
             // TODO: LCSC's search is from experience pretty poor and always returns "too much". Let's do this later, if ever.
             return null;
         }
 
         @Override
-        public List<Supply> searchKeywords(String keywords)
+        public List<Supply> searchKeywords(Supplier supplier, String keywords)
         {
             // TODO: LCSC's search is from experience pretty poor and always returns "too much". Let's do this later, if ever.
             return null;
         }
 
-        private Supply createSupply(LcscPart product)
+        private Supply createSupply(Supplier supplier, LcscPart product)
         {
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.mf().set(product.brandNameEn().get());
             p.mpn().set(product.productModel().get() );
-            p.supplier().set(this);
+            p.supplier().set(supplier);
             p.supplierPartNumber().set(product.productCode().get());
             p.productIntro().set(product.productIntroEn().get());
             p.availableSupply().set(product.shipImmediately().get() + product.ship3Days().get());
