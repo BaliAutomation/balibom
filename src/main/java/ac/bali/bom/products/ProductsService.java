@@ -1,6 +1,8 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.parts.PartsService;
+import org.apache.polygene.library.fileconfig.FileConfiguration;
+import org.apache.polygene.library.fileconfig.FileConfigurationService;
 import org.qi4j.library.javafx.support.Action;
 import java.io.File;
 import org.apache.polygene.api.concern.Concerns;
@@ -24,6 +26,10 @@ public interface ProductsService
     @Action(label="Import BOM...")
     Product importBom(File bomFile) throws Exception;
 
+    String parseNameFromFile(File bomFile);
+
+    String parseRevisionFromFile(File bomFile);
+
     @SuppressWarnings("resource")
     class Mixin
         implements ProductsService
@@ -36,6 +42,9 @@ public interface ProductsService
 
         @Service
         private BomReader bomReader;
+
+        @Service
+        FileConfigurationService fileConfigurationService;
 
         @Override
         public Product importBom(File bomFile) throws Exception
@@ -54,14 +63,19 @@ public interface ProductsService
             return builder.newInstance();
         }
 
-        static String parseNameFromFile(File bomFile)
+        @Override
+        public String parseNameFromFile(File bomFile)
         {
             String path = bomFile.getAbsolutePath();
-            String[] parts = path.split(File.separator);
+            String pattern = "/";
+            if( fileConfigurationService.os().equals(FileConfiguration.OS.windows))
+                pattern = "\\\\";
+            String[] parts = path.split(pattern);
             return parts[parts.length - 3];
         }
 
-        static String parseRevisionFromFile(File bomFile)
+        @Override
+        public String parseRevisionFromFile(File bomFile)
         {
             String path = bomFile.getAbsolutePath();
             int pos = path.indexOf("Rev");
