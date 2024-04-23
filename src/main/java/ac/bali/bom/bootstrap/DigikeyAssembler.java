@@ -64,7 +64,6 @@ public class DigikeyAssembler
     public void assemble(ModuleAssembly module) throws AssemblyException
     {
         module.addServices(DigikeySupplier.class)
-            .withTypes(OAuth2Authentication.class)
             .identifiedBy("digikey")
             .instantiateOnStartup()
         ;

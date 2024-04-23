@@ -2,15 +2,17 @@ package ac.bali.bom.suppliers.oauth2;
 
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
-import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
 
 public interface OAuth2Authentication
 {
-    @UseDefaults("<not set>")
+    @UseDefaults
+    Property<Boolean> useOAuth2();
+
+    @Optional
     Property<String> loginClientId();
 
-    @UseDefaults("<not set>")
+    @Optional
     Property<String> loginClientSecret();
 
     @Optional
@@ -22,5 +24,6 @@ public interface OAuth2Authentication
     @Optional
     Property<Long> loginExpirationDateTime();
 
+    @Optional
     Property<String> loginEndpoint();
 }

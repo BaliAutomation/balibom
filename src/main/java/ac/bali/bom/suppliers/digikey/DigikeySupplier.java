@@ -24,15 +24,17 @@ import org.apache.polygene.api.identity.Identity;
 import org.apache.polygene.api.identity.StringIdentity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
+import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.NoSuchEntityException;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
+@Mixins(DigikeySupplier.Mixin.class)
 public interface DigikeySupplier extends SupplierProvider
 {
-    abstract class Mixin
+    class Mixin
         implements DigikeySupplier
     {
         private static final String TOKEN_ENDPOINT = "https://sandbox-api.digikey.com/v1/oauth2/token";
@@ -184,6 +186,7 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.orderingApi().set("https://api.digikey.com/orderstatus/v4/orders");
                 instance.searchApi().set("https://api.digikey.com/products/v4/search/");
                 instance.website().set("https://digikey.com");
+                instance.loginEndpoint().set("https://api.digikey.com/v1/oauth2/token");
                 instance.bomColumns().get().add(NAME);
                 instance.bomColumns().get().add("DigiKey_PN");
                 instance.bomColumns().get().add("DigiKeyPN");

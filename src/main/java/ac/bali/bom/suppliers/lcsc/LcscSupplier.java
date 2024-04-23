@@ -168,7 +168,6 @@ public interface LcscSupplier extends SupplierProvider
                 instance.website().set(WEBSITE_URL);
                 instance.bomColumns().get().add(NAME);
                 builder.newInstance();
-                uow.complete();
             }
         }
     }

@@ -8,12 +8,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.apache.polygene.api.common.AppliesTo;
 import org.apache.polygene.api.concern.ConcernOf;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.This;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 
+@AppliesTo(LoginRequired.class)
 public class OAuth2LoginConcern extends ConcernOf<InvocationHandler>
     implements InvocationHandler
 {
@@ -29,7 +31,8 @@ public class OAuth2LoginConcern extends ConcernOf<InvocationHandler>
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
     {
-        login();
+        if (auth.useOAuth2().get())
+            login();
         return next.invoke(proxy, method, args);
     }
 

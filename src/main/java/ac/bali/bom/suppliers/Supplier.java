@@ -1,8 +1,11 @@
 package ac.bali.bom.suppliers;
 
+import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
 import java.util.List;
 import java.util.Map;
+import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
+import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.This;
@@ -13,12 +16,16 @@ import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsName;
 
 @Mixins(Supplier.Mixin.class)
-public interface Supplier extends HasIdentity
+@Concerns(OAuth2LoginConcern.class)
+public interface Supplier extends HasIdentity, OAuth2Authentication
 {
+    @LoginRequired
     Supply searchSupplierPartNumber(String supplierPartNumber);
 
+    @LoginRequired
     Supply searchManufacturerPartNumber(String mf, String mpn);
 
+    @LoginRequired
     List<Supply> searchKeywords(String keywords);
 
     @RenderAsName
@@ -39,9 +46,6 @@ public interface Supplier extends HasIdentity
 
     @UseDefaults
     Property<List<String>> bomColumns();
-
-    @UseDefaults
-    Property<Map<String,String>> authArguments();
 
     abstract class Mixin
         implements Supplier
