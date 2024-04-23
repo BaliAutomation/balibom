@@ -10,6 +10,7 @@ import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.bootstrap.layered.ModuleAssembler;
+import org.apache.polygene.library.fileconfig.FileConfigurationService;
 
 import static org.apache.polygene.api.common.Visibility.application;
 
@@ -22,6 +23,7 @@ public class ProductsModule
     public ModuleAssembly assemble(LayerAssembly layer, ModuleAssembly module) throws AssemblyException
     {
         module.defaultServices();
+        module.services(FileConfigurationService.class);
         module.services(ProductsService.class).visibleIn(Visibility.application);
         module.services(BomReader.class).visibleIn(Visibility.application);
         module.entities(Product.class).visibleIn(application);
