@@ -1,6 +1,7 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.RenderAsDescription;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -13,6 +14,7 @@ import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.PropertyDescriptor;
+import org.qi4j.library.javafx.support.RenderAsDescription;
 
 public class StringPropertyControl extends PropertyControl<String>
 {
@@ -32,6 +34,7 @@ public class StringPropertyControl extends PropertyControl<String>
             ta.setWrapText(true);
             field = ta;
         }
+        field.textProperty().addListener((observable, oldValue, newValue) -> StringPropertyControl.this.fireEvent(new DirtyEvent(StringPropertyControl.this)));
         Pane box;
         if (withLabel)
         {
@@ -51,14 +54,12 @@ public class StringPropertyControl extends PropertyControl<String>
         setFillWidth(true);
         getChildren().add(box);
 //        setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
-
     }
 
     @Override
     protected void updateTo(String value)
     {
-
-        field.setText(value == null ? "" : String.valueOf(value));
+        field.setText(value == null ? "" : value);
     }
 
     protected String currentValue()

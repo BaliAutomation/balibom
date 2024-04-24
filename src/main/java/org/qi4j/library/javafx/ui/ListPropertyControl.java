@@ -1,7 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.Height;
-import org.qi4j.library.javafx.support.ListRenderer;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -25,6 +23,8 @@ import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.property.PropertyDescriptor;
 import org.apache.polygene.api.structure.MetaInfoHolder;
+import org.qi4j.library.javafx.support.Height;
+import org.qi4j.library.javafx.support.ListRenderer;
 
 public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
 {
@@ -105,6 +105,11 @@ public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
     public void removeEventHandler(ListChangeListener<T> listener)
     {
         listView.getItems().removeListener(listener);
+    }
+
+    public List<T> selection()
+    {
+        return listView.getSelectionModel().getSelectedItems();
     }
 
     public void selected(Consumer<T> selected)

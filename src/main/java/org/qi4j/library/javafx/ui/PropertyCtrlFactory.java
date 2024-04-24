@@ -1,7 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.MemberOrderComparator;
-import org.qi4j.library.javafx.support.RenderAsName;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -27,6 +25,9 @@ import org.apache.polygene.api.value.ValueComposite;
 import org.apache.polygene.api.value.ValueDescriptor;
 import org.apache.polygene.spi.PolygeneSPI;
 import org.apache.polygene.spi.module.ModuleSpi;
+import org.qi4j.library.javafx.support.MemberOrderComparator;
+import org.qi4j.library.javafx.support.RenderAsName;
+import org.qi4j.library.javafx.support.RenderAsValue;
 
 @Mixins(PropertyCtrlFactory.Mixin.class)
 public interface PropertyCtrlFactory
@@ -170,6 +171,9 @@ public interface PropertyCtrlFactory
         @Override
         public String nameOf(PropertyDescriptor property)
         {
+            RenderAsValue renderAsValue = property.metaInfo(RenderAsValue.class);
+            if( renderAsValue != null )
+                return renderAsValue.title();
             return humanize(property.qualifiedName().name());
         }
 

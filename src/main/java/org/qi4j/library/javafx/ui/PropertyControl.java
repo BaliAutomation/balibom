@@ -1,6 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.geometry.Insets;
@@ -32,15 +31,9 @@ public abstract class PropertyControl<T> extends VBox
         fireEvent(new PropertyDataEvent(this, this.value, value));
         updateTo(value);
         this.value = value;
-        dirty();
     }
 
     protected abstract void updateTo(T value);
-
-    protected void dirty()
-    {  // TODO
-//        fireEvent(new DirtyEvent(this));
-    }
 
     protected Label labelOf()
     {
@@ -57,7 +50,7 @@ public abstract class PropertyControl<T> extends VBox
     {
         HBox box = new HBox(controls);
         box.setPadding(PADDING);
-        box.setDisable(immutable);
+//        box.setDisable(immutable);
         return box;
     }
 
@@ -65,7 +58,7 @@ public abstract class PropertyControl<T> extends VBox
     {
         VBox box = new VBox(controls);
         box.setPadding(PADDING);
-        box.setDisable(immutable);
+//        box.setDisable(immutable);
         return box;
     }
 
@@ -78,8 +71,8 @@ public abstract class PropertyControl<T> extends VBox
 
     public static class DirtyEvent extends Event
     {
-        public static final EventType<ActionEvent> DIRTY = new EventType<>(Event.ANY, "DIRTY_FORM_DATA");
-        public static final EventType<ActionEvent> ANY = DIRTY;
+        public static final EventType<DirtyEvent> DIRTY = new EventType<>(Event.ANY, "DIRTY_FORM_DATA");
+        public static final EventType<DirtyEvent> ANY = DIRTY;
 
         public DirtyEvent(PropertyControl source)
         {

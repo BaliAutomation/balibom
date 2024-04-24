@@ -1,9 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.Action;
-import org.qi4j.library.javafx.support.ActionCall;
-import org.qi4j.library.javafx.support.ActionScope;
-import org.qi4j.library.javafx.support.HasListViewController;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,6 +23,10 @@ import org.apache.polygene.api.mixin.Initializable;
 import org.apache.polygene.api.structure.Module;
 import org.apache.polygene.api.type.HasTypes;
 import org.apache.polygene.spi.PolygeneSPI;
+import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.javafx.support.ActionCall;
+import org.qi4j.library.javafx.support.ActionScope;
+import org.qi4j.library.javafx.support.HasListViewController;
 
 import static org.qi4j.library.javafx.ui.PropertyCtrlFactory.Mixin.humanize;
 
@@ -81,6 +81,10 @@ public class ActionBar<T> extends ToolBar
         saveButton.setDisable(true);
         cancelButton.setDisable(true);
         deleteButton.setDisable(true);
+        for (ActionCall a : actions)
+        {
+            a.button().setDisable(a.actionScope() == ActionScope.composite);
+        }
     }
 
     public void onNew()
@@ -88,7 +92,23 @@ public class ActionBar<T> extends ToolBar
         newButton.setDisable(true);
         saveButton.setDisable(false);
         cancelButton.setDisable(false);
-        deleteButton.setDisable(false);
+        deleteButton.setDisable(true);
+        for (ActionCall a : actions)
+        {
+            a.button().setDisable(true);
+        }
+    }
+
+    public void onEdit()
+    {
+        newButton.setDisable(true);
+        saveButton.setDisable(false);
+        cancelButton.setDisable(false);
+        deleteButton.setDisable(true);
+        for (ActionCall a : actions)
+        {
+            a.button().setDisable(true);
+        }
     }
 
     public void onSelected(List<T> items)
@@ -102,6 +122,8 @@ public class ActionBar<T> extends ToolBar
         {
             if (a.actionScope() == ActionScope.composite)
                 a.button().setDisable(items.size() == 0);
+            else
+                a.button().setDisable(false);
         }
     }
 

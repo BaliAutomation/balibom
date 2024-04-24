@@ -1,7 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.Ignore;
-import org.qi4j.library.javafx.support.MemberOrderComparator;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javafx.event.Event;
+import javafx.event.EventType;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
@@ -36,11 +36,12 @@ import org.apache.polygene.api.value.ValueComposite;
 import org.apache.polygene.api.value.ValueDescriptor;
 import org.apache.polygene.spi.PolygeneSPI;
 import org.apache.polygene.spi.module.ModuleSpi;
+import org.qi4j.library.javafx.support.Ignore;
+import org.qi4j.library.javafx.support.MemberOrderComparator;
 
 public class CompositePane<T> extends VBox
     implements Initializable
 {
-
     private final Map<String, PropertyControl<?>> controls = new HashMap<>();
 
     @Uses
@@ -64,14 +65,17 @@ public class CompositePane<T> extends VBox
     @Structure
     ModuleSpi module;
 
+    T currentValue;
+
     @SuppressWarnings("unchecked")
-    public void updateWith(T current)
+    public void updateWith(T newValue)
     {
+        T oldValue = currentValue;
         AssociationStateHolder state;
-        if (current instanceof ValueComposite)
-            state = spi.stateOf((ValueComposite) current);
-        else if (current instanceof EntityComposite)
-            state = spi.stateOf((EntityComposite) current);
+        if (newValue instanceof ValueComposite)
+            state = spi.stateOf((ValueComposite) newValue);
+        else if (newValue instanceof EntityComposite)
+            state = spi.stateOf((EntityComposite) newValue);
         else
             return;
         AssociationStateDescriptor compositeState = module.typeLookup().lookupValueModel(compositeType).state();
@@ -100,6 +104,7 @@ public class CompositePane<T> extends VBox
                 }
             }
         });
+        fireEvent(new DataEvent<T>(this, oldValue, newValue));
     }
 
     public void clearForm()
@@ -172,8 +177,9 @@ public class CompositePane<T> extends VBox
             .filter(Objects::nonNull)
             .forEach(entry ->
             {
-                vbox.getChildren().add(entry.getValue());
-                this.controls.put(entry.getKey(), entry.getValue());
+                PropertyControl<?> valueCtrl = entry.getValue();
+                vbox.getChildren().add(valueCtrl);
+                this.controls.put(entry.getKey(), valueCtrl);
             });
         vbox.setFillWidth(true);
 //        vbox.setStyle("-fx-border-color: blue;");
@@ -222,7 +228,7 @@ public class CompositePane<T> extends VBox
     public T toValue()
     {
         //noinspection UnnecessaryLocalVariable
-        T value = (T) vbf.newValueBuilderWithState(
+        T value = vbf.newValueBuilderWithState(
             compositeType,
             p ->
             {
@@ -244,5 +250,29 @@ public class CompositePane<T> extends VBox
             n -> null
         ).newInstance();
         return value;
+    }
+
+    private static class DataEvent<T> extends Event
+    {
+        private static final EventType<DataEvent<?>> COMPOSITE_EVENT = new EventType<>(EventType.ROOT, "COMPOSITEPANE_DATA_EVENT");
+        private final T oldValue;
+        private final T newValue;
+
+        public DataEvent(CompositePane<T> pane, T oldValue, T newValue)
+        {
+            super(pane, pane, COMPOSITE_EVENT);
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+        }
+
+        public T getOldValue()
+        {
+            return oldValue;
+        }
+
+        public T getNewValue()
+        {
+            return newValue;
+        }
     }
 }

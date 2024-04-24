@@ -3,9 +3,11 @@ package ac.bali.bom.suppliers.oauth2;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.property.Property;
+import org.qi4j.library.javafx.support.RenderAsValue;
 
 public interface OAuth2Authentication
 {
+    @RenderAsValue(title="Use OAuth2")
     @UseDefaults
     Property<Boolean> useOAuth2();
 

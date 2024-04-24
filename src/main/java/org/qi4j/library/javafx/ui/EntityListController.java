@@ -21,10 +21,12 @@ import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 import org.apache.polygene.spi.PolygeneSPI;
 import org.qi4j.library.javafx.support.EntityNameComparator;
+import org.qi4j.library.javafx.ui.PropertyControl.DirtyEvent;
 
 import static org.qi4j.library.javafx.ui.EntityListController.StateMachine.adding;
 import static org.qi4j.library.javafx.ui.EntityListController.StateMachine.defaultState;
 import static org.qi4j.library.javafx.ui.EntityListController.StateMachine.editing;
+import static org.qi4j.library.javafx.ui.EntityListController.StateMachine.loading;
 
 public class EntityListController<T extends HasIdentity>
     implements Initializable
@@ -60,6 +62,7 @@ public class EntityListController<T extends HasIdentity>
 
     public void loadAll()
     {
+        stateMachine = stateMachine.loading();
         Usecase usecase = UsecaseBuilder.newUsecase("loadAll - " + entityType.getSimpleName());
         ObservableList<T> items = FXCollections.observableArrayList();
         try (UnitOfWork uow = uowf.newUnitOfWork(usecase))
@@ -75,7 +78,7 @@ public class EntityListController<T extends HasIdentity>
             });
         }
         listCtrl.setValue(items);
-        stateMachine = stateMachine.loadAll();
+        stateMachine = stateMachine.loaded();
     }
 
     private void onNew(ActionEvent actionEvent)
@@ -110,6 +113,7 @@ public class EntityListController<T extends HasIdentity>
 
     private void onDelete(ActionEvent actionEvent)
     {
+        stateMachine = stateMachine.loading();
         compositePane.clearForm();
         listCtrl.setDisable(true);
         Usecase usecase = UsecaseBuilder.newUsecase("onDelete Action - " + entityType.getSimpleName());
@@ -127,9 +131,12 @@ public class EntityListController<T extends HasIdentity>
         stateMachine = stateMachine.delete();
     }
 
-    public void onDirty(ActionEvent event)
+    public void onEdit(DirtyEvent event)
     {
+        if( stateMachine.isLoading())
+            return;
         stateMachine = stateMachine.edit();
+        actionBar.onEdit();
     }
 
     public void save(UnitOfWork uow)
@@ -139,7 +146,7 @@ public class EntityListController<T extends HasIdentity>
             T valueComposite = compositePane.toValue();
             T entity = uow.toEntity(entityType, valueComposite);
         }
-        stateMachine.save();
+        stateMachine = stateMachine.save();
     }
 
     @Override
@@ -150,20 +157,23 @@ public class EntityListController<T extends HasIdentity>
         actionBar.addCancelActionHandler(this::onCancel);
         actionBar.addDeleteActionHandler(this::onDelete);
         actionBar.addNewActionHandler(this::onNew);
-        listCtrl.addEventHandler(PropertyControl.DirtyEvent.ANY, this::onDirty);
+        compositePane.addEventHandler(DirtyEvent.DIRTY, this::onEdit);
         listCtrl.addSelectionHandler(this::onSelection);
     }
 
     private void onSelection(ObservableValue<? extends T> source, T oldValue, T newValue)
     {
+        stateMachine = stateMachine.loading();
         if (stateMachine == editing || stateMachine == adding)
         {
-            askToSaveOrAbandonChanges(newValue);
+            askToSaveOrAbandonChanges();
         }
+        stateMachine = loading;
         compositePane.updateWith(newValue);
+        stateMachine = stateMachine.loaded();
     }
 
-    private void askToSaveOrAbandonChanges(T newValue)
+    private void askToSaveOrAbandonChanges()
     {
         // TODO; if it is dirty, ask to Save
         String SAVE = "Save changes";
@@ -189,7 +199,7 @@ public class EntityListController<T extends HasIdentity>
 
     enum StateMachine
     {
-        defaultState, adding, editing;
+        defaultState, adding, editing, loading;
 
         StateMachine cancel()
         {
@@ -211,14 +221,24 @@ public class EntityListController<T extends HasIdentity>
             return defaultState;
         }
 
-        StateMachine loadAll()
+        StateMachine loaded()
         {
             return defaultState;
+        }
+
+        StateMachine loading()
+        {
+            return loading;
         }
 
         public StateMachine edit()
         {
             return editing;
+        }
+
+        public boolean isLoading()
+        {
+            return this.equals(loading);
         }
     }
 }

@@ -1,7 +1,5 @@
 package org.qi4j.library.javafx.ui;
 
-import org.qi4j.library.javafx.support.MemberOrderComparator;
-import org.qi4j.library.javafx.support.RenderAsValue;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -31,6 +29,8 @@ import org.apache.polygene.api.structure.Module;
 import org.apache.polygene.api.value.ValueComposite;
 import org.apache.polygene.api.value.ValueDescriptor;
 import org.apache.polygene.spi.PolygeneSPI;
+import org.qi4j.library.javafx.support.MemberOrderComparator;
+import org.qi4j.library.javafx.support.RenderAsValue;
 
 public class MapPropertyControl<K, V> extends PropertyControl<Map<K, V>>
 {

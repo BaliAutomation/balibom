@@ -1,6 +1,5 @@
 package org.qi4j.library.javafx.support;
 
-import org.qi4j.library.javafx.support.RenderAsName;
 import java.util.Comparator;
 import java.util.Optional;
 import org.apache.polygene.api.composite.CompositeDescriptor;
@@ -12,7 +11,6 @@ import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.value.ValueComposite;
 import org.apache.polygene.api.value.ValueDescriptor;
 import org.apache.polygene.spi.PolygeneSPI;
-import org.qi4j.library.javafx.ui.CompositePane;
 
 public class EntityNameComparator
     implements Comparator<Object>

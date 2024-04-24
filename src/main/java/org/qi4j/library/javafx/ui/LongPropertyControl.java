@@ -15,28 +15,9 @@ import org.apache.polygene.api.property.PropertyDescriptor;
 
 public class LongPropertyControl extends NumericPropertyControl<Long>
 {
-    private final TextInputControl field;
-
     public LongPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor);
-        field = new TextField();
-        field.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
-        Pane box;
-        if (withLabel)
-        {
-            Label label = labelOf();
-            box = wrapInHBox(label, field);
-        } else
-        {
-            box = wrapInHBox(field);
-        }
-        HBox.setHgrow(field, Priority.ALWAYS);
-        setAlignment(Pos.TOP_LEFT);
-        setFillWidth(true);
-        getChildren().add(box);
-//        setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
-
+        super(factory, descriptor, new TextFormatter<>(new LongStringConverter()));
     }
 
     @Override
@@ -47,7 +28,10 @@ public class LongPropertyControl extends NumericPropertyControl<Long>
 
     protected Long currentValue()
     {
-        return Long.parseLong(field.getText());
+        String text = field.getText();
+        if( text.matches("[0-9]+"))
+            return Long.parseLong(text);
+        return null;
     }
 
     @Override
