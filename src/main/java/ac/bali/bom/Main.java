@@ -51,7 +51,7 @@ public class Main extends Application
         TabPane tabs = setupNavigationTabs(productsPane, jobsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, manufacturersPane, suppliersPane);
 
         productsPane.loadAll();
-        Scene mainScene = new Scene(tabs, 1000, 600);
+        Scene mainScene = new Scene(tabs, 1200, 800);
         stage.setScene(mainScene);
         stage.show();
     }

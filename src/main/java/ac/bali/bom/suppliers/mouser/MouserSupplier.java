@@ -32,11 +32,20 @@ import org.apache.polygene.api.value.ValueBuilderFactory;
 @Mixins(MouserSupplier.Mixin.class)
 public interface MouserSupplier extends SupplierProvider
 {
+    String HOST = "host";
+    String HOSTNAME = "https://api.mouser.com";
+    String PRODUCTS = "products";
+    String PRODUCT_DETAILS_API_PATH = "/api/v2/search/partnumberandmanufacturer?apiKey=${apiKey}";
+    String SEARCH = "search";
+    String SEARCH_API_PATH = "/api/v2/search";
+    String WEBSITE = "https://eu.mouser.com/";
+
     class Mixin
         implements MouserSupplier
     {
         private static final String NAME = "Mouser";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.Mouser");
+
 
         @Structure
         UnitOfWorkFactory uowf;
@@ -150,11 +159,18 @@ public interface MouserSupplier extends SupplierProvider
                 EntityBuilder<Supplier> eb = uow.newEntityBuilder(Supplier.class, IDENTITY);
                 Supplier instance = eb.instance();
                 instance.name().set("Mouser");
-                instance.productDetailsApi().set("https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=%s");
-                instance.orderingApi().set("");
-                instance.searchApi().set("https://api.mouser.com/api/v2/search");
-                instance.website().set("https://eu.mouser.com/");
-                instance.loginEndpoint().set("https://api.mouser.com/api/v2/search");
+
+                //noinspection DuplicatedCode
+                Map<String, String> hosts = new HashMap<>();
+                hosts.put(HOST, HOSTNAME);
+                instance.hosts().set(hosts);
+
+                Map<String, String> paths = new HashMap<>();
+                paths.put(PRODUCTS, PRODUCT_DETAILS_API_PATH);
+                paths.put(SEARCH, SEARCH_API_PATH);
+                instance.paths().set(paths);
+
+                instance.website().set(WEBSITE);
                 instance.bomColumns().get().add(NAME);
                 instance.bomColumns().get().add("Mouser_PN");
                 instance.bomColumns().get().add("MouserPN");

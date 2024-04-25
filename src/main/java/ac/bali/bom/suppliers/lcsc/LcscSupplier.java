@@ -34,14 +34,19 @@ import org.apache.polygene.api.value.ValueBuilderFactory;
 @Mixins(LcscSupplier.Mixin.class)
 public interface LcscSupplier extends SupplierProvider
 {
+    String HOST = "host";
+    String HOSTNAME = "https://wmsc.lcsc.com";
+
+    String PRODUCT = "product";
+    String SEARCH = "search";
+    String PRODUCT_FETCH_PATH = "/wmsc/product/detail?productCode=${productCode}";
+    String SEARCH_PATH = "https://wmsc.lcsc.com/wmsc/search/global?keyword=${keyword}";
+
+    String WEBSITE_URL = "https://lcsc.com";
 
     abstract class Mixin
         implements LcscSupplier
     {
-        private static final String PRODUCT_FETCH_URL = "https://wmsc.lcsc.com/wmsc/product/detail?productCode=%s";
-        private static final String SEARCH_URL = "https://wmsc.lcsc.com/wmsc/search/global?keyword=%s";
-        private static final String ORDERING_URL = "";
-        private static final String WEBSITE_URL = "https://lcsc.com";
         private static final String NAME = "LCSC";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.LCSC");
 
@@ -66,7 +71,10 @@ public interface LcscSupplier extends SupplierProvider
         {
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
-                final HttpGet httpget = new HttpGet(String.format(PRODUCT_FETCH_URL, spn.trim()));
+                String host = supplier.hosts().get().get(HOST);
+                String path = supplier.paths().get().get(PRODUCT);
+                path = path.replace("${productCode}", spn);
+                final HttpGet httpget = new HttpGet(host + path);
                 LcscPart lcscPart = httpclient.execute(httpget, this::convertToPart);
                 return createSupply(supplier, lcscPart);
             } catch (IOException e)
@@ -166,9 +174,13 @@ public interface LcscSupplier extends SupplierProvider
                 EntityBuilder<Supplier> builder = uow.newEntityBuilder(Supplier.class, IDENTITY);
                 Supplier instance = builder.instance();
                 instance.name().set("LCSC");
-                instance.productDetailsApi().set(PRODUCT_FETCH_URL);
-                instance.orderingApi().set(ORDERING_URL);
-                instance.searchApi().set(SEARCH_URL);
+                Map<String,String> hosts = new HashMap<>();
+                hosts.put(HOST, HOSTNAME);
+                instance.hosts().set(hosts);
+                Map<String,String> paths = new HashMap<>();
+                paths.put( PRODUCT, PRODUCT_FETCH_PATH );
+                paths.put( SEARCH, SEARCH_PATH );
+                instance.paths().set(paths);
                 instance.website().set(WEBSITE_URL);
                 instance.bomColumns().get().add(NAME);
                 instance.enabled().set(false);

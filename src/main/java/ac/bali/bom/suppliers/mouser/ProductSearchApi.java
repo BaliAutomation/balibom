@@ -1,7 +1,6 @@
 package ac.bali.bom.suppliers.mouser;
 
 import ac.bali.bom.suppliers.Supplier;
-import ac.bali.bom.suppliers.mouser.model.MouserManufacturersNameRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchByKeywordMfrNameRequestRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchByPartMfrNameRequestRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchResponseRoot;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
@@ -31,8 +29,6 @@ public interface ProductSearchApi
 
     SearchResponseRoot searchByPartMfrName(Supplier supplier, SearchByPartMfrNameRequestRoot body);
 
-    MouserManufacturersNameRoot mouserManufacturersName(Supplier supplier);
-
     abstract class Mixin
         implements ProductSearchApi
     {
@@ -42,37 +38,31 @@ public interface ProductSearchApi
         @Structure
         ModuleDescriptor module;
 
-        private String apiKey;
-
         @Override
         public SearchResponseRoot searchByKeywordMfrName(Supplier supplier, SearchByKeywordMfrNameRequestRoot body)
         {
-            String path = "https://api.mouser.com/api/v2/search/keywordandmanufacturer?apiKey=" + supplier.loginAccessToken().get();
-            HttpPost request = new HttpPost(path);
-            System.out.println(serialization.serialize(body));
-            HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
-            request.setEntity(entity);
-            return makeRequest(request, SearchResponseRoot.class);
+            return sendToApi(supplier, MouserSupplier.SEARCH, serialization.serialize(body));
         }
 
         @Override
         public SearchResponseRoot searchByPartMfrName(Supplier supplier, SearchByPartMfrNameRequestRoot body)
         {
-            String path = "https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=" + supplier.loginAccessToken().get();
-            HttpPost request = new HttpPost(path);
-            System.out.println(serialization.serialize(body));
-            HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
+            return sendToApi(supplier, MouserSupplier.PRODUCTS, serialization.serialize(body));
+        }
+
+        private SearchResponseRoot sendToApi(Supplier supplier, String pathEntry, String body)
+        {
+            String host = supplier.hosts().get().get(MouserSupplier.HOST);
+            String path = supplier.paths().get().get(pathEntry);
+            path = path.replace("${apiKey}", supplier.loginAccessToken().get());
+            HttpPost request = new HttpPost(host + path);
+            System.out.println(body);
+            HttpEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
             request.setEntity(entity);
             return makeRequest(request, SearchResponseRoot.class);
         }
 
-        @Override
-        public MouserManufacturersNameRoot mouserManufacturersName(Supplier supplier)
-        {
-            String path = "https://api.mouser.com/api/v2/search/manufacturerlist?apiKey=" + supplier.loginAccessToken().get();
-            return makeRequest(new HttpGet(path), MouserManufacturersNameRoot.class);
-        }
-
+        @SuppressWarnings("SameParameterValue")
         private <T> T makeRequest(HttpUriRequest request, Class<T> responseType)
         {
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
@@ -87,6 +77,8 @@ public interface ProductSearchApi
                     String response = baos.toString(StandardCharsets.UTF_8);
                     baos.close();
                     System.out.println("Mouser Response: " + response);
+
+                    //noinspection EnhancedSwitchMigration
                     switch (r.getStatusLine().getStatusCode())
                     {
                         case 200:

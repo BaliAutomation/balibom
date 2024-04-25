@@ -35,21 +35,16 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
     @Order(1)
     Property<String> name();
 
-    @Order(2)
-    Property<String> website();
-
-    @Order(3)
-    Property<String> searchApi();
-
-    @Order(4)
-    Property<String> productDetailsApi();
-
-    @Order(5)
-    Property<String> orderingApi();
-
     @UseDefaults
     @Height(min=100, pref=100, max=300)
     Property<List<String>> bomColumns();
+
+    @Order(2)
+    Property<Map<String,String>> hosts();
+
+    Property<Map<String,String>> paths();
+
+    Property<String> website();
 
     abstract class Mixin
         implements Supplier

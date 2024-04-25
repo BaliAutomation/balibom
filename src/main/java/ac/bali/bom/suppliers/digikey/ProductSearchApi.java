@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -75,8 +76,8 @@ public interface ProductSearchApi
         @Override
         public KeywordResponse keywordSearch(Supplier supplier, KeywordRequest body)
         {
-            String path = "/products/v4/search/keyword";
-            String resourcePath = createResourcePath(path);
+            String path = supplier.paths().get().get(DigikeySupplier.SEARCH);
+            String resourcePath = createResourcePath(supplier, path);
             HttpPost request = new HttpPost(resourcePath);
             System.out.println(serialization.serialize(body));
             HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
@@ -87,17 +88,19 @@ public interface ProductSearchApi
         @Override
         public ProductDetails productDetails(Supplier supplier, String productNumber)
         {
-            String path = "/products/v4/search/" + productNumber + "/productdetails";
-            String resourcePath = createResourcePath(path);
+            String path = supplier.paths().get().get(DigikeySupplier.PRODUCT_DETAILS_PATH);
+            path = path.replace("${productNumber}", productNumber);
+            String resourcePath = createResourcePath(supplier, path);
             return makeRequest(supplier, new HttpGet(resourcePath), ProductDetails.class);
         }
 
-        private String createResourcePath(String path)
+        private String createResourcePath(Supplier supplier, String path)
         {
-            String host = "https://sandbox-api.digikey.com";
+            Map<String, String> urls = supplier.hosts().get();
+            String host = urls.get(DigikeySupplier.HOST);
             if (application.mode() == Application.Mode.production)
             {
-                host = "https://api.digikey.com";
+                host = urls.get(DigikeySupplier.HOST_DEV);
             }
             return host + path;
         }

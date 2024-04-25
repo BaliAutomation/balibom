@@ -33,11 +33,30 @@ import org.apache.polygene.api.value.ValueBuilderFactory;
 @Mixins(DigikeySupplier.Mixin.class)
 public interface DigikeySupplier extends SupplierProvider
 {
+
+    String HOSTNAME = "https://api.digikey.com/";
+    String HOST = "production";
+    String HOSTNAME_DEV = "https://sandbox-api.digikey.com/";
+    String HOST_DEV = "sandbox";
+
+    String PRODUCT_DETAILS = "productDetailsApi";
+    String ORDERING = "orderingApi";
+    String SEARCH = "searchApi";
+    String LOGIN = "loginEndpoint";
+
+    String PRODUCT_DETAILS_PATH = "/products/v4/search/${productNumber}/productdetails";
+    String ORDERING_PATH = "/orderstatus/v4/orders";
+    String SEARCH_PATH = "/products/v4/search/";
+    String LOGIN_ENDPOINT_PATH = "/v1/oauth2/token";
+    String WEBSITE_PATH = "https://digikey.com";
+
+
     class Mixin
         implements DigikeySupplier
     {
         private static final String NAME = "DigiKey";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.DigiKey");
+
 
         @Structure
         UnitOfWorkFactory uowf;
@@ -102,18 +121,18 @@ public interface DigikeySupplier extends SupplierProvider
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.mf().set(product.Manufacturer().get().Name().get());
-            p.mpn().set(product.ManufacturerProductNumber().get() );
+            p.mpn().set(product.ManufacturerProductNumber().get());
             p.supplier().set(supplier);
             p.supplierPartNumber().set(product.ProductVariations().get().get(0).DigiKeyProductNumber().get());
             p.productIntro().set(product.Description().get().ProductDescription().get());
-            p.availableSupply().set( product.QuantityAvailable().get().intValue() );
-            p.inStock().set( product.QuantityAvailable().get().intValue() );
-            p.canShipWithInWeek().set(product.QuantityAvailable().get().intValue() );
+            p.availableSupply().set(product.QuantityAvailable().get().intValue());
+            p.inStock().set(product.QuantityAvailable().get().intValue());
+            p.canShipWithInWeek().set(product.QuantityAvailable().get().intValue());
             List<ProductVariation> variations = product.ProductVariations().get();
             p.reelSize().set(variations.get(0).StandardPackage().get());
             p.isReel().set(isReel(product));
-            p.images().set( List.of(product.PhotoUrl().get()) );
-            p.datasheet().set(product.DatasheetUrl().get() );
+            p.images().set(List.of(product.PhotoUrl().get()));
+            p.datasheet().set(product.DatasheetUrl().get());
             p.parameters().set(getParameters(product));
             p.prices().set(getPriceList(product));
             p.minBuyNumber().set(minBuyNumber(product));
@@ -179,11 +198,21 @@ public interface DigikeySupplier extends SupplierProvider
                 EntityBuilder<Supplier> eb = uow.newEntityBuilder(Supplier.class, IDENTITY);
                 Supplier instance = eb.instance();
                 instance.name().set("DigiKey");
-                instance.productDetailsApi().set("https://api.digikey.com/products/v4/search/{productNumber}/productdetails");
-                instance.orderingApi().set("https://api.digikey.com/orderstatus/v4/orders");
-                instance.searchApi().set("https://api.digikey.com/products/v4/search/");
-                instance.website().set("https://digikey.com");
-                instance.loginEndpoint().set("https://api.digikey.com/v1/oauth2/token");
+
+                Map<String, String> hosts = new HashMap<>();
+                hosts.put(HOST_DEV, HOSTNAME_DEV);
+                hosts.put(HOST, HOSTNAME);
+                instance.hosts().set(hosts);
+
+                Map<String, String> paths = new HashMap<>();
+                paths.put(PRODUCT_DETAILS, PRODUCT_DETAILS_PATH);
+                paths.put(ORDERING, ORDERING_PATH);
+                paths.put(SEARCH, SEARCH_PATH);
+                paths.put(LOGIN, LOGIN_ENDPOINT_PATH);
+                instance.paths().set(paths);
+
+                instance.website().set(WEBSITE_PATH);
+
                 instance.bomColumns().get().add(NAME);
                 instance.bomColumns().get().add("DigiKey_PN");
                 instance.bomColumns().get().add("DigiKeyPN");
@@ -193,5 +222,5 @@ public interface DigikeySupplier extends SupplierProvider
                 eb.newInstance();
             }
         }
-   }
+    }
 }
