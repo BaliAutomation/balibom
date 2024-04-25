@@ -81,14 +81,6 @@ public class EntityListController<T extends HasIdentity>
         stateMachine = stateMachine.loaded();
     }
 
-    private void onNew(ActionEvent actionEvent)
-    {
-        actionBar.onNew();
-        listCtrl.setDisable(true);
-        compositePane.clearForm();
-        stateMachine = stateMachine.neww();
-    }
-
     private void onSave(ActionEvent actionEvent)
     {
         Usecase usecase = UsecaseBuilder.newUsecase("onSave Action - " + entityType.getSimpleName());
@@ -152,11 +144,9 @@ public class EntityListController<T extends HasIdentity>
     @Override
     public void initialize() throws Exception
     {
-        actionBar.addNewActionHandler(this::onNew);
         actionBar.addSaveActionHandler(this::onSave);
         actionBar.addCancelActionHandler(this::onCancel);
         actionBar.addDeleteActionHandler(this::onDelete);
-        actionBar.addNewActionHandler(this::onNew);
         compositePane.addEventHandler(DirtyEvent.DIRTY, this::onEdit);
         listCtrl.addSelectionHandler(this::onSelection);
     }

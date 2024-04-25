@@ -1,5 +1,6 @@
 package ac.bali.bom.products;
 
+import ac.bali.bom.order.Order;
 import ac.bali.bom.parts.PartsService;
 import org.apache.polygene.library.fileconfig.FileConfiguration;
 import org.apache.polygene.library.fileconfig.FileConfigurationService;
@@ -16,6 +17,7 @@ import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
+import org.qi4j.library.javafx.support.ActionScope;
 
 @SuppressWarnings("unused")
 @Mixins(ProductsService.Mixin.class)

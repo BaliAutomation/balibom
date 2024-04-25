@@ -5,12 +5,12 @@ import ac.bali.bom.bootstrap.Qi4jApplicationAssembler;
 import ac.bali.bom.bootstrap.ViewLayer;
 import ac.bali.bom.inventory.PartsInventory;
 import ac.bali.bom.inventory.ProductsInventory;
+import ac.bali.bom.jobs.Job;
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.order.Order;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.products.Product;
 import ac.bali.bom.suppliers.Supplier;
-import org.qi4j.library.javafx.ui.EntityPane;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
@@ -18,6 +18,7 @@ import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.structure.Module;
+import org.qi4j.library.javafx.ui.EntityPane;
 
 import static org.apache.polygene.api.structure.Application.Mode.development;
 
@@ -40,13 +41,14 @@ public class Main extends Application
 
         stage.setTitle("Bill Of Materials");
         EntityPane<Product> productsPane = objectFactory.newObject(EntityPane.class, Product.class);
+        EntityPane<Part> jobsPane = objectFactory.newObject(EntityPane.class, Job.class);
         EntityPane<Part> partsPane = objectFactory.newObject(EntityPane.class, Part.class);
         EntityPane<Order> ordersPane = objectFactory.newObject(EntityPane.class, Order.class);
         EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class);
         EntityPane<PartsInventory> partsInventoryPane = objectFactory.newObject(EntityPane.class, PartsInventory.class);
         EntityPane<Manufacturer> manufacturersPane = objectFactory.newObject(EntityPane.class, Manufacturer.class);
         EntityPane<Supplier> suppliersPane = objectFactory.newObject(EntityPane.class, Supplier.class);
-        TabPane tabs = setupNavigationTabs(productsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, manufacturersPane, suppliersPane);
+        TabPane tabs = setupNavigationTabs(productsPane, jobsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, manufacturersPane, suppliersPane);
 
         productsPane.loadAll();
         Scene mainScene = new Scene(tabs, 1000, 600);
