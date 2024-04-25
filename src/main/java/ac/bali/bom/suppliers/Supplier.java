@@ -48,7 +48,7 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
     Property<String> orderingApi();
 
     @UseDefaults
-    @Height(min=300, pref=400, max=600)
+    @Height(min=100, pref=100, max=300)
     Property<List<String>> bomColumns();
 
     abstract class Mixin
