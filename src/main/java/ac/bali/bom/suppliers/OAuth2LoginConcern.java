@@ -40,7 +40,8 @@ public class OAuth2LoginConcern extends ConcernOf<InvocationHandler>
     {
         try
         {
-            if (auth.loginExpirationDateTime().get() < System.currentTimeMillis() + 30000)
+            Long expiry = auth.loginExpirationDateTime().get();
+            if (expiry == null || expiry < System.currentTimeMillis() + 30000)
             {
                 URL url = new URL(auth.loginEndpoint().get());
                 OAuth2AccessToken token = oauth2.authorize(url, auth.loginClientId().get(), auth.loginClientSecret().get());

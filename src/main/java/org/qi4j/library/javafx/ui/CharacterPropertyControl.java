@@ -22,6 +22,7 @@ public class CharacterPropertyControl extends PropertyControl<Character>
     {
         super(factory, descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
         field = new TextField();
+        field.textProperty().addListener((observable, oldValue, newValue) -> CharacterPropertyControl.this.fireEvent(new DirtyEvent(CharacterPropertyControl.this)));
         field.setTextFormatter(new TextFormatter<>(new CharacterStringConverter()));
         Pane box;
         if (withLabel)

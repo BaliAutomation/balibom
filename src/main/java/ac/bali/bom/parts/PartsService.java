@@ -4,7 +4,6 @@ import ac.bali.bom.products.BomItem;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SuppliersService;
 import ac.bali.bom.suppliers.Supply;
-import org.qi4j.library.javafx.support.Action;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +22,7 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilderFactory;
+import org.qi4j.library.javafx.support.Action;
 
 import static org.qi4j.library.javafx.support.ActionScope.composite;
 
@@ -81,7 +81,8 @@ public interface PartsService
             for (Map.Entry<String, Supply> entry : part.supply().get().entrySet())
             {
                 Supply supply = suppliersService.findSupply(entry.getKey(), entry.getValue().supplierPartNumber().get());
-                newSupply.put(entry.getKey(), supply);
+                if (supply != null)
+                    newSupply.put(entry.getKey(), supply);
             }
             UnitOfWork uow = uowf.currentUnitOfWork();
             Part entity = uow.toEntity(Part.class, part);
@@ -102,18 +103,21 @@ public interface PartsService
                 if (supplierPartNumber != null)
                 {
                     supply = suppliersService.findSupply(supplierName, supplierPartNumber);
-                } else {
+                } else
+                {
                     supply = suppliersService.findSupply(supplierName, mf, mpn);
                 }
-                result.put(supplierName, supply);
+                if (supply != null)
+                    result.put(supplierName, supply);
             }
             // Get supply from MF/MPN
-            if( result.size() == 0 )
+            if (result.size() == 0)
             {
                 List<Supply> supplies = suppliersService.searchSupply(mf, mpn);
                 for (Supply s : supplies)
                 {
-                    result.put(s.supplier().get().name().get(), s);
+                    if (s != null)
+                        result.put(s.supplier().get().name().get(), s);
                 }
             }
             return result;
@@ -145,6 +149,8 @@ public interface PartsService
             Map<String, Supply> supply = createSupply(item);
             for (Supply s : supply.values())
             {
+                if (s == null)
+                    continue;
                 String smf = s.mf().get();
                 String smpn = s.mpn().get();
                 if (mf == null || mf.length() == 0)

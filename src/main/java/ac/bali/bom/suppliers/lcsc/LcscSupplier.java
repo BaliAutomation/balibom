@@ -28,12 +28,10 @@ import org.apache.polygene.api.structure.ModuleDescriptor;
 import org.apache.polygene.api.unitofwork.NoSuchEntityException;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
-import org.apache.polygene.api.usecase.Usecase;
-import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
-@Mixins( LcscSupplier.Mixin.class)
+@Mixins(LcscSupplier.Mixin.class)
 public interface LcscSupplier extends SupplierProvider
 {
 
@@ -93,10 +91,12 @@ public interface LcscSupplier extends SupplierProvider
 
         private Supply createSupply(Supplier supplier, LcscPart product)
         {
+            if (product == null)
+                return null;
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.mf().set(product.brandNameEn().get());
-            p.mpn().set(product.productModel().get() );
+            p.mpn().set(product.productModel().get());
             p.supplier().set(supplier);
             p.supplierPartNumber().set(product.productCode().get());
             p.productIntro().set(product.productIntroEn().get());
@@ -117,12 +117,16 @@ public interface LcscSupplier extends SupplierProvider
         {
             Map<String, String> result = new HashMap<>();
             LcscPart lcscPart = (LcscPart) fetched;
-            lcscPart.paramVOList().get().forEach(p ->
+            List<LcscParameter> voList = lcscPart.paramVOList().get();
+            if (voList != null)
             {
-                String name = p.paramNameEn().get();
-                String value = p.paramValueEn().get();
-                result.put(name, value);
-            });
+                voList.forEach(p ->
+                {
+                    String name = p.paramNameEn().get();
+                    String value = p.paramValueEn().get();
+                    result.put(name, value);
+                });
+            }
             return result;
         }
 
@@ -167,6 +171,7 @@ public interface LcscSupplier extends SupplierProvider
                 instance.searchApi().set(SEARCH_URL);
                 instance.website().set(WEBSITE_URL);
                 instance.bomColumns().get().add(NAME);
+                instance.enabled().set(false);
                 builder.newInstance();
             }
         }

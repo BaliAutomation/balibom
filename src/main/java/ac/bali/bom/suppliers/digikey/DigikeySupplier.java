@@ -54,6 +54,7 @@ public interface DigikeySupplier extends SupplierProvider
         @Override
         public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
         {
+            products.updateAuthMethod(supplier);
             ProductDetails prodDetails = products.productDetails(supplierPartNumber);
             if (prodDetails == null)
                 return null;
@@ -72,6 +73,8 @@ public interface DigikeySupplier extends SupplierProvider
             {
                 return null;
             }
+            products.updateAuthMethod(supplier);
+
             SortOptions sortOptions = vbf.newValue(SortOptions.class);
 
             FilterOptionsRequest filterOptions = vbf.newValue(FilterOptionsRequest.class);
@@ -97,6 +100,7 @@ public interface DigikeySupplier extends SupplierProvider
         @Override
         public List<Supply> searchKeywords(Supplier supplier, String keywords)
         {
+            products.updateAuthMethod(supplier);
             return null;
         }
 
@@ -192,6 +196,7 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.bomColumns().get().add("DigiKeyPN");
                 instance.bomColumns().get().add("Digi-KeyPN");
                 instance.bomColumns().get().add("Digi-Key_PN");
+                instance.enabled().set(false);
                 eb.newInstance();
             }
         }

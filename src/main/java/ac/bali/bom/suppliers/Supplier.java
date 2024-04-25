@@ -28,6 +28,8 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
     @LoginRequired
     List<Supply> searchKeywords(String keywords);
 
+    Property<Boolean> enabled();
+
     @RenderAsName
     @Order(1)
     Property<String> name();
@@ -59,18 +61,30 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
         @Override
         public Supply searchSupplierPartNumber(String supplierPartNumber)
         {
+            if (!enabled().get())
+            {
+                return null;
+            }
             return provider().searchSupplierPartNumber(meAsSupplier, supplierPartNumber);
         }
 
         @Override
         public Supply searchManufacturerPartNumber(String mf, String mpn)
         {
+            if (!enabled().get())
+            {
+                return null;
+            }
             return provider().searchManufacturerPartNumber(meAsSupplier, mf, mpn);
         }
 
         @Override
         public List<Supply> searchKeywords(String keywords)
         {
+            if (!enabled().get())
+            {
+                return null;
+            }
             return provider().searchKeywords(meAsSupplier, keywords);
         }
 
