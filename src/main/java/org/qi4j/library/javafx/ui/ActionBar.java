@@ -9,10 +9,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.stage.FileChooser;
@@ -42,7 +40,6 @@ public class ActionBar<T> extends ToolBar
     @Uses
     Class<T> entityType;
 
-    private Button newButton;
     private Button saveButton;
     private Button cancelButton;
     private Button deleteButton;
@@ -52,12 +49,10 @@ public class ActionBar<T> extends ToolBar
     @Override
     public void initialize()
     {
-        ObservableList<Node> children = getChildren();
-        newButton = new Button("New");
         saveButton = new Button("Save");
         cancelButton = new Button("Cancel");
         deleteButton = new Button("Delete");
-        getItems().addAll(newButton, saveButton, cancelButton, deleteButton);
+        getItems().addAll(saveButton, cancelButton, deleteButton);
         actions = findActions();
         for (ActionCall action : actions)
         {
@@ -77,7 +72,6 @@ public class ActionBar<T> extends ToolBar
 
     public void setDefaultState()
     {
-        newButton.setDisable(false);
         saveButton.setDisable(true);
         cancelButton.setDisable(true);
         deleteButton.setDisable(true);
@@ -87,21 +81,8 @@ public class ActionBar<T> extends ToolBar
         }
     }
 
-    public void onNew()
-    {
-        newButton.setDisable(true);
-        saveButton.setDisable(false);
-        cancelButton.setDisable(false);
-        deleteButton.setDisable(true);
-        for (ActionCall a : actions)
-        {
-            a.button().setDisable(true);
-        }
-    }
-
     public void onEdit()
     {
-        newButton.setDisable(true);
         saveButton.setDisable(false);
         cancelButton.setDisable(false);
         deleteButton.setDisable(true);
@@ -113,7 +94,6 @@ public class ActionBar<T> extends ToolBar
 
     public void onSelected(List<T> items)
     {
-        newButton.setDisable(false);
         saveButton.setDisable(true);
         cancelButton.setDisable(true);
         deleteButton.setDisable(false);
@@ -157,11 +137,6 @@ public class ActionBar<T> extends ToolBar
             result.addAll(actions);
         }
         return result;
-    }
-
-    public void addNewActionHandler(EventHandler<ActionEvent> onNew)
-    {
-        newButton.addEventHandler(ActionEvent.ANY, onNew);
     }
 
     public void addSaveActionHandler(EventHandler<ActionEvent> onSave)
