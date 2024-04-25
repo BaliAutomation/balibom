@@ -7,6 +7,7 @@ import org.qi4j.library.javafx.ui.BigIntegerPropertyControl;
 import org.qi4j.library.javafx.ui.BooleanPropertyControl;
 import org.qi4j.library.javafx.ui.BytePropertyControl;
 import org.qi4j.library.javafx.ui.CharacterPropertyControl;
+import org.qi4j.library.javafx.ui.CompositeListPropertyControl;
 import org.qi4j.library.javafx.ui.CompositePane;
 import org.qi4j.library.javafx.ui.DoublePropertyControl;
 import org.qi4j.library.javafx.ui.DurationPropertyControl;
@@ -57,6 +58,7 @@ public class JavaFxModule
             BytePropertyControl.class,
             CharacterPropertyControl.class,
             CompositePane.class,
+            CompositeListPropertyControl.class,
             DoublePropertyControl.class,
             DurationPropertyControl.class,
             EntityNameComparator.class,

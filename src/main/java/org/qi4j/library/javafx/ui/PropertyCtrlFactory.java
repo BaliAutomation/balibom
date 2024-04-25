@@ -7,9 +7,8 @@ import java.util.stream.Collectors;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.AssociationStateHolder;
 import org.apache.polygene.api.common.Optional;
-import org.apache.polygene.api.composite.StatefulCompositeDescriptor;
-import org.apache.polygene.api.entity.EntityComposite;
-import org.apache.polygene.api.entity.EntityReference;
+import org.apache.polygene.api.composite.ModelDescriptor;
+import org.apache.polygene.api.composite.StatefulAssociationCompositeDescriptor;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.object.ObjectFactory;
@@ -47,6 +46,7 @@ public interface PropertyCtrlFactory
     String nameOf(AssociationDescriptor descriptor);
 
     String nameOf(PropertyDescriptor property);
+    String nameOf(ValueDescriptor property);
 
     String nameOf(@Optional PropertyDescriptor propDescriptor, @Optional AssociationDescriptor assocDescriptor);
 
@@ -74,7 +74,12 @@ public interface PropertyCtrlFactory
                 return objectFactory.newObject(EntityReferenceControl.class, descriptor, withLabel);
             } else if (propertyType instanceof CollectionType)
             {
-                return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+                ValueDescriptor valueDescriptor = module.typeLookup().lookupValueModel(((CollectionType) propertyType).collectedType().primaryType());
+                if (valueDescriptor == null)
+                {
+                    return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+                }
+                return objectFactory.newObject(CompositeListPropertyControl.class, valueDescriptor, withLabel);
             } else if (propertyType instanceof MapType)
             {
                 return objectFactory.newObject(MapPropertyControl.class, descriptor, withLabel);
@@ -123,39 +128,22 @@ public interface PropertyCtrlFactory
         {
             if (composite == null)
                 return "<no object>";
-            if (ValueComposite.class.isAssignableFrom(composite.getClass()))
+            if (spi.isComposite(composite))
             {
-                StatefulCompositeDescriptor descriptor = spi.valueDescriptorFor(composite);
-                return descriptor.state()
-                    .properties()
-                    .filter(p -> p.metaInfo(RenderAsName.class) != null)
-                    .sorted(new MemberOrderComparator())
-                    .map(p ->
-                    {
-                        AssociationStateHolder state = spi.stateOf((ValueComposite) composite);
-                        Property<?> property = state.propertyFor(p.accessor());
-                        return property.get().toString();
-                    }).collect(Collectors.joining(" - "));
-            } else if (EntityComposite.class.isAssignableFrom(composite.getClass()))
-            {
-                StatefulCompositeDescriptor descriptor = spi.entityDescriptorFor(composite);
-                return descriptor.state()
-                    .properties()
-                    .filter(p -> p.metaInfo(RenderAsName.class) != null)
-                    .sorted(new MemberOrderComparator())
-                    .map(p ->
-                    {
-                        AssociationStateHolder state = spi.stateOf((EntityComposite) composite);
-                        Property<?> property = state.propertyFor(p.accessor());
-                        return property.get().toString();
-                    }).collect(Collectors.joining(" - "));
-            } else if (composite instanceof EntityReference)
-            {
-                return ((EntityReference) composite).identity().toString();
-            } else
-            {
-                throw new IllegalArgumentException("Only Stateful Composites can be used as PropertyControl");
+                ModelDescriptor modelDescriptor = spi.modelDescriptorFor(composite);
+                if (modelDescriptor instanceof StatefulAssociationCompositeDescriptor descriptor)
+                    return descriptor.state()
+                        .properties()
+                        .filter(p -> p.metaInfo(RenderAsName.class) != null)
+                        .sorted(new MemberOrderComparator())
+                        .map(p ->
+                        {
+                            AssociationStateHolder state = spi.stateOf((ValueComposite) composite);
+                            Property<?> property = state.propertyFor(p.accessor());
+                            return property.get().toString();
+                        }).collect(Collectors.joining(" - "));
             }
+            throw new IllegalArgumentException("Only Stateful Composites can be used as PropertyControl: " + composite);
         }
 
         @Override
@@ -169,10 +157,19 @@ public interface PropertyCtrlFactory
         }
 
         @Override
+        public String nameOf(ValueDescriptor descriptor)
+        {
+            RenderAsValue renderAsValue = descriptor.metaInfo(RenderAsValue.class);
+            if (renderAsValue != null)
+                return renderAsValue.title();
+            return humanize(descriptor.toString());
+        }
+
+        @Override
         public String nameOf(PropertyDescriptor property)
         {
             RenderAsValue renderAsValue = property.metaInfo(RenderAsValue.class);
-            if( renderAsValue != null )
+            if (renderAsValue != null)
                 return renderAsValue.title();
             return humanize(property.qualifiedName().name());
         }

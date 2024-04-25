@@ -48,12 +48,15 @@ public class EntityReferenceControl extends PropertyControl<EntityReference>
             {
                 Object obj = uow.get((Class<?>) descriptor.type(), value.identity());
                 valuePane.updateWith(obj);
+                VBox root = new VBox(valuePane);
+                root.setFillWidth(true);
                 VBox.setVgrow(valuePane, Priority.ALWAYS);
-                Scene scene = new Scene(root,800,800);
+                Scene scene = new Scene(root, 1200, 800);
                 Stage compositeStage = new Stage();
                 compositeStage.setTitle(label.getText());
                 compositeStage.setScene(scene);
-                compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt -> {
+                compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt ->
+                {
                     compositeStage.setScene(null);
                     compositeStage.close();
                     root.getChildren().clear();

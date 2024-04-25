@@ -50,7 +50,7 @@ public class ValueLinkControl<T> extends PropertyControl<T>
             VBox root = new VBox(valuePane);
             root.setFillWidth(true);
             VBox.setVgrow(valuePane, Priority.ALWAYS);
-            Scene scene = new Scene(root,800,800);
+            Scene scene = new Scene(root,1200,800);
             Stage compositeStage = new Stage();
             compositeStage.setScene(scene);
             compositeStage.setTitle(label.getText());
