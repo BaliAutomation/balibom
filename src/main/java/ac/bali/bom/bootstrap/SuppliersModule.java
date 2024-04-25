@@ -21,6 +21,7 @@ public class SuppliersModule
 
         new LcscAssembler().assemble(module);
         new DigikeyAssembler().assemble(module);
+        new MouserAssembler().assemble(module);
         new Oauth2Assembler().assemble(module);
 
         module.services(SuppliersService.class).instantiateOnStartup().visibleIn(application);

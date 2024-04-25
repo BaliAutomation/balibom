@@ -2,6 +2,7 @@ package ac.bali.bom.suppliers;
 
 import ac.bali.bom.suppliers.digikey.DigikeySupplier;
 import ac.bali.bom.suppliers.lcsc.LcscSupplier;
+import ac.bali.bom.suppliers.mouser.MouserSupplier;
 import org.apache.polygene.api.service.ServiceActivation;
 import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.qi4j.library.javafx.support.Action;
@@ -106,6 +107,7 @@ public interface SuppliersService extends ServiceActivation
             {
                 DigikeySupplier.Mixin.createSupplier(uow);
                 LcscSupplier.Mixin.createSupplier(uow);
+                MouserSupplier.Mixin.createSupplier(uow);
                 uow.complete();
             }
         }

@@ -141,7 +141,7 @@ public interface MouserSupplier extends SupplierProvider
                 Supplier instance = eb.instance();
                 instance.name().set("Mouser");
                 instance.productDetailsApi().set("https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104");
-                instance.orderingApi().set(null);
+                instance.orderingApi().set("");
                 instance.searchApi().set("https://api.mouser.com/api/v2/search");
                 instance.website().set("https://eu.mouser.com/");
                 instance.loginEndpoint().set("https://api.mouser.com/api/v2/search");
@@ -149,6 +149,7 @@ public interface MouserSupplier extends SupplierProvider
                 instance.bomColumns().get().add("Mouser_PN");
                 instance.bomColumns().get().add("MouserPN");
                 instance.bomColumns().get().add("Mouser-PN");
+                instance.enabled().set(false);
                 eb.newInstance();
             }
         }
