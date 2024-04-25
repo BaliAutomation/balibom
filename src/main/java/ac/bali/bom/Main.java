@@ -40,14 +40,14 @@ public class Main extends Application
         ObjectFactory objectFactory = module.objectFactory();
 
         stage.setTitle("Bill Of Materials");
-        EntityPane<Product> productsPane = objectFactory.newObject(EntityPane.class, Product.class);
-        EntityPane<Part> jobsPane = objectFactory.newObject(EntityPane.class, Job.class);
-        EntityPane<Part> partsPane = objectFactory.newObject(EntityPane.class, Part.class);
-        EntityPane<Order> ordersPane = objectFactory.newObject(EntityPane.class, Order.class);
-        EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class);
-        EntityPane<PartsInventory> partsInventoryPane = objectFactory.newObject(EntityPane.class, PartsInventory.class);
-        EntityPane<Manufacturer> manufacturersPane = objectFactory.newObject(EntityPane.class, Manufacturer.class);
-        EntityPane<Supplier> suppliersPane = objectFactory.newObject(EntityPane.class, Supplier.class);
+        EntityPane<Product> productsPane = objectFactory.newObject(EntityPane.class, Product.class, "Products");
+        EntityPane<Part> jobsPane = objectFactory.newObject(EntityPane.class, Job.class, "Jobs");
+        EntityPane<Part> partsPane = objectFactory.newObject(EntityPane.class, Part.class, "Parts");
+        EntityPane<Order> ordersPane = objectFactory.newObject(EntityPane.class, Order.class, "Orders");
+        EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class, "Product Inventory");
+        EntityPane<PartsInventory> partsInventoryPane = objectFactory.newObject(EntityPane.class, PartsInventory.class, "Parts Inventory");
+        EntityPane<Manufacturer> manufacturersPane = objectFactory.newObject(EntityPane.class, Manufacturer.class, "Manufacturers");
+        EntityPane<Supplier> suppliersPane = objectFactory.newObject(EntityPane.class, Supplier.class, "Suppliers");
         TabPane tabs = setupNavigationTabs(productsPane, jobsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, manufacturersPane, suppliersPane);
 
         productsPane.loadAll();
@@ -56,26 +56,20 @@ public class Main extends Application
         stage.show();
     }
 
-    private static TabPane setupNavigationTabs(EntityPane<Product> productsPane, EntityPane<Part> partsPane, EntityPane<Order> ordersPane, EntityPane<ProductsInventory> productsInventoryPane, EntityPane<PartsInventory> partsInventoryPane, EntityPane<Manufacturer> manufacturersPane, EntityPane<Supplier> suppliersPane)
+    private static TabPane setupNavigationTabs(EntityPane<?>... panes)
     {
         TabPane tabs = new TabPane();
-        createTab(tabs, "Products", productsPane);
-        createTab(tabs, "Parts", partsPane);
-        createTab(tabs, "Orders", ordersPane);
-        createTab(tabs, "Part Inventory", partsInventoryPane);
-        createTab(tabs, "Product Inventory", productsInventoryPane);
-        createTab(tabs, "Manufacturers", manufacturersPane);
-        createTab(tabs, "Suppliers", suppliersPane);
+        for( EntityPane<?> pane : panes)
+        {
+            String title = pane.title();
+            Tab tab = new Tab(title, pane);
+            tab.setOnSelectionChanged(evt -> pane.loadAll());
+            tab.setClosable(false);
+            tabs.getTabs().add(tab);
+            pane.prefWidthProperty().bind(tabs.widthProperty());
+            pane.prefHeightProperty().bind(tabs.heightProperty());
+        }
         return tabs;
-    }
-
-    private static void createTab(TabPane tabs, String title, EntityPane<?> pane)
-    {
-        Tab tab = new Tab(title, pane);
-        tab.setOnSelectionChanged(evt -> pane.loadAll());
-        tabs.getTabs().add(tab);
-        pane.prefWidthProperty().bind(tabs.widthProperty());
-        pane.prefHeightProperty().bind(tabs.heightProperty());
     }
 
     @Override

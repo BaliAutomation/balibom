@@ -16,6 +16,9 @@ import org.apache.polygene.api.object.ObjectFactory;
 public class EntityPane<T extends HasIdentity> extends VBox
     implements Initializable
 {
+    @Uses
+    String title;
+
     CompositePane<T> compositeForm;
     ActionBar<T> actionBar;
     ListPropertyControl<T> entityList;
@@ -70,5 +73,10 @@ public class EntityPane<T extends HasIdentity> extends VBox
     public void loadAll()
     {
         controller.loadAll();
+    }
+
+    public String title()
+    {
+        return title;
     }
 }
