@@ -13,7 +13,6 @@ import ac.bali.bom.suppliers.digikey.model.Product;
 import ac.bali.bom.suppliers.digikey.model.ProductDetails;
 import ac.bali.bom.suppliers.digikey.model.ProductVariation;
 import ac.bali.bom.suppliers.digikey.model.SortOptions;
-import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +36,6 @@ public interface DigikeySupplier extends SupplierProvider
     class Mixin
         implements DigikeySupplier
     {
-        private static final String TOKEN_ENDPOINT = "https://sandbox-api.digikey.com/v1/oauth2/token";
-
         private static final String NAME = "DigiKey";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.DigiKey");
 
@@ -54,8 +51,7 @@ public interface DigikeySupplier extends SupplierProvider
         @Override
         public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
         {
-            products.updateAuthMethod(supplier);
-            ProductDetails prodDetails = products.productDetails(supplierPartNumber);
+            ProductDetails prodDetails = products.productDetails(supplier, supplierPartNumber);
             if (prodDetails == null)
                 return null;
             Product product = prodDetails.Product().get();
@@ -73,8 +69,6 @@ public interface DigikeySupplier extends SupplierProvider
             {
                 return null;
             }
-            products.updateAuthMethod(supplier);
-
             SortOptions sortOptions = vbf.newValue(SortOptions.class);
 
             FilterOptionsRequest filterOptions = vbf.newValue(FilterOptionsRequest.class);
@@ -87,7 +81,7 @@ public interface DigikeySupplier extends SupplierProvider
             prototype3.SortOptions().set(sortOptions);
             prototype3.FilterOptionsRequest().set(filterOptions);
             KeywordRequest search = builder3.newInstance();
-            KeywordResponse response = products.keywordSearch(search);
+            KeywordResponse response = products.keywordSearch(supplier, search);
             List<Product> exactMatches = response.ExactMatches().get();
             if (exactMatches.size() == 1)
             {
@@ -100,7 +94,6 @@ public interface DigikeySupplier extends SupplierProvider
         @Override
         public List<Supply> searchKeywords(Supplier supplier, String keywords)
         {
-            products.updateAuthMethod(supplier);
             return null;
         }
 

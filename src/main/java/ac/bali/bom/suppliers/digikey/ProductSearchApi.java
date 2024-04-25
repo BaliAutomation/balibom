@@ -1,5 +1,6 @@
 package ac.bali.bom.suppliers.digikey;
 
+import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.digikey.model.CategoriesResponse;
 import ac.bali.bom.suppliers.digikey.model.CategoryResponse;
 import ac.bali.bom.suppliers.digikey.model.DigiReelPricing;
@@ -33,32 +34,31 @@ import org.apache.polygene.api.serialization.Serialization;
 import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.structure.ModuleDescriptor;
 
+@SuppressWarnings("unused")
 @Mixins({ProductSearchApi.Mixin.class, NoopMixin.class})
 public interface ProductSearchApi
 {
-    void updateAuthMethod(OAuth2Authentication authenticationMethod);
+    ProductAssociationsResponse associations(Supplier supplier, String productNumber);
 
-    ProductAssociationsResponse associations(String productNumber);
+    CategoriesResponse categories(Supplier supplier);
 
-    CategoriesResponse categories();
+    CategoryResponse categoriesById(Supplier supplier, Integer categoryId);
 
-    CategoryResponse categoriesById(Integer categoryId);
+    DigiReelPricing digiReelPricing(Supplier supplier, String productNumber, Integer requestedQuantity);
 
-    DigiReelPricing digiReelPricing(String productNumber, Integer requestedQuantity);
+    KeywordResponse keywordSearch(Supplier supplier, KeywordRequest body);
 
-    KeywordResponse keywordSearch(KeywordRequest body);
+    ManufacturersResponse manufacturers(Supplier supplier);
 
-    ManufacturersResponse manufacturers();
+    MediaResponse media(Supplier supplier, String productNumber);
 
-    MediaResponse media(String productNumber);
+    PackageTypeByQuantityResponse packageTypeByQuantity(Supplier supplier, String productNumber, Integer requestedQuantity, String packagingPreference);
 
-    PackageTypeByQuantityResponse packageTypeByQuantity(String productNumber, Integer requestedQuantity, String packagingPreference);
+    ProductDetails productDetails(Supplier supplier, String productNumber);
 
-    ProductDetails productDetails(String productNumber);
+    RecommendedProductsResponse recommendedProducts(Supplier supplier, String productNumber, Integer limit, String searchOptionList, Boolean excludeMarketPlaceProducts);
 
-    RecommendedProductsResponse recommendedProducts(String productNumber, Integer limit, String searchOptionList, Boolean excludeMarketPlaceProducts);
-
-    ProductSubstitutesResponse substitutions(String productNumber, String includes);
+    ProductSubstitutesResponse substitutions(Supplier supplier, String productNumber, String includes);
 
     abstract class Mixin
         implements ProductSearchApi
@@ -72,16 +72,8 @@ public interface ProductSearchApi
         @Structure
         Application application;
 
-        private OAuth2Authentication authMethod;
-
         @Override
-        public void updateAuthMethod(OAuth2Authentication authenticationMethod)
-        {
-            this.authMethod = authenticationMethod;
-        }
-
-        @Override
-        public KeywordResponse keywordSearch(KeywordRequest body)
+        public KeywordResponse keywordSearch(Supplier supplier, KeywordRequest body)
         {
             String path = "/products/v4/search/keyword";
             String resourcePath = createResourcePath(path);
@@ -89,15 +81,15 @@ public interface ProductSearchApi
             System.out.println(serialization.serialize(body));
             HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
             request.setEntity(entity);
-            return makeRequest(request, KeywordResponse.class);
+            return makeRequest(supplier, request, KeywordResponse.class);
         }
 
         @Override
-        public ProductDetails productDetails(String productNumber)
+        public ProductDetails productDetails(Supplier supplier, String productNumber)
         {
             String path = "/products/v4/search/" + productNumber + "/productdetails";
             String resourcePath = createResourcePath(path);
-            return makeRequest(new HttpGet(resourcePath), ProductDetails.class);
+            return makeRequest(supplier, new HttpGet(resourcePath), ProductDetails.class);
         }
 
         private String createResourcePath(String path)
@@ -110,7 +102,7 @@ public interface ProductSearchApi
             return host + path;
         }
 
-        private <T> T makeRequest(HttpUriRequest request, Class<T> responseType)
+        private <T> T makeRequest(OAuth2Authentication authMethod, HttpUriRequest request, Class<T> responseType)
         {
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
@@ -129,7 +121,7 @@ public interface ProductSearchApi
                     System.out.println("Digikey Response: " + response);
                     System.out.println("Digikey RateLimit Remaining: " + r.getFirstHeader("X-RateLimit-Remaining"));
                     System.out.println("Digikey BurstLimit Remaining: " + r.getFirstHeader("X-BurstLimit-Remaining"));
-                    switch( r.getStatusLine().getStatusCode())
+                    switch (r.getStatusLine().getStatusCode())
                     {
                         case 200:
                             return serialization.deserialize(module, responseType, response);
@@ -138,7 +130,7 @@ public interface ProductSearchApi
                         case 429:
                             throw new IOException("Digikey RateLimit");
                         default:
-                            System.err.println("Digikey Unhandled Response Code" + r.getStatusLine() );
+                            System.err.println("Digikey Unhandled Response Code" + r.getStatusLine());
                             return null;
                     }
                 });

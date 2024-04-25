@@ -1,9 +1,14 @@
 package ac.bali.bom.suppliers.mouser;
 
+import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.mouser.model.MouserManufacturersNameRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchByKeywordMfrNameRequestRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchByPartMfrNameRequestRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchResponseRoot;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -15,25 +20,21 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
-import org.apache.polygene.api.mixin.NoopMixin;
 import org.apache.polygene.api.serialization.Serialization;
-import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.structure.ModuleDescriptor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.nio.charset.StandardCharsets;
-
 @Mixins({ProductSearchApi.Mixin.class})
-public interface ProductSearchApi {
+public interface ProductSearchApi
+{
 
-    SearchResponseRoot searchByKeywordMfrName(SearchByKeywordMfrNameRequestRoot body);
-    SearchResponseRoot searchByPartMfrName (SearchByPartMfrNameRequestRoot body);
-    MouserManufacturersNameRoot mouserManufacturersName ();
+    SearchResponseRoot searchByKeywordMfrName(Supplier supplier, SearchByKeywordMfrNameRequestRoot body);
+
+    SearchResponseRoot searchByPartMfrName(Supplier supplier, SearchByPartMfrNameRequestRoot body);
+
+    MouserManufacturersNameRoot mouserManufacturersName(Supplier supplier);
 
     abstract class Mixin
-    implements ProductSearchApi
+        implements ProductSearchApi
     {
         @Service
         Serialization serialization;
@@ -41,10 +42,12 @@ public interface ProductSearchApi {
         @Structure
         ModuleDescriptor module;
 
+        private String apiKey;
+
         @Override
-        public SearchResponseRoot searchByKeywordMfrName(SearchByKeywordMfrNameRequestRoot body){
-            String path =
-                    "https://api.mouser.com/api/v2/search/keywordandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
+        public SearchResponseRoot searchByKeywordMfrName(Supplier supplier, SearchByKeywordMfrNameRequestRoot body)
+        {
+            String path = "https://api.mouser.com/api/v2/search/keywordandmanufacturer?apiKey=" + supplier.loginAccessToken().get();
             HttpPost request = new HttpPost(path);
             System.out.println(serialization.serialize(body));
             HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
@@ -53,9 +56,9 @@ public interface ProductSearchApi {
         }
 
         @Override
-        public SearchResponseRoot searchByPartMfrName (SearchByPartMfrNameRequestRoot body){
-            String path =
-                    "https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
+        public SearchResponseRoot searchByPartMfrName(Supplier supplier, SearchByPartMfrNameRequestRoot body)
+        {
+            String path = "https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=" + supplier.loginAccessToken().get();
             HttpPost request = new HttpPost(path);
             System.out.println(serialization.serialize(body));
             HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
@@ -64,12 +67,11 @@ public interface ProductSearchApi {
         }
 
         @Override
-        public MouserManufacturersNameRoot mouserManufacturersName (){
-            String path =
-                    "https://api.mouser.com/api/v2/search/manufacturerlist?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
+        public MouserManufacturersNameRoot mouserManufacturersName(Supplier supplier)
+        {
+            String path = "https://api.mouser.com/api/v2/search/manufacturerlist?apiKey=" + supplier.loginAccessToken().get();
             return makeRequest(new HttpGet(path), MouserManufacturersNameRoot.class);
         }
-
 
         private <T> T makeRequest(HttpUriRequest request, Class<T> responseType)
         {
@@ -85,7 +87,7 @@ public interface ProductSearchApi {
                     String response = baos.toString(StandardCharsets.UTF_8);
                     baos.close();
                     System.out.println("Mouser Response: " + response);
-                    switch( r.getStatusLine().getStatusCode())
+                    switch (r.getStatusLine().getStatusCode())
                     {
                         case 200:
                             return serialization.deserialize(module, responseType, response);
@@ -94,7 +96,7 @@ public interface ProductSearchApi {
                         case 429:
                             throw new IOException("Mouser RateLimit");
                         default:
-                            System.err.println("Mouser Unhandled Response Code" + r.getStatusLine() );
+                            System.err.println("Mouser Unhandled Response Code" + r.getStatusLine());
                             return null;
                     }
                 });

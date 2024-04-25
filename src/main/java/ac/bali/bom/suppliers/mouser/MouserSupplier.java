@@ -33,10 +33,8 @@ import org.apache.polygene.api.value.ValueBuilderFactory;
 public interface MouserSupplier extends SupplierProvider
 {
     class Mixin
-        implements MouserSupplier {
-
-        private static final String TOKEN_ENDPOINT = "https://api.mouser.com/api/v2/search";
-
+        implements MouserSupplier
+    {
         private static final String NAME = "Mouser";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.Mouser");
 
@@ -50,19 +48,22 @@ public interface MouserSupplier extends SupplierProvider
         ProductSearchApi products;
 
         @Override
-        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber) {
+        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
+        {
             return null;
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn) {
-            if (mf == null || mf.trim().length() == 0) {
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
+        {
+            if (mf == null || mf.trim().length() == 0)
+            {
                 return null;
             }
-            if (mpn == null || mpn.trim().length() == 0) {
+            if (mpn == null || mpn.trim().length() == 0)
+            {
                 return null;
             }
-
             ValueBuilder<SearchByPartMfrNameRequest> builder2 =
                 vbf.newValueBuilder(SearchByPartMfrNameRequest.class);
             SearchByPartMfrNameRequest prototype2 = builder2.prototype();
@@ -76,18 +77,21 @@ public interface MouserSupplier extends SupplierProvider
             prototype3.SearchByPartMfrNameRequest().set(builder2.newInstance());
             SearchByPartMfrNameRequestRoot search = builder3.newInstance();
 
-            SearchResponseRoot response = products.searchByPartMfrName(search);
+            SearchResponseRoot response = products.searchByPartMfrName(supplier, search);
             return createSupply(supplier, response).get(0);
         }
 
         @Override
-        public List<Supply> searchKeywords(Supplier supplier, String keywords) {
+        public List<Supply> searchKeywords(Supplier supplier, String keywords)
+        {
             return null;
         }
 
-        private List<Supply> createSupply(Supplier supplier, SearchResponseRoot product) {
+        private List<Supply> createSupply(Supplier supplier, SearchResponseRoot product)
+        {
             List<Supply> supplies = new ArrayList<>();
-            for (MouserPart mp : product.SearchResults().get().Parts().get()) {
+            for (MouserPart mp : product.SearchResults().get().Parts().get())
+            {
                 ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
                 Supply p = builder.prototype();
                 p.mf().set(mp.ActualMfrName().get());
@@ -110,7 +114,8 @@ public interface MouserSupplier extends SupplierProvider
             return supplies;
         }
 
-        private SortedSet<Price> getPriceList(List<Pricebreak> prices) {
+        private SortedSet<Price> getPriceList(List<Pricebreak> prices)
+        {
             TreeSet<Price> result = new TreeSet<>(new Price.PriceComparator());
             prices.forEach(p ->
             {
@@ -123,9 +128,11 @@ public interface MouserSupplier extends SupplierProvider
             return result;
         }
 
-        private static Map<String, String> getParameters(List<ProductAttribute> attributes) {
+        private static Map<String, String> getParameters(List<ProductAttribute> attributes)
+        {
             Map<String, String> result = new HashMap<>();
-            for (ProductAttribute p : attributes) {
+            for (ProductAttribute p : attributes)
+            {
                 String k = p.AttributeName().get();
                 String v = p.AttributeValue().get();
                 result.put(k, v);
@@ -133,14 +140,17 @@ public interface MouserSupplier extends SupplierProvider
             return result;
         }
 
-        public static void createSupplier(UnitOfWork uow) throws Exception {
-            try {
+        public static void createSupplier(UnitOfWork uow) throws Exception
+        {
+            try
+            {
                 uow.get(Supplier.class, IDENTITY);
-            } catch (NoSuchEntityException e) {
+            } catch (NoSuchEntityException e)
+            {
                 EntityBuilder<Supplier> eb = uow.newEntityBuilder(Supplier.class, IDENTITY);
                 Supplier instance = eb.instance();
                 instance.name().set("Mouser");
-                instance.productDetailsApi().set("https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104");
+                instance.productDetailsApi().set("https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=%s");
                 instance.orderingApi().set("");
                 instance.searchApi().set("https://api.mouser.com/api/v2/search");
                 instance.website().set("https://eu.mouser.com/");
