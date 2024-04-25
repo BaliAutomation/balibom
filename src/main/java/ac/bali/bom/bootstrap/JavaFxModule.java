@@ -7,7 +7,6 @@ import org.qi4j.library.javafx.ui.BigIntegerPropertyControl;
 import org.qi4j.library.javafx.ui.BooleanPropertyControl;
 import org.qi4j.library.javafx.ui.BytePropertyControl;
 import org.qi4j.library.javafx.ui.CharacterPropertyControl;
-import org.qi4j.library.javafx.ui.CompositeDialog;
 import org.qi4j.library.javafx.ui.CompositePane;
 import org.qi4j.library.javafx.ui.DoublePropertyControl;
 import org.qi4j.library.javafx.ui.DurationPropertyControl;
@@ -15,7 +14,6 @@ import org.qi4j.library.javafx.ui.EntityListController;
 import org.qi4j.library.javafx.support.EntityNameComparator;
 import org.qi4j.library.javafx.ui.EntityPane;
 import org.qi4j.library.javafx.ui.EntityReferenceControl;
-import org.qi4j.library.javafx.ui.EntityReferencePropertyControl;
 import org.qi4j.library.javafx.ui.EnumPropertyControl;
 import org.qi4j.library.javafx.ui.FloatPropertyControl;
 import org.qi4j.library.javafx.ui.IdentityPropertyControl;
@@ -58,7 +56,6 @@ public class JavaFxModule
             BooleanPropertyControl.class,
             BytePropertyControl.class,
             CharacterPropertyControl.class,
-            CompositeDialog.class,
             CompositePane.class,
             DoublePropertyControl.class,
             DurationPropertyControl.class,
@@ -66,7 +63,6 @@ public class JavaFxModule
             EntityListController.class,
             EntityPane.class,
             EntityReferenceControl.class,
-            EntityReferencePropertyControl.class,
             EnumPropertyControl.class,
             FloatPropertyControl.class,
             IdentityPropertyControl.class,

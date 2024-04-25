@@ -1,12 +1,14 @@
 package org.qi4j.library.javafx.ui;
 
-import java.util.Optional;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import org.apache.polygene.api.composite.CompositeDescriptor;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
@@ -41,13 +43,23 @@ public class ValueLinkControl<T> extends PropertyControl<T>
         field = new Hyperlink();
         label = labelOf();
         label.setPadding(PADDING);
+
         field.setOnAction(ev ->
         {
-            CompositeDescriptor compositeDescriptor = spi.compositeDescriptorFor(value);
-            CompositeDialog<T> dialog = obf.newObject(CompositeDialog.class, compositeDescriptor, label, valuePane, false);
-            dialog.setValue(currentValue());
-            Optional<T> result = dialog.showAndWait();
-            result.ifPresent(t -> fireEvent(new PropertyDataEvent(ValueLinkControl.this, value, t)));
+            valuePane.updateWith(currentValue());
+            VBox root = new VBox(valuePane);
+            root.setFillWidth(true);
+            VBox.setVgrow(valuePane, Priority.ALWAYS);
+            Scene scene = new Scene(root,800,800);
+            Stage compositeStage = new Stage();
+            compositeStage.setScene(scene);
+            compositeStage.setTitle(label.getText());
+            compositeStage.show();
+            compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt -> {
+                compositeStage.setScene(null);
+                compositeStage.close();
+                root.getChildren().clear();
+            });
         });
         HBox box = wrapInHBox(label, field);
         HBox.setHgrow(field, Priority.ALWAYS);

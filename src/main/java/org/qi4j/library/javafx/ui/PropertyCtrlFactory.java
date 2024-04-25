@@ -71,7 +71,7 @@ public interface PropertyCtrlFactory
                 return factory.apply(descriptor, withLabel);
             if (propertyType instanceof StatefulAssociationValueType<?>)
             {
-                return objectFactory.newObject(EntityReferencePropertyControl.class, descriptor, withLabel);
+                return objectFactory.newObject(EntityReferenceControl.class, descriptor, withLabel);
             } else if (propertyType instanceof CollectionType)
             {
                 return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
@@ -97,7 +97,7 @@ public interface PropertyCtrlFactory
         @Override
         public PropertyControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
         {
-            return objectFactory.newObject(EntityReferencePropertyControl.class, descriptor, withLabel);
+            return objectFactory.newObject(EntityReferenceControl.class, descriptor, withLabel);
         }
 
         @Override

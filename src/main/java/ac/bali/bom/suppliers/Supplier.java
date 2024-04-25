@@ -12,6 +12,7 @@ import org.apache.polygene.api.injection.scope.This;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.service.ServiceReference;
+import org.qi4j.library.javafx.support.Height;
 import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsName;
 
@@ -47,6 +48,7 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
     Property<String> orderingApi();
 
     @UseDefaults
+    @Height(min=300, pref=400, max=600)
     Property<List<String>> bomColumns();
 
     abstract class Mixin

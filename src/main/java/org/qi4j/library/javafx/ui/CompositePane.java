@@ -183,7 +183,6 @@ public class CompositePane<T> extends VBox
             });
         vbox.setFillWidth(true);
 //        vbox.setStyle("-fx-border-color: blue;");
-        setDisable(immutable);
         return vbox;
     }
 

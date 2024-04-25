@@ -1,45 +1,65 @@
 package org.qi4j.library.javafx.ui;
 
-import java.util.Optional;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import org.apache.polygene.api.composite.CompositeDescriptor;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.entity.EntityReference;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.property.Immutable;
-import org.apache.polygene.api.property.PropertyDescriptor;
+import org.apache.polygene.api.unitofwork.UnitOfWork;
+import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
+import org.apache.polygene.api.usecase.Usecase;
+import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.spi.PolygeneSPI;
 
 public class EntityReferenceControl extends PropertyControl<EntityReference>
 {
-    private final CompositePane valuePane;
-    private final Label label;
     private final Hyperlink field;
+    private final Label label;
+    private final CompositePane<Object> valuePane;
 
     public EntityReferenceControl(@Structure ObjectFactory obf,
                                   @Structure PolygeneSPI spi,
+                                  @Structure UnitOfWorkFactory uowf,
                                   @Service PropertyCtrlFactory factory,
-                                  @Uses PropertyDescriptor descriptor)
+                                  @Uses AssociationDescriptor descriptor)
     {
-        super(factory, descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
-        Class<?> compositeType = descriptor.valueType().primaryType();
-        valuePane = obf.newObject(CompositePane.class, compositeType, descriptor.metaInfo(Immutable.class) != null);
+        super(factory, false, factory.nameOf(descriptor));
         field = new Hyperlink();
         label = labelOf();
         label.setPadding(PADDING);
+        Class<?> compositeType = (Class<?>) descriptor.type();
+        //noinspection unchecked
+        valuePane = obf.newObject(CompositePane.class, compositeType, descriptor.metaInfo(Immutable.class) != null);
         field.setOnAction(ev ->
         {
-            CompositeDescriptor compositeDescriptor = spi.compositeDescriptorFor(value);
-            @SuppressWarnings("unchecked")
-            CompositeDialog<Object> dialog = obf.newObject(CompositeDialog.class, compositeDescriptor, label, valuePane, true);
-            Optional<Object> result = dialog.showAndWait();
-            result.ifPresent(t -> fireEvent(new PropertyDataEvent(EntityReferenceControl.this, value, t)));
+            Usecase usecase = UsecaseBuilder.newUsecase("View Association: " + value);
+            try (UnitOfWork uow = uowf.newUnitOfWork(usecase))
+            {
+                Object obj = uow.get((Class<?>) descriptor.type(), value.identity());
+                valuePane.updateWith(obj);
+                VBox.setVgrow(valuePane, Priority.ALWAYS);
+                Scene scene = new Scene(root,800,800);
+                Stage compositeStage = new Stage();
+                compositeStage.setTitle(label.getText());
+                compositeStage.setScene(scene);
+                compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt -> {
+                    compositeStage.setScene(null);
+                    compositeStage.close();
+                    root.getChildren().clear();
+                });
+                compositeStage.show();
+            }
         });
         HBox box = wrapInHBox(label, field);
         HBox.setHgrow(field, Priority.ALWAYS);
@@ -64,6 +84,7 @@ public class EntityReferenceControl extends PropertyControl<EntityReference>
     @Override
     protected EntityReference currentValue()
     {
+//        EntityReference ref = EntityReference.parseEntityReference(field.getText());
         return value;
     }
 }
