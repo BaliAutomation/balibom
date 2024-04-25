@@ -73,7 +73,7 @@ public interface MouserSupplier extends SupplierProvider
             ValueBuilder<SearchByPartMfrNameRequestRoot> builder3 =
                 vbf.newValueBuilder(SearchByPartMfrNameRequestRoot.class);
             SearchByPartMfrNameRequestRoot prototype3 = builder3.prototype();
-            prototype3.SearchByPartMfrNameRequest().set(prototype2);
+            prototype3.SearchByPartMfrNameRequest().set(builder2.newInstance());
             SearchByPartMfrNameRequestRoot search = builder3.newInstance();
 
             SearchResponseRoot response = products.searchByPartMfrName(search);

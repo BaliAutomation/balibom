@@ -86,8 +86,8 @@ public interface ProductSearchApi
             String path = "/products/v4/search/keyword";
             String resourcePath = createResourcePath(path);
             HttpPost request = new HttpPost(resourcePath);
-            System.out.println(body.toString());
-            HttpEntity entity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+            System.out.println(serialization.serialize(body));
+            HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
             request.setEntity(entity);
             return makeRequest(request, KeywordResponse.class);
         }

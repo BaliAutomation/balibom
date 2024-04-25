@@ -44,10 +44,10 @@ public interface ProductSearchApi {
         @Override
         public SearchResponseRoot searchByKeywordMfrName(SearchByKeywordMfrNameRequestRoot body){
             String path =
-                    "https://api.mouser.com/api/v2/search/manufacturerlist?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
+                    "https://api.mouser.com/api/v2/search/keywordandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
             HttpPost request = new HttpPost(path);
-            System.out.println(body.toString());
-            HttpEntity entity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+            System.out.println(serialization.serialize(body));
+            HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
             request.setEntity(entity);
             return makeRequest(request, SearchResponseRoot.class);
         }
@@ -55,10 +55,10 @@ public interface ProductSearchApi {
         @Override
         public SearchResponseRoot searchByPartMfrName (SearchByPartMfrNameRequestRoot body){
             String path =
-                    "https://api.mouser.com/api/v2/search/manufacturerlist?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
+                    "https://api.mouser.com/api/v2/search/partnumberandmanufacturer?apiKey=619fd051-cb0f-4621-a14e-e8d9b6a9a104";
             HttpPost request = new HttpPost(path);
-            System.out.println(body.toString());
-            HttpEntity entity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+            System.out.println(serialization.serialize(body));
+            HttpEntity entity = new StringEntity(serialization.serialize(body), ContentType.APPLICATION_JSON);
             request.setEntity(entity);
             return makeRequest(request, SearchResponseRoot.class);
         }
