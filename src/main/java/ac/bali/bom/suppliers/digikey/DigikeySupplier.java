@@ -154,10 +154,10 @@ public interface DigikeySupplier extends SupplierProvider
         private SortedSet<Price> getPriceList(Product product)
         {
             TreeSet<Price> result = new TreeSet<>(new Price.PriceComparator());
+            ValueBuilder<Price> builder = vbf.newValueBuilder(Price.class);
             List<PriceBreak> prices = product.ProductVariations().get().get(0).StandardPricing().get();
             prices.forEach(p ->
             {
-                ValueBuilder<Price> builder = vbf.newValueBuilder(Price.class);
                 Price prototype = builder.prototype();
                 prototype.quantity().set(p.BreakQuantity().get());
                 prototype.price().set(p.UnitPrice().get());

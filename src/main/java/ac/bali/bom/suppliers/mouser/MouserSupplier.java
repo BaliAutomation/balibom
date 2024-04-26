@@ -99,9 +99,9 @@ public interface MouserSupplier extends SupplierProvider
         private List<Supply> createSupply(Supplier supplier, SearchResponseRoot product)
         {
             List<Supply> supplies = new ArrayList<>();
+            ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             for (MouserPart mp : product.SearchResults().get().Parts().get())
             {
-                ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
                 Supply p = builder.prototype();
                 p.mf().set(mp.ActualMfrName().get());
                 p.mpn().set(mp.ManufacturerPartNumber().get());
@@ -126,9 +126,9 @@ public interface MouserSupplier extends SupplierProvider
         private SortedSet<Price> getPriceList(List<Pricebreak> prices)
         {
             TreeSet<Price> result = new TreeSet<>(new Price.PriceComparator());
+            ValueBuilder<Price> builder = vbf.newValueBuilder(Price.class);
             prices.forEach(p ->
             {
-                ValueBuilder<Price> builder = vbf.newValueBuilder(Price.class);
                 Price prototype = builder.prototype();
                 prototype.quantity().set(p.Quantity().get());
                 prototype.price().set(new BigDecimal(p.Price().get()));
