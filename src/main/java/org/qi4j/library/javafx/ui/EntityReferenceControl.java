@@ -36,6 +36,8 @@ public class EntityReferenceControl extends PropertyControl<EntityReference>
     {
         super(factory, false, factory.nameOf(descriptor));
         field = new Hyperlink();
+        field.setAlignment(Pos.CENTER_RIGHT);
+        field.setPadding(PADDING);
         label = labelOf();
         label.setPadding(PADDING);
         Class<?> compositeType = (Class<?>) descriptor.type();

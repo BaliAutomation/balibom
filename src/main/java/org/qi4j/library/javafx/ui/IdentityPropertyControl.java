@@ -18,13 +18,14 @@ import org.apache.polygene.api.property.PropertyDescriptor;
 
 public class IdentityPropertyControl extends PropertyControl<Identity>
 {
-    private final TextInputControl field;
+    private final Label field;
 
     public IdentityPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
         super(factory, descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
-        field = new TextField();
-        field.setTextFormatter(new TextFormatter<>(new IdentityStringConverter()));
+        field = new Label();
+        field.setAlignment(Pos.CENTER_RIGHT);
+        field.setPadding(PADDING);
         Pane box;
         Label label = labelOf();
         box = wrapInHBox(label, field);
@@ -54,24 +55,5 @@ public class IdentityPropertyControl extends PropertyControl<Identity>
     {
         String text = field.getText();
         return StringIdentity.identityOf(text);
-    }
-
-    private static class IdentityStringConverter extends StringConverter<Identity>
-    {
-        @Override
-        public String toString(Identity object)
-        {
-            if( object == null)
-                return "";
-            return object.toString();
-        }
-
-        @Override
-        public Identity fromString(String string)
-        {
-            if( string == null || string.length() == 0)
-                return null;
-            return StringIdentity.identityOf(string);
-        }
     }
 }

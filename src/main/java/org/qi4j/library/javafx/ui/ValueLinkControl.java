@@ -41,6 +41,8 @@ public class ValueLinkControl<T> extends PropertyControl<T>
         Class<?> compositeType = descriptor.valueType().primaryType();
         valuePane = obf.newObject(CompositePane.class, compositeType, descriptor.metaInfo(Immutable.class) != null);
         field = new Hyperlink();
+        field.setAlignment(Pos.CENTER_RIGHT);
+        field.setPadding(PADDING);
         label = labelOf();
         label.setPadding(PADDING);
 
