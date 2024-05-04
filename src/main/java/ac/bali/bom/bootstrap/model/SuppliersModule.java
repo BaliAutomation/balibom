@@ -32,7 +32,9 @@ public class SuppliersModule
         new ApiKeyAssembler().assemble(module);
 
         module.services(SuppliersService.class).instantiateOnStartup().visibleIn(application);
-        module.entities(Supplier.class);
+        module.entities(Supplier.class)
+            .withConcerns(ObservablePropertyConcern.class)
+        ;
         return module;
     }
 }

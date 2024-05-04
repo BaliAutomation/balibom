@@ -7,6 +7,7 @@ import ac.bali.bom.suppliers.Supply;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,7 @@ public interface LcscSupplier extends SupplierProvider
                 return null;
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
+            p.updatedOn().set(LocalDate.now());
             p.mf().set(product.brandNameEn().get());
             p.mpn().set(product.productModel().get());
             p.supplier().set(supplier);

@@ -1,18 +1,18 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.bootstrap.ModelLayer;
-import ac.bali.bom.bootstrap.model.ProductsModule;
 import ac.bali.bom.bootstrap.Qi4jApplicationAssembler;
+import ac.bali.bom.bootstrap.model.ProductsModule;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.polygene.api.entity.EntityBuilder;
 import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.structure.Module;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.usecase.Usecase;
 import org.apache.polygene.api.usecase.UsecaseBuilder;
-import org.apache.polygene.api.value.ValueBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,7 +49,7 @@ public class BomReaderTest
             assertThat(bom.revision().get(), equalTo("C"));
 
             List<BomItem> expected = expected1();
-            List<BomItem> actual = bom.items().get();
+            List<BomItem> actual = bom.items().toList();
             assertThat(actual.size(), equalTo(expected.size()));
             for (int i = 0; i < expected.size(); i++)
             {
@@ -70,7 +70,7 @@ public class BomReaderTest
             assertThat(bom.revision().get(), equalTo("C"));
 
             List<BomItem> expected = expected2();
-            List<BomItem> actual = bom.items().get();
+            List<BomItem> actual = bom.items().toList();
             assertThat(actual.size(), equalTo(expected.size()));
             for (int i = 0; i < expected.size(); i++)
             {
@@ -218,8 +218,8 @@ public class BomReaderTest
     }
     private BomItem createBomItem(String designators, String value, String footprint, String digikey, String issue, String lcsc, String mf, String mpn, String mouser, String supplier, String quantity)
     {
-        ValueBuilder<BomItem> builder = module.valueBuilderFactory().newValueBuilder(BomItem.class);
-        BomItem prototype = builder.prototype();
+        EntityBuilder<BomItem> builder = module.unitOfWorkFactory().newUnitOfWork().newEntityBuilder(BomItem.class);
+        BomItem prototype = builder.instance();
         prototype.designator().set(designators);
         prototype.quantity().set(Integer.parseInt(quantity));
         prototype.mf().set(mf);
@@ -231,8 +231,8 @@ public class BomReaderTest
 
     private BomItem createBomItem(String value, String designators, String footprint, String lcsc, String digikey, String mpn, String mf, String comment)
     {
-        ValueBuilder<BomItem> builder = module.valueBuilderFactory().newValueBuilder(BomItem.class);
-        BomItem prototype = builder.prototype();
+        EntityBuilder<BomItem> builder = module.unitOfWorkFactory().newUnitOfWork().newEntityBuilder(BomItem.class);
+        BomItem prototype = builder.instance();
         prototype.quantity().set(BomReader.Mixin.countDesignators(designators));
         prototype.mf().set(mf);
         prototype.mpn().set(mpn);

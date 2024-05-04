@@ -110,7 +110,7 @@ public interface ProductSearchApi
         private <T> T makeRequest(Supplier supplier, HttpUriRequest request, Class<T> responseType)
         {
             OAuth2Authentication oauth2 = (OAuth2Authentication) supplier.authentication().get();
-            if( oauth2 == null || !oauth2.isValid())
+            if (oauth2 == null || !oauth2.isValid())
                 return null;
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
@@ -133,7 +133,7 @@ public interface ProductSearchApi
                     {
                         case 200:
                             return serialization.deserialize(module, responseType, response);
-                        case 400, 415:
+                        case 400, 404, 415:
                             throw new IOException("Digikey Error: " + r.getStatusLine());
                         case 429:
                             throw new IOException("Digikey RateLimit");

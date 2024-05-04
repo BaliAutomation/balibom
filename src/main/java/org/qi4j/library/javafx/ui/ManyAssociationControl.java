@@ -1,106 +1,134 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.event.Event;
-import javafx.event.EventType;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Control;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.ManyAssociation;
+import org.apache.polygene.api.entity.EntityComposite;
+import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.injection.scope.Service;
+import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
+import org.apache.polygene.api.object.ObjectFactory;
+import org.apache.polygene.api.structure.Module;
+import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
+import org.apache.polygene.api.value.ValueComposite;
+import org.apache.polygene.spi.PolygeneSPI;
+import org.qi4j.library.javafx.support.Ignore;
+import org.qi4j.library.javafx.support.MemberOrderComparator;
+import org.qi4j.library.javafx.support.ObservableManyAssociationWrapper;
 
-public class ManyAssociationControl<T> extends VBox
+public class ManyAssociationControl<T> extends PropertyControl<List<T>>
 {
-    static final Insets PADDING = new Insets(5, 10, 5, 10);
-    protected final PropertyCtrlFactory factory;
-    private final String labelText;
-    protected ManyAssociation<T> value;
+    private final TableView<T> tableView;
+    private final SimpleObjectProperty<List<T>> uiProperty = new SimpleObjectProperty<>();
+    private ManyAssociation<T> association;
 
-    public ManyAssociationControl(@Service PropertyCtrlFactory factory, @Uses AssociationDescriptor descriptor, @Uses boolean withLabel)
+    @Structure
+    private ObjectFactory obf;
+
+    @Structure
+    UnitOfWorkFactory uowf;
+
+    @Structure
+    PolygeneSPI spi;
+
+    @SuppressWarnings("unchecked")
+    public ManyAssociationControl(
+        @Structure Module module,
+        @Service PropertyCtrlFactory factory,
+        @Uses AssociationDescriptor assocDescr)
     {
-        this.factory = factory;
-        this.labelText = withLabel ? factory.nameOf(descriptor) : null;
+        super(factory, factory.nameOf(assocDescr));
+        EntityDescriptor descriptor = module.typeLookup().lookupEntityModel((Class<?>) assocDescr.type());
+        // TableView
+        tableView = new TableView<>();
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+//        tableView.setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
+
+        uiProperty.addListener((observable, oldValue, newValue) -> {
+            tableView.setItems(FXCollections.observableList(newValue));
+        });
+
+        ScrollPane scroll = new ScrollPane(tableView);
+        scroll.setFitToHeight(true);
+        scroll.setFitToWidth(true);
+//        scroll.setStyle("-fx-border-style: solid; -fx-border-color: red; -fx-border-width: 2px");
+
+        descriptor.state().properties()
+            .filter(property -> property.metaInfo(Ignore.class) == null)
+            .sorted(new MemberOrderComparator())
+            .forEach(p ->
+            {
+                TableColumn<T, String> column = new TableColumn<>(factory.nameOf(p));
+                column.setCellValueFactory(pr ->
+                {
+                    T composite = pr.getValue();
+                    Object value = spi.stateOf((EntityComposite) composite).propertyFor(p.accessor()).get();
+                    if( value instanceof Map)
+                    {
+                        Map<Object,Object> m = (Map<Object, Object>) value;
+                        value = m.entrySet().stream()
+                            .filter(o -> o.getValue() != null && String.valueOf(o.getValue()).length() > 0 )
+                            .map(o -> o.getKey() + "=" + o.getValue())
+                            .collect(Collectors.joining("\n"));
+                    }
+                    return new SimpleStringProperty(String.valueOf(value));
+                });
+                tableView.getColumns().add(column);
+            });
+        VBox vbox = new VBox(new Label(factory.nameOf(assocDescr)), scroll);
+        vbox.setPadding(PADDING);
+        getChildren().add(vbox);
     }
 
+    @Override
     public void clear()
     {
-        // TODO
+        super.clear();
+        tableView.getItems().clear();
     }
 
-    protected void load(ManyAssociation<T> value)
+    @Override
+    public Property<List<T>> uiProperty()
     {
-        this.value = value;
+        return uiProperty;
     }
 
-    public void addAssociation(T value)
+    public void bind(ManyAssociation<T> p)
     {
-        this.value.add(value);
-        fireEvent(new AssociationDataEvent(this, AssociationDataEvent.ASSOCIATION_ADDED, value));
-    }
-
-    public void removeAssociation(T value)
-    {
-        this.value.remove(value);
-        fireEvent(new AssociationDataEvent(this, AssociationDataEvent.ASSOCIATION_REMOVED, value));
-    }
-
-    protected Label labelOf()
-    {
-        if (labelText == null)
-            return null;
-        Label label = new Label(labelText);
-        label.setPrefWidth(150);
-        label.setAlignment(Pos.CENTER_RIGHT);
-        label.setPadding(PADDING);
-        return label;
-    }
-
-    protected HBox wrapInHBox(Control... controls)
-    {
-        HBox box = new HBox(controls);
-        box.setPadding(PADDING);
-//        box.setDisable(immutable);
-        return box;
-    }
-
-    protected VBox wrapInVBox(Control... controls)
-    {
-        VBox box = new VBox(controls);
-        box.setPadding(PADDING);
-//        box.setDisable(immutable);
-        return box;
-    }
-
-    public static class DirtyEvent extends Event
-    {
-        public static final EventType<DirtyEvent> DIRTY = new EventType<>(Event.ANY, "DIRTY_FORM_DATA");
-        public static final EventType<DirtyEvent> ANY = DIRTY;
-
-        public DirtyEvent(ManyAssociationControl source)
+        unbind();
+        javafx.beans.property.Property<List<T>> value = uiProperty();
+        if (value == null)
+            return;
+        if (p instanceof ObservableManyAssociationWrapper<T> assoc)
         {
-            super(null, source, DIRTY);
+            association = assoc;
+            Bindings.bindBidirectional(value, assoc);
         }
     }
 
-    public static class AssociationDataEvent extends Event
+    private void unbind()
     {
-        public static final EventType<Event> ASSOCIATION_ADDED = new EventType<>(ANY, "ASSOCIATION_ADDED");
-        public static final EventType<Event> ASSOCIATION_REMOVED = new EventType<>(ANY, "ASSOCIATION_RMOVED");
-        private final Object value;
-
-        public AssociationDataEvent(ManyAssociationControl assocControl, EventType eventType, Object value)
+        javafx.beans.property.Property<List<T>> value = uiProperty();
+        if (value == null)
         {
-            super(assocControl, assocControl, eventType);
-            this.value = value;
+            System.err.println("bind() not supported: " + this.getClass().getSimpleName());
+            return;
         }
-
-        public Object getValue()
-        {
-            return value;
-        }
+        if (association != null)
+            Bindings.unbindBidirectional(value, association);
     }
+
 }

@@ -1,43 +1,43 @@
 package org.qi4j.library.javafx.support;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.WeakListener;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableObjectValue;
-import org.apache.polygene.api.property.Property;
+import org.apache.polygene.api.association.NamedAssociation;
 
-public class ObservablePropertyWrapper<T>
-    implements Property<T>, javafx.beans.property.Property<T>, WritableObjectValue<T>
+public class ObservableNamedAssociationWrapper<T> extends NamedAssociationWrapper<T>
+    implements NamedAssociation<T>, Property<Map<String,T>>, WritableObjectValue<Map<String,T>>
 {
-    Property<T> property;
-    private ObservableValue<? extends T> observable = null;
-    private ExpressionHelper<T> helper = null;
+    private ObservableValue<? extends Map<String,T>> observable = null;
+    private ExpressionHelper<Map<String,T>> helper = null;
     private InvalidationListener listener = null;
     private boolean valid = false;
 
-    public ObservablePropertyWrapper(Property<T> property)
+    public ObservableNamedAssociationWrapper(NamedAssociation<T> association)
     {
-        this.property = property;
+        super(association);
     }
 
     @Override
-    public T get()
+    public Map<String,T> get()
     {
         valid = true;
-        return property.get();
+        return next.toMap();
     }
 
     @Override
-    public void set(T newValue) throws IllegalArgumentException, IllegalStateException
+    public void set(Map<String,T> newValue) throws IllegalArgumentException, IllegalStateException
     {
-        if (property.get() != newValue) {
-            property.set(newValue);
-            markInvalid();
-        }
+        next.clear();
+        newValue.entrySet().forEach(entry -> next.put(entry.getKey(), entry.getValue()));
+        markInvalid();
     }
 
     @Override
@@ -51,25 +51,9 @@ public class ObservablePropertyWrapper<T>
     }
 
     @Override
-    public void addListener(ChangeListener<? super T> listener) {
-        helper = ExpressionHelper.addListener(helper, this, listener);
-    }
-
-    @Override
-    public void removeListener(ChangeListener<? super T> listener) {
-        helper = ExpressionHelper.removeListener(helper, listener);
-    }
-
-    @Override
-    public T getValue()
+    public Map<String,T> getValue()
     {
-        return property.get();
-    }
-
-    @Override
-    public void setValue(T value)
-    {
-        set(value);
+        return next.toMap();
     }
 
     public boolean isBound() {
@@ -77,7 +61,8 @@ public class ObservablePropertyWrapper<T>
     }
 
     @Override
-    public void bind(final ObservableValue<? extends T> newObservable) {
+    public void bind(ObservableValue<? extends Map<String,T>> newObservable)
+    {
         if (newObservable == null) {
             throw new NullPointerException("Cannot bind to null");
         }
@@ -86,7 +71,7 @@ public class ObservablePropertyWrapper<T>
             unbind();
             observable = newObservable;
             if (listener == null) {
-                listener = new ObservablePropertyWrapper.Listener(this);
+                listener = new ObservableNamedAssociationWrapper.Listener(this);
             }
             observable.addListener(listener);
             markInvalid();
@@ -103,13 +88,33 @@ public class ObservablePropertyWrapper<T>
     }
 
     @Override
-    public void bindBidirectional(javafx.beans.property.Property<T> other) {
+    public void bindBidirectional(Property<Map<String,T>> other)
+    {
         Bindings.bindBidirectional(this, other);
     }
 
     @Override
-    public void unbindBidirectional(javafx.beans.property.Property<T> other) {
+    public void unbindBidirectional(Property<Map<String,T>> other)
+    {
         Bindings.unbindBidirectional(this, other);
+    }
+
+    @Override
+    public void addListener(ChangeListener<? super Map<String,T>> listener)
+    {
+        helper = ExpressionHelper.addListener(helper, this, listener);
+    }
+
+    @Override
+    public void removeListener(ChangeListener<? super Map<String,T>> listener)
+    {
+        helper = ExpressionHelper.removeListener(helper, listener);
+    }
+
+    @Override
+    public void setValue(Map<String,T> value)
+    {
+        set(value);
     }
 
     @Override
@@ -137,15 +142,15 @@ public class ObservablePropertyWrapper<T>
 
     private static class Listener implements InvalidationListener, WeakListener
     {
-        private final WeakReference<ObservablePropertyWrapper<?>> wref;
+        private final WeakReference<ObservableNamedAssociationWrapper<?>> wref;
 
-        public Listener(ObservablePropertyWrapper<?> ref) {
+        public Listener(ObservableNamedAssociationWrapper<?> ref) {
             this.wref = new WeakReference<>(ref);
         }
 
         @Override
         public void invalidated(Observable observable) {
-            ObservablePropertyWrapper<?> ref = wref.get();
+            ObservableNamedAssociationWrapper<?> ref = wref.get();
             if (ref == null) {
                 observable.removeListener(this);
             } else {

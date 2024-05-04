@@ -1,9 +1,13 @@
 package ac.bali.bom.bootstrap.view;
 
+import ac.bali.bom.view.Deleter;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.bootstrap.layered.ModuleAssembler;
+
+import static org.apache.polygene.api.common.Visibility.application;
+import static org.apache.polygene.api.common.Visibility.layer;
 
 public class ViewModelModule
         implements ModuleAssembler
@@ -15,6 +19,8 @@ public class ViewModelModule
         throws AssemblyException
     {
         module.defaultServices();
+        module.services(Deleter.class).visibleIn(layer);
+
         return module;
     }
 }

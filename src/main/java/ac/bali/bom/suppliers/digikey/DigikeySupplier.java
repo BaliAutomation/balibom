@@ -15,6 +15,7 @@ import ac.bali.bom.suppliers.digikey.model.ProductDetails;
 import ac.bali.bom.suppliers.digikey.model.ProductVariation;
 import ac.bali.bom.suppliers.digikey.model.SortOptions;
 import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public interface DigikeySupplier extends SupplierProvider
     String ORDERING_PATH = "/orderstatus/v4/orders";
 
     String SEARCH = "searchApi";
-    String SEARCH_PATH = "/products/v4/search/";
+    String SEARCH_PATH = "/products/v4/search/keyword";
 
     String LOGIN_ENDPOINT_PATH = "/v1/oauth2/token";
     String WEBSITE_PATH = "https://digikey.com";
@@ -106,10 +107,23 @@ public interface DigikeySupplier extends SupplierProvider
             prototype3.FilterOptionsRequest().set(filterOptions);
             KeywordRequest search = builder3.newInstance();
             KeywordResponse response = products.keywordSearch(supplier, search);
+            if( response == null )
+            {
+                System.err.println();
+                return null;
+            }
+            Integer count = response.ProductsCount().get();
+            if( count > 1 )
+                System.err.println("WARNING: More than one search result for " + mf + " " + mpn);
             List<Product> exactMatches = response.ExactMatches().get();
-            if (exactMatches.size() == 1)
+            if( exactMatches.size() == 1)
             {
                 Product product = exactMatches.get(0);
+                return createSupply(supplier, product);
+            }
+            if (count == 1)
+            {
+                Product product = response.Products().get().get(0);
                 return createSupply(supplier, product);
             }
             return null;
@@ -125,6 +139,7 @@ public interface DigikeySupplier extends SupplierProvider
         {
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
+            p.updatedOn().set(LocalDate.now());
             p.mf().set(product.Manufacturer().get().Name().get());
             p.mpn().set(product.ManufacturerProductNumber().get());
             p.supplier().set(supplier);
@@ -227,6 +242,8 @@ public interface DigikeySupplier extends SupplierProvider
                 OAuth2Authentication authMethod = createAuthMethod(uow);
                 instance.authentication().set(authMethod);
                 instance.enabled().set(false);
+                setLoginEndpoint(instance, uow, mode);
+
                 eb.newInstance();
             }
         }

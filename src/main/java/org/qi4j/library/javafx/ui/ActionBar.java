@@ -5,6 +5,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,6 +25,7 @@ import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.mixin.Initializable;
 import org.apache.polygene.api.structure.Module;
 import org.apache.polygene.api.type.HasTypes;
+import org.apache.polygene.api.util.Methods;
 import org.apache.polygene.spi.PolygeneSPI;
 import org.qi4j.library.javafx.support.Action;
 import org.qi4j.library.javafx.support.ActionCall;
@@ -176,7 +179,8 @@ public class ActionBar<T> extends ToolBar
             {
                 if (parameters.length == 1)
                 {
-                    if (Collection.class.isAssignableFrom(parameters[0].getType()))
+                    Class<?> parameter1Type = parameters[0].getType();
+                    if (Collection.class.isAssignableFrom(parameter1Type))
                     {
                         method.invoke(service, selectedItems);
                     } else

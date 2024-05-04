@@ -1,18 +1,24 @@
 package ac.bali.bom.suppliers.mouser;
 
 import ac.bali.bom.parts.Price;
-import ac.bali.bom.suppliers.apikeyauth.ApiKeyAuthentication;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
+import ac.bali.bom.suppliers.apikeyauth.ApiKeyAuthentication;
+import ac.bali.bom.suppliers.mouser.model.AvailabilityOnOrderObject;
 import ac.bali.bom.suppliers.mouser.model.MouserPart;
 import ac.bali.bom.suppliers.mouser.model.Pricebreak;
 import ac.bali.bom.suppliers.mouser.model.ProductAttribute;
 import ac.bali.bom.suppliers.mouser.model.SearchByPartMfrNameRequest;
 import ac.bali.bom.suppliers.mouser.model.SearchByPartMfrNameRequestRoot;
+import ac.bali.bom.suppliers.mouser.model.SearchResponse;
 import ac.bali.bom.suppliers.mouser.model.SearchResponseRoot;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +30,13 @@ import org.apache.polygene.api.identity.StringIdentity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
-import org.apache.polygene.api.structure.Application;
+import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.unitofwork.NoSuchEntityException;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
+import org.apache.polygene.spi.PolygeneSPI;
 
 @Mixins(MouserSupplier.Mixin.class)
 public interface MouserSupplier extends SupplierProvider
@@ -49,6 +56,9 @@ public interface MouserSupplier extends SupplierProvider
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.Mouser");
         public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("Authentication.Mouser");
 
+
+        @Structure
+        PolygeneSPI spi;
 
         @Structure
         UnitOfWorkFactory uowf;
@@ -76,8 +86,7 @@ public interface MouserSupplier extends SupplierProvider
             {
                 return null;
             }
-            ValueBuilder<SearchByPartMfrNameRequest> builder2 =
-                vbf.newValueBuilder(SearchByPartMfrNameRequest.class);
+            ValueBuilder<SearchByPartMfrNameRequest> builder2 = vbf.newValueBuilder(SearchByPartMfrNameRequest.class);
             SearchByPartMfrNameRequest prototype2 = builder2.prototype();
             prototype2.manufacturerName().set(mf);
             prototype2.mouserPartNumber().set(mpn);
@@ -90,7 +99,12 @@ public interface MouserSupplier extends SupplierProvider
             SearchByPartMfrNameRequestRoot search = builder3.newInstance();
 
             SearchResponseRoot response = products.searchByPartMfrName(supplier, search);
-            return createSupply(supplier, response).get(0);
+            List<Supply> supply = createSupply(supplier, response);
+            if (supply.size() > 1)
+                System.err.println("WARNING: More than one search result for " + mf + " " + mpn);
+            if (supply.size() == 0)
+                return null;
+            return supply.get(0);
         }
 
         @Override
@@ -102,28 +116,86 @@ public interface MouserSupplier extends SupplierProvider
         private List<Supply> createSupply(Supplier supplier, SearchResponseRoot product)
         {
             List<Supply> supplies = new ArrayList<>();
-            ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
-            for (MouserPart mp : product.SearchResults().get().Parts().get())
+            SearchResponse searchResponse = product.SearchResults().get();
+            if (searchResponse != null)
             {
-                Supply p = builder.prototype();
-                p.mf().set(mp.ActualMfrName().get());
-                p.mpn().set(mp.ManufacturerPartNumber().get());
-                p.supplier().set(supplier);
-                p.supplierPartNumber().set(mp.MouserPartNumber().get());
-                p.productIntro().set(mp.Description().get());
-                p.availableSupply().set(Integer.valueOf(mp.AvailableOnOrder().get()));
-                p.inStock().set(Integer.valueOf(mp.AvailabilityInStock().get()));
-                p.canShipWithInWeek().set(mp.AvailabilityOnOrder().get().get(0).Quantity().get());
-                p.reelSize().set(Integer.valueOf(mp.FactoryStock().get()));
-                p.isReel().set(mp.Reeling().get());
-                p.images().set(List.of(mp.ImagePath().get()));
-                p.datasheet().set(mp.DataSheetUrl().get());
-                p.parameters().set(getParameters(mp.ProductAttributes().get()));
-                p.prices().set(getPriceList(mp.PriceBreaks().get()));
-                p.minBuyNumber().set(Integer.valueOf(mp.Min().get()));
-                supplies.add(builder.newInstance());
+                for (MouserPart mp : searchResponse.Parts().get())
+                {
+                    ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
+                    Supply p = builder.prototype();
+                    p.updatedOn().set(LocalDate.now());
+                    p.mf().set(mp.Manufacturer().get());
+                    p.mpn().set(mp.ManufacturerPartNumber().get());
+                    p.supplier().set(supplier);
+                    p.supplierPartNumber().set(mp.MouserPartNumber().get());
+                    p.productIntro().set(mp.Description().get());
+                    Integer available = integerOf(mp.AvailabilityInStock(), 0);
+                    p.availableSupply().set(available);
+                    p.inStock().set(available);
+                    int availableWithinWeek = computeWithinWeek(mp);
+                    p.canShipWithInWeek().set(availableWithinWeek);
+                    p.reelSize().set(reelSizeOf(mp));
+                    p.isReel().set(mp.Reeling().get());
+                    String imagePath = mp.ImagePath().get();
+                    p.images().set(singleItemListOf(imagePath));
+                    p.datasheet().set(mp.DataSheetUrl().get());
+                    p.parameters().set(getParameters(mp.ProductAttributes().get()));
+                    p.prices().set(getPriceList(mp.PriceBreaks().get()));
+                    p.minBuyNumber().set(Integer.valueOf(mp.Min().get()));
+                    supplies.add(builder.newInstance());
+                }
             }
             return supplies;
+        }
+
+        private static List<String> singleItemListOf(String item)
+        {
+            List<String> list;
+            if (item == null)
+            {
+                list = Collections.emptyList();
+            } else
+            {
+                list = List.of(item);
+            }
+            return list;
+        }
+
+        private Integer integerOf(Property<String> prop, int defaultValue)
+        {
+            if (prop.get() == null)
+                return defaultValue;
+            try
+            {
+                return Integer.valueOf(prop.get());
+            } catch (NumberFormatException e)
+            {
+                System.err.println(spi.propertyDescriptorFor(prop).qualifiedName() + " is an invalid integer. Returning default value.");
+                return defaultValue;
+            }
+        }
+
+        private Integer reelSizeOf(MouserPart mp)
+        {
+            List<ProductAttribute> productAttributes = mp.ProductAttributes().get();
+            return productAttributes.stream()
+                .filter(pa -> pa.AttributeName().get().equals("Standard Pack Qty"))
+                .map(ProductAttribute::AttributeValue).map(v -> Integer.parseInt(v.get()))
+                .findAny().orElse(0);
+        }
+
+        private int computeWithinWeek(MouserPart mp)
+        {
+            int available = integerOf(mp.AvailabilityInStock(), 0);
+
+            List<AvailabilityOnOrderObject> onOrder = mp.AvailabilityOnOrder().get();
+            for (AvailabilityOnOrderObject order : onOrder)
+            {
+                LocalDateTime eightDaysFromNow = LocalDateTime.now().plus(8, ChronoUnit.DAYS);
+                if (order.Date().get().isBefore(eightDaysFromNow))
+                    available += order.Quantity().get();
+            }
+            return available;
         }
 
         private SortedSet<Price> getPriceList(List<Pricebreak> prices)
@@ -134,10 +206,20 @@ public interface MouserSupplier extends SupplierProvider
             {
                 Price prototype = builder.prototype();
                 prototype.quantity().set(p.Quantity().get());
-                prototype.price().set(new BigDecimal(p.Price().get()));
+                prototype.price().set(priceOf(p));
                 result.add(builder.newInstance());
             });
             return result;
+        }
+
+        private static BigDecimal priceOf(Pricebreak p)
+        {
+            String priceText = p.Price().get();
+            while (priceText.length() > 0 && !priceText.matches("^[0-9.]*"))
+                priceText = priceText.substring(1);
+            if (priceText.length() > 0)
+                return new BigDecimal(priceText);
+            return new BigDecimal(Integer.MAX_VALUE);
         }
 
         private static Map<String, String> getParameters(List<ProductAttribute> attributes)

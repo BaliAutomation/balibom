@@ -1,18 +1,19 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.view.Delete;
-import org.qi4j.library.javafx.support.HasListViewController;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsDescription;
-import org.qi4j.library.javafx.support.RenderAsName;
+import ac.bali.bom.view.Deleter;
 import ac.bali.bom.view.ResolveParts;
+import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.entity.Queryable;
 import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.Property;
+import org.qi4j.library.javafx.support.HasListViewController;
+import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.javafx.support.RenderAsDescription;
+import org.qi4j.library.javafx.support.RenderAsName;
 
-@HasListViewController({ProductsService.class, ResolveParts.class, Delete.class})
+@HasListViewController({ProductsService.class, ResolveParts.class, Deleter.class})
 public interface Product extends HasIdentity
 {
     @Order(1)
@@ -37,6 +38,6 @@ public interface Product extends HasIdentity
     @Order(4)
     @Queryable(false)
     @Immutable
-    Property<Bom> bom();
+    Association<Bom> bom();
 
 }

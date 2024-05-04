@@ -54,6 +54,7 @@ public class EntityPane<T extends HasIdentity> extends VBox
         compositeForm = obf.newObject(CompositePane.class, entityType, false);
         compositeForm.addEventHandler(EventType.ROOT, evt ->
         {
+            // TODO: We need to figure out how to capture actual changes to any of the controls in the form.
             if (evt instanceof MouseEvent)
                 return;
             actionBar.onEdit();

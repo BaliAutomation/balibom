@@ -82,16 +82,29 @@ public interface PartsService
         @Override
         public void updateSupply(Part part)
         {
-            Map<String, Supply> newSupply = new HashMap<>();
+            Map<String, Supply> newSupply = new HashMap<>(part.supply().get());
             for (Map.Entry<String, Supply> entry : part.supply().get().entrySet())
             {
                 Supply supply = suppliersService.findSupply(entry.getKey(), entry.getValue().supplierPartNumber().get());
                 if (supply != null)
+                {
                     newSupply.put(entry.getKey(), supply);
+                }
             }
-            UnitOfWork uow = uowf.currentUnitOfWork();
-            Part entity = uow.toEntity(Part.class, part);
-            entity.supply().set(newSupply);
+            for (Supplier s : suppliersService.suppliers())
+            {
+                String supplierName = s.name().get();
+                Supply supply = newSupply.get(supplierName);
+                if (supply == null)
+                {
+                    supply = suppliersService.findSupply(supplierName, part.manufacturer().get(), part.mpn().get());
+                    if( supply != null )
+                    {
+                        newSupply.put(supplierName, supply);
+                    }
+                }
+            }
+            part.supply().set(newSupply);
         }
 
         public Map<String, Supply> createSupply(BomItem item)
@@ -187,7 +200,7 @@ public interface PartsService
             }
             if (supply.size() > 0)     // Don't add part if we have no supplier,
                 buildNewPart(mf, mpn, supply);
-            if( errors.size() > 0)
+            if (errors.size() > 0)
             {
                 item.errors().set(errors);
             }

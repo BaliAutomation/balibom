@@ -11,6 +11,11 @@ import ac.bali.bom.order.Order;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.products.Product;
 import ac.bali.bom.suppliers.Supplier;
+import java.io.File;
+import java.util.logging.Filter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
@@ -35,7 +40,7 @@ public class Main extends Application
     {
         System.out.println("java version: " + System.getProperty("java.version"));
         System.out.println("javafx.version: " + System.getProperty("javafx.version"));
-
+        setupLogging();
         qi4jApplication = new Qi4jApplicationAssembler("Bill Of Materials", "1.0", development);
         qi4jApplication.initialize();
         qi4jApplication.start();
@@ -86,5 +91,14 @@ public class Main extends Application
     public static void main(String[] args)
     {
         launch();
+    }
+
+    private void setupLogging()
+    {
+        File configFile = new File("logging.properties").getAbsoluteFile();
+        System.setProperty("java.util.logging.config.file", configFile.getPath());
+        Logger httpLogger = Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies");
+        httpLogger.setLevel(Level.SEVERE);
+        httpLogger.setFilter(record -> false);
     }
 }

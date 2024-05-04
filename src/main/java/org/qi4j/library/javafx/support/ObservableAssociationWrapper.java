@@ -138,12 +138,8 @@ public class ObservableAssociationWrapper<T>
     private void markInvalid() {
         if (valid) {
             valid = false;
-            invalidated();
             fireValueChangedEvent();
         }
-    }
-
-    protected void invalidated() {
     }
 
     private static class Listener implements InvalidationListener, WeakListener

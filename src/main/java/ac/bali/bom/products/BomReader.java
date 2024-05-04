@@ -11,11 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.polygene.api.concern.Concerns;
+import org.apache.polygene.api.entity.EntityBuilder;
+import org.apache.polygene.api.identity.Identity;
+import org.apache.polygene.api.identity.StringIdentity;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
+import org.apache.polygene.api.unitofwork.UnitOfWork;
+import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
-import org.apache.polygene.api.value.ValueBuilder;
-import org.apache.polygene.api.value.ValueBuilderFactory;
 
 @SuppressWarnings("unused")
 @Mixins(BomReader.Mixin.class)
@@ -30,7 +33,7 @@ public interface BomReader
         implements BomReader
     {
         @Structure
-        private ValueBuilderFactory vbf;
+        private UnitOfWorkFactory uowf;
 
         public Bom load(String product, String revision, File bomFile)
             throws Exception
@@ -42,20 +45,23 @@ public interface BomReader
         public Bom load(String product, String revision, List<String> lines) throws InvalidBomException
         {
             Columns columns = new Columns();
-            ValueBuilder<Bom> builder = vbf.newValueBuilder(Bom.class);
-            Bom bomP = builder.prototype();
+            UnitOfWork uow = uowf.currentUnitOfWork();
+            Identity identity = StringIdentity.identityOf("bom." + product + "-" + revision);
+            EntityBuilder<Bom> builder = uow.newEntityBuilder(Bom.class, identity);
+            Bom bomP = builder.instance();
             bomP.product().set(product);
             bomP.revision().set(revision);
             findColumns(lines.get(0), columns);
-            ValueBuilder<BomItem> builder2 = vbf.newValueBuilder(BomItem.class);
-            BomItem bomItemP = builder2.prototype();
-            List<BomItem> items = new ArrayList<>();
             for (int i = 1; i < lines.size(); i++)
             {
+                EntityBuilder<BomItem> builder2 = uow.newEntityBuilder(BomItem.class);
+                BomItem bomItemP = builder2.instance();
                 String line = lines.get(i);
                 if( line.contains("-- mixed values --"))
+                {
                     throw new InvalidBomException("BOM is invalid, containing '-- mixed values--' on line " + (i+1) + " : " + line );
-                if (line != null && line.trim().length() > 0)
+                }
+                if (line.trim().length() > 0)
                 {
                     try
                     {
@@ -102,14 +108,13 @@ public interface BomReader
                         }
                         bomItemP.attributes().set(attributes);
                         BomItem item = builder2.newInstance();
-                        items.add(item);
+                        bomP.items().add(item);
                     } catch (Exception e)
                     {
                         bomP.errors().get().add(e.getMessage());
                     }
                 }
             }
-            bomP.items().set(items);
             return builder.newInstance();
         }
 

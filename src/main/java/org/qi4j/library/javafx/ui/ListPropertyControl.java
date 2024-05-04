@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -41,6 +42,7 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
     {
         super(factory, null);
         listView = new ListView<>();
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         listView.setPadding(PADDING);
         uiProperty.addListener((observable, oldValue, newValue) -> {
             listView.setItems(FXCollections.observableList(newValue));
@@ -125,6 +127,7 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
 
     public void setValue(ObservableList<T> items)
     {
+        listView.setItems(null);
         listView.setItems(items);
     }
 

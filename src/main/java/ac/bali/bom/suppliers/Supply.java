@@ -1,6 +1,7 @@
 package ac.bali.bom.suppliers;
 
 import ac.bali.bom.parts.Price;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.qi4j.library.javafx.support.Order;
@@ -18,6 +19,8 @@ import org.apache.polygene.api.property.Property;
 public interface Supply {
 
     BigDecimal priceof(int quantity);
+
+    Property<LocalDate> updatedOn();
 
     @RenderAsName
     @RenderAsValue(title="SPN")

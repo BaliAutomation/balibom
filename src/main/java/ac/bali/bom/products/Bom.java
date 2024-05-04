@@ -1,5 +1,7 @@
 package ac.bali.bom.products;
 
+import org.apache.polygene.api.association.ManyAssociation;
+import org.apache.polygene.api.entity.Aggregated;
 import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsName;
 import java.util.List;
@@ -17,7 +19,8 @@ public interface Bom
     Property<String> revision();
 
     @Order(3)
-    Property<List<BomItem>> items();
+    @Aggregated
+    ManyAssociation<BomItem> items();
 
     @UseDefaults
     Property<List<String>> errors();

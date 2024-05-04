@@ -16,6 +16,8 @@ import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.AssociationStateDescriptor;
 import org.apache.polygene.api.association.AssociationStateHolder;
+import org.apache.polygene.api.association.ManyAssociation;
+import org.apache.polygene.api.association.NamedAssociation;
 import org.apache.polygene.api.entity.EntityComposite;
 import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.injection.scope.Service;
@@ -71,6 +73,7 @@ public class CompositePane<T> extends VBox
     {
         AssociationStateHolder state;
         AssociationStateDescriptor associationStateDescriptor;
+        getChildren().clear();
         if (newValue instanceof ValueComposite)
         {
             state = spi.stateOf((ValueComposite) newValue);
@@ -82,8 +85,9 @@ public class CompositePane<T> extends VBox
             associationStateDescriptor = spi.entityDescriptorFor(newValue).state();
         }
         else
+        {
             return;
-        getChildren().clear();
+        }
         HBox hBox = forms.get(associationStateDescriptor);
         getChildren().add(hBox);
         state.properties().forEach(p ->
@@ -121,20 +125,34 @@ public class CompositePane<T> extends VBox
         state.allManyAssociations().forEach(p ->
         {
             AssociationDescriptor descriptor = spi.associationDescriptorFor(p);
-            String name = factory.nameOf(descriptor);
+            try
+            {
+                String name = factory.nameOf(descriptor);
+                ManyAssociation<?> wrapped = (ManyAssociation<?>) ((Method) descriptor.accessor()).invoke(newValue);
 
-            //noinspection rawtypes
-            ManyAssociationControl ctrl = manyAssociations.get(name);
-            ctrl.load(p);
+                //noinspection rawtypes
+                ManyAssociationControl ctrl = manyAssociations.get(name);
+                ctrl.bind(wrapped);
+            } catch (IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException("Problem in " + descriptor, e);
+            }
         });
         state.allNamedAssociations().forEach(p ->
         {
             AssociationDescriptor descriptor = spi.associationDescriptorFor(p);
+            try
+            {
             String name = factory.nameOf(descriptor);
+            NamedAssociation<?> wrapped = (NamedAssociation<?>) ((Method) descriptor.accessor()).invoke(newValue);
 
             //noinspection rawtypes
             NamedAssociationControl ctrl = namedAssociations.get(name);
-            ctrl.load(p);
+            ctrl.load(wrapped);
+            } catch (IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException("Problem in " + descriptor, e);
+            }
         });
     }
 
