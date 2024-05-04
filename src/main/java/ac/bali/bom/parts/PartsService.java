@@ -43,14 +43,8 @@ public interface PartsService
     @UnitOfWorkPropagation(MANDATORY)
     void updateSupply(Part part);
 
-    @Action(label = "Delete", scope = composite)
-    @UnitOfWorkPropagation(MANDATORY)
-    void delete(Part part);
-
     @UnitOfWorkPropagation(MANDATORY)
     void resolve(BomItem item);
-
-    Map<String, String> findAttributes(Part part);
 
     @SuppressWarnings("resource")
     class Mixin
@@ -100,13 +94,6 @@ public interface PartsService
             entity.supply().set(newSupply);
         }
 
-        @Override
-        public void delete(Part part)
-        {
-            UnitOfWork uow = uowf.currentUnitOfWork();
-            uow.remove(part);
-        }
-
         public Map<String, Supply> createSupply(BomItem item)
         {
             String mf = item.mf().get();
@@ -115,28 +102,28 @@ public interface PartsService
             // Get supply from Supplier Part Number
             for (Supplier supplier : suppliersService.suppliers())
             {
-                String supplierName = supplier.name().get();
-                String supplierPartNumber = getSupplierPartNumber(item, supplier);
-                Supply supply;
-                if (supplierPartNumber != null)
+                if (supplier.enabled().get())
                 {
-                    supply = suppliersService.findSupply(supplierName, supplierPartNumber);
-                } else
-                {
-                    supply = suppliersService.findSupply(supplierName, mf, mpn);
+                    String supplierName = supplier.name().get();
+                    String supplierPartNumber = getSupplierPartNumber(item, supplier);
+                    Supply supply;
+                    if (supplierPartNumber != null)
+                    {
+                        supply = suppliersService.findSupply(supplierName, supplierPartNumber);
+                    } else
+                    {
+                        supply = suppliersService.findSupply(supplierName, mf, mpn);
+                    }
+                    if (supply != null)
+                        result.put(supplierName, supply);
                 }
-                if (supply != null)
-                    result.put(supplierName, supply);
             }
-            // Get supply from MF/MPN
+            // Get supply from keyword search, desperate attempt
             if (result.size() == 0)
             {
                 List<Supply> supplies = suppliersService.searchSupply(mf, mpn);
                 for (Supply s : supplies)
-                {
-                    if (s != null)
-                        result.put(s.supplier().get().name().get(), s);
-                }
+                    result.put(s.supplier().get().name().get(), s);
             }
             return result;
         }
@@ -178,7 +165,7 @@ public interface PartsService
                 {
                     if (!smf.equalsIgnoreCase(mf))
                     {
-                        errors.add("Manufacturer from " + s.supplier().get().name() + " is " + smf + " and doesn't match BOM MF of " + mf);
+                        errors.add("Manufacturer from " + s.supplier().get().name().get() + " is " + smf + " and doesn't match BOM MF of " + mf);
                     }
                 }
                 if (mpn == null || mpn.length() == 0)
@@ -188,7 +175,7 @@ public interface PartsService
                 {
                     if (!smpn.equalsIgnoreCase(mpn))
                     {
-                        errors.add("MPN from " + s.supplier().get().name() + " is " + s.mpn().get() + " and doesn't match BOM MPN of " + mpn);
+                        errors.add("MPN from " + s.supplier().get().name().get() + " is " + s.mpn().get() + " and doesn't match BOM MPN of " + mpn);
                     }
                 }
                 existingpart = findPart(mf, mpn);
@@ -199,10 +186,14 @@ public interface PartsService
                 }
             }
             if (supply.size() > 0)     // Don't add part if we have no supplier,
-                buildNewPart(mf, mpn, supply, errors);
+                buildNewPart(mf, mpn, supply);
+            if( errors.size() > 0)
+            {
+                item.errors().set(errors);
+            }
         }
 
-        private void buildNewPart(String mf, String mpn, Map<String, Supply> supply, List<String> errors)
+        private void buildNewPart(String mf, String mpn, Map<String, Supply> supply)
         {
             UnitOfWork uow = uowf.currentUnitOfWork();
             mf = mf.trim();
@@ -229,7 +220,6 @@ public interface PartsService
             partPrototype.manufacturer().set(mf);
             partPrototype.mpn().set(mpn);
             partPrototype.supply().set(supply);
-            partPrototype.errors().set(errors);
             builder.newInstance();
         }
 
@@ -239,13 +229,21 @@ public interface PartsService
             return supplies.values()                                        // get the Supply instances
                 .stream()                                                   // stream the Supply instances
                 .flatMap(s -> s.parameters().get().entrySet().stream())     // stream the parameter pairs
-                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getValue));   // collect into a Map.
-        }
-
-        @Override
-        public Map<String, String> findAttributes(Part part)
-        {
-            return part.parameters().get();
+                .filter(a ->
+                {
+                    if (a.getKey().equals("-"))
+                    {
+                        System.err.println("Error in parameters: " + a.getKey() + "=" + a.getValue());
+                        return false;
+                    }
+                    if (a.getValue().equals("-"))
+                    {
+                        System.err.println("Error in parameters: " + a.getKey() + "=" + a.getValue());
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));   // collect into a Map.
         }
 
         private Identity identityOf(String mf, String mpn)

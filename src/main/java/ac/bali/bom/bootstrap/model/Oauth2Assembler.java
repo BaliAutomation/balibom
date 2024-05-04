@@ -16,7 +16,7 @@ public class Oauth2Assembler
     @Override
     public void assemble(ModuleAssembly module) throws AssemblyException {
         module.entities(OAuth2Authentication.class).visibleIn(application);
-
+        module.values(OAuth2AccessToken.class);
         module.services(OAuth2Service.class)
             .identifiedBy("oauth2")
             .visibleIn(layer)

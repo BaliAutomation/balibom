@@ -101,7 +101,7 @@ public class SetPropertyControl<T> extends PropertyControl<Set<T>>
     public void clear()
     {
         super.clear();
-        listView.getItems().clear();
+        listView.setItems(FXCollections.emptyObservableList());
     }
 
     public void addSelectionHandler(ChangeListener<T> listener)

@@ -1,5 +1,6 @@
 package ac.bali.bom.products;
 
+import java.util.List;
 import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsName;
 import java.util.Map;
@@ -35,4 +36,7 @@ public interface BomItem
     @UseDefaults
     @Order(30)
     Property<Map<String,String>> attributes();
+
+    @UseDefaults
+    Property<List<String>> errors();
 }

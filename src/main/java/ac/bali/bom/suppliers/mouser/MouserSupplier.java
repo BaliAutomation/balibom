@@ -24,6 +24,7 @@ import org.apache.polygene.api.identity.StringIdentity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
+import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.unitofwork.NoSuchEntityException;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;

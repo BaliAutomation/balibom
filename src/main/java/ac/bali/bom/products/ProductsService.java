@@ -29,9 +29,6 @@ public interface ProductsService
     @Action(label="Import BOM...")
     Product importBom(File bomFile) throws Exception;
 
-    @Action(label="Delete", scope = ActionScope.composite)
-    void delete(Product p) throws Exception;
-
     String parseNameFromFile(File bomFile);
 
     String parseRevisionFromFile(File bomFile);
@@ -67,13 +64,6 @@ public interface ProductsService
             instance.revision().set(revision);
             instance.bom().set(bom);
             return builder.newInstance();
-        }
-
-        @Override
-        public void delete(Product p) throws Exception
-        {
-            UnitOfWork uow = uowf.currentUnitOfWork();
-            uow.remove(p);
         }
 
         @Override

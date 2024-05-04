@@ -3,9 +3,6 @@ package ac.bali.bom.suppliers;
 import ac.bali.bom.suppliers.digikey.DigikeySupplier;
 import ac.bali.bom.suppliers.lcsc.LcscSupplier;
 import ac.bali.bom.suppliers.mouser.MouserSupplier;
-import org.apache.polygene.api.service.ServiceActivation;
-import org.apache.polygene.api.usecase.UsecaseBuilder;
-import org.qi4j.library.javafx.support.Action;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -15,11 +12,15 @@ import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.query.Query;
 import org.apache.polygene.api.query.QueryBuilder;
 import org.apache.polygene.api.query.QueryBuilderFactory;
+import org.apache.polygene.api.service.ServiceActivation;
+import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
+import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
+import org.qi4j.library.javafx.support.Action;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 import static org.qi4j.library.javafx.support.ActionScope.type;
@@ -47,6 +48,9 @@ public interface SuppliersService extends ServiceActivation
         implements SuppliersService
     {
         @Structure
+        Application application;
+
+        @Structure
         QueryBuilderFactory qbf;
 
         @Structure
@@ -61,6 +65,7 @@ public interface SuppliersService extends ServiceActivation
             return suppliers().stream()
                 .filter(Objects::nonNull)
                 .map( supplier -> supplier.searchManufacturerPartNumber(mf, mpn))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         }
 
@@ -70,6 +75,7 @@ public interface SuppliersService extends ServiceActivation
             return suppliers().stream()
                 .filter(Objects::nonNull)
                 .flatMap( supplier -> supplier.searchKeywords(mpn).stream())
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         }
 
@@ -106,7 +112,7 @@ public interface SuppliersService extends ServiceActivation
         {
             try(UnitOfWork uow = uowf.newUnitOfWork(UsecaseBuilder.newUsecase("Load/Create Suppliers")))
             {
-                DigikeySupplier.Mixin.createSupplier(uow);
+                DigikeySupplier.Mixin.createSupplier(uow, application.mode());
                 LcscSupplier.Mixin.createSupplier(uow);
                 MouserSupplier.Mixin.createSupplier(uow);
                 uow.complete();

@@ -1,7 +1,7 @@
 package ac.bali.bom.parts;
 
 import ac.bali.bom.suppliers.Supply;
-import org.qi4j.library.javafx.support.Delete;
+import ac.bali.bom.view.Delete;
 import org.qi4j.library.javafx.support.HasListViewController;
 import org.qi4j.library.javafx.support.Height;
 import org.qi4j.library.javafx.support.Order;
@@ -66,5 +66,6 @@ public interface Part extends HasIdentity
     @Height(pref=300, min=300, max=300)
     Property<Map<String, Supply>> supply();
 
+    @UseDefaults
     Property<List<String>> errors();
 }

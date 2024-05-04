@@ -1,6 +1,6 @@
 package ac.bali.bom.products;
 
-import org.qi4j.library.javafx.support.Delete;
+import ac.bali.bom.view.Delete;
 import org.qi4j.library.javafx.support.HasListViewController;
 import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsDescription;

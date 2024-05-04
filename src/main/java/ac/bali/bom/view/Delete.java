@@ -1,9 +1,11 @@
-package org.qi4j.library.javafx.support;
+package ac.bali.bom.view;
 
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
+import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.javafx.support.ActionScope;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 

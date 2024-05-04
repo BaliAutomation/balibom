@@ -1,6 +1,7 @@
 package ac.bali.bom.suppliers.digikey;
 
 import ac.bali.bom.parts.Price;
+import ac.bali.bom.suppliers.AuthenticationMethod;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
@@ -25,6 +26,7 @@ import org.apache.polygene.api.identity.StringIdentity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
+import org.apache.polygene.api.structure.Application;
 import org.apache.polygene.api.unitofwork.NoSuchEntityException;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
@@ -191,11 +193,12 @@ public interface DigikeySupplier extends SupplierProvider
             return minQuantity;
         }
 
-        public static void createSupplier(UnitOfWork uow) throws Exception
+        public static void createSupplier(UnitOfWork uow, Application.Mode mode) throws Exception
         {
             try
             {
-                uow.get(Supplier.class, IDENTITY);
+                Supplier supplier = uow.get(Supplier.class, IDENTITY);
+                setLoginEndpoint(supplier, uow, mode);
             } catch (NoSuchEntityException e)
             {
                 EntityBuilder<Supplier> eb = uow.newEntityBuilder(Supplier.class, IDENTITY);
@@ -226,6 +229,17 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.enabled().set(false);
                 eb.newInstance();
             }
+        }
+
+        private static void setLoginEndpoint(Supplier supplier, UnitOfWork uow, Application.Mode mode)
+        {
+            OAuth2Authentication authentication = (OAuth2Authentication) supplier.authentication().get();
+            String loginEndpoint = HOSTNAME_DEV + LOGIN_ENDPOINT_PATH;
+            if (mode == Application.Mode.production)
+            {
+                loginEndpoint = HOSTNAME + LOGIN_ENDPOINT_PATH;
+            }
+            authentication.loginEndpoint().set(loginEndpoint);
         }
 
         private static OAuth2Authentication createAuthMethod(UnitOfWork uow)
