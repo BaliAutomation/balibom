@@ -9,24 +9,14 @@ public class DurationPropertyControl extends PropertyControl<Duration>
 {
     public DurationPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, "fix this");
+        super(factory, "fix this");
     }
 
     @Override
     public void clear()
     {
+        super.clear();
 
     }
 
-    @Override
-    protected void updateTo(Duration value)
-    {
-
-    }
-
-    @Override
-    protected Duration currentValue()
-    {
-        return null;
-    }
 }

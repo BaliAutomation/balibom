@@ -1,5 +1,6 @@
 package ac.bali.bom.bootstrap;
 
+import ac.bali.bom.bootstrap.configuration.ConfigurationModule;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;

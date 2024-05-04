@@ -8,24 +8,13 @@ public class ArrayPropertyControl extends PropertyControl<Object[]>
 {
     public ArrayPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, "fix this");
+        super(factory, "fix this");
     }
 
     @Override
     public void clear()
     {
-
+        super.clear();
     }
 
-    @Override
-    protected void updateTo(Object[] value)
-    {
-
-    }
-
-    @Override
-    protected Object[] currentValue()
-    {
-        return new Object[0];
-    }
 }

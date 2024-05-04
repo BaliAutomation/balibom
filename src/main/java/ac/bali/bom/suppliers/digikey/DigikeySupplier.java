@@ -13,6 +13,7 @@ import ac.bali.bom.suppliers.digikey.model.Product;
 import ac.bali.bom.suppliers.digikey.model.ProductDetails;
 import ac.bali.bom.suppliers.digikey.model.ProductVariation;
 import ac.bali.bom.suppliers.digikey.model.SortOptions;
+import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,19 +35,20 @@ import org.apache.polygene.api.value.ValueBuilderFactory;
 public interface DigikeySupplier extends SupplierProvider
 {
 
-    String HOSTNAME = "https://api.digikey.com/";
+    String HOSTNAME = "https://api.digikey.com";
     String HOST = "production";
-    String HOSTNAME_DEV = "https://sandbox-api.digikey.com/";
+    String HOSTNAME_DEV = "https://sandbox-api.digikey.com";
     String HOST_DEV = "sandbox";
 
     String PRODUCT_DETAILS = "productDetailsApi";
-    String ORDERING = "orderingApi";
-    String SEARCH = "searchApi";
-    String LOGIN = "loginEndpoint";
-
     String PRODUCT_DETAILS_PATH = "/products/v4/search/${productNumber}/productdetails";
+
+    String ORDERING = "orderingApi";
     String ORDERING_PATH = "/orderstatus/v4/orders";
+
+    String SEARCH = "searchApi";
     String SEARCH_PATH = "/products/v4/search/";
+
     String LOGIN_ENDPOINT_PATH = "/v1/oauth2/token";
     String WEBSITE_PATH = "https://digikey.com";
 
@@ -56,6 +58,7 @@ public interface DigikeySupplier extends SupplierProvider
     {
         private static final String NAME = "DigiKey";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.DigiKey");
+        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("Authentication.DigiKey");
 
 
         @Structure
@@ -208,7 +211,6 @@ public interface DigikeySupplier extends SupplierProvider
                 paths.put(PRODUCT_DETAILS, PRODUCT_DETAILS_PATH);
                 paths.put(ORDERING, ORDERING_PATH);
                 paths.put(SEARCH, SEARCH_PATH);
-                paths.put(LOGIN, LOGIN_ENDPOINT_PATH);
                 instance.paths().set(paths);
 
                 instance.website().set(WEBSITE_PATH);
@@ -218,9 +220,25 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.bomColumns().get().add("DigiKeyPN");
                 instance.bomColumns().get().add("Digi-KeyPN");
                 instance.bomColumns().get().add("Digi-Key_PN");
+
+                OAuth2Authentication authMethod = createAuthMethod(uow);
+                instance.authentication().set(authMethod);
                 instance.enabled().set(false);
                 eb.newInstance();
             }
+        }
+
+        private static OAuth2Authentication createAuthMethod(UnitOfWork uow)
+        {
+            EntityBuilder<OAuth2Authentication> builder = uow.newEntityBuilder(OAuth2Authentication.class, AUTH_IDENTITY);
+            OAuth2Authentication proto = builder.instance();
+            proto.loginClientId().set("");
+            proto.loginClientSecret().set("");
+            proto.loginEndpoint().set(LOGIN_ENDPOINT_PATH);
+            proto.loginRefreshToken().set("");
+            proto.loginAccessToken().set("");
+            proto.loginExpirationDateTime().set(0L);
+            return builder.newInstance();
         }
     }
 }

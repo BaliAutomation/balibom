@@ -24,7 +24,7 @@ public interface BomReader
 {
     Bom load(String product, String revision, File bomFile) throws Exception;
 
-    Bom load(String product, String revision, List<String> lines);
+    Bom load(String product, String revision, List<String> lines) throws InvalidBomException;
 
     abstract class Mixin
         implements BomReader
@@ -39,7 +39,7 @@ public interface BomReader
             return load(product, revision, lines);
         }
 
-        public Bom load(String product, String revision, List<String> lines)
+        public Bom load(String product, String revision, List<String> lines) throws InvalidBomException
         {
             Columns columns = new Columns();
             ValueBuilder<Bom> builder = vbf.newValueBuilder(Bom.class);
@@ -53,6 +53,8 @@ public interface BomReader
             for (int i = 1; i < lines.size(); i++)
             {
                 String line = lines.get(i);
+                if( line.contains("-- mixed values --"))
+                    throw new InvalidBomException("BOM is invalid, containing '-- mixed values--' on line " + (i+1) + " : " + line );
                 if (line != null && line.trim().length() > 0)
                 {
                     try
@@ -206,7 +208,7 @@ public interface BomReader
             private int mpnColumn = -1;
             private int mfColumn = -1;
             private int quantityColumn = -1;
-            private Map<String, Integer> attributes = new HashMap<>();
+            private final Map<String, Integer> attributes = new HashMap<>();
         }
 
     }

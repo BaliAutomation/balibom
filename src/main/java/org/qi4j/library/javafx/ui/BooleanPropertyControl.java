@@ -1,7 +1,6 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -10,20 +9,24 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Uses;
-import org.apache.polygene.api.property.Immutable;
+import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.property.PropertyDescriptor;
+import org.qi4j.library.javafx.support.ObservablePropertyWrapper;
 
 public class BooleanPropertyControl extends PropertyControl<Boolean>
 {
     private final CheckBox field;
+    private ObservablePropertyWrapper<Boolean> property;
 
     public BooleanPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory,  descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
         field = new CheckBox();
-        field.selectedProperty().addListener((observable, oldValue, newValue) ->
-            BooleanPropertyControl.this.fireEvent(new DirtyEvent(BooleanPropertyControl.this) ));
+//        field.selectedProperty().addListener((observable, oldValue, newValue) ->
+//            BooleanPropertyControl.this.fireEvent(new DirtyEvent(BooleanPropertyControl.this) ));
+        field.setPadding(PADDING);
         Label label = labelOf();
+        label.setPadding(PADDING);
         Pane box = wrapInHBox(label, field);
         HBox.setHgrow(field, Priority.ALWAYS);
         setAlignment(Pos.TOP_LEFT);
@@ -34,19 +37,27 @@ public class BooleanPropertyControl extends PropertyControl<Boolean>
     }
 
     @Override
-    protected void updateTo(Boolean value)
+    public void clear()
     {
-        field.setSelected(value);
-    }
-
-    protected Boolean currentValue()
-    {
-        return field.selectedProperty().get();
+        super.clear();
+        field.setSelected(false);
     }
 
     @Override
-    public void clear()
+    public javafx.beans.property.Property<Boolean> uiProperty()
     {
-        field.setSelected(false);
+        return field.selectedProperty();
+    }
+
+    @Override
+    public void bind(Property<Boolean> p)
+    {
+        if( property != null )
+            Bindings.unbindBidirectional(field.selectedProperty(), property);
+        if( p instanceof ObservablePropertyWrapper<Boolean> prop)
+        {
+            property = prop;
+            Bindings.bindBidirectional(field.selectedProperty(), prop);
+        }
     }
 }

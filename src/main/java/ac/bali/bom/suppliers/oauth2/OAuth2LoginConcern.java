@@ -1,9 +1,8 @@
-package ac.bali.bom.suppliers;
+package ac.bali.bom.suppliers.oauth2;
 
-import ac.bali.bom.suppliers.oauth2.AuthorizationException;
-import ac.bali.bom.suppliers.oauth2.OAuth2AccessToken;
-import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
-import ac.bali.bom.suppliers.oauth2.OAuth2Service;
+import ac.bali.bom.suppliers.AuthenticationMethod;
+import ac.bali.bom.suppliers.LoginRequired;
+import ac.bali.bom.suppliers.Supplier;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -20,7 +19,7 @@ public class OAuth2LoginConcern extends ConcernOf<InvocationHandler>
     implements InvocationHandler
 {
     @This
-    OAuth2Authentication auth;
+    Supplier supplier;
 
     @Structure
     UnitOfWorkFactory uowf;
@@ -31,12 +30,16 @@ public class OAuth2LoginConcern extends ConcernOf<InvocationHandler>
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
     {
-        if (auth.useOAuth2().get())
-            login();
+        AuthenticationMethod authenticationMethod = supplier.authentication().get();
+        if( authenticationMethod instanceof OAuth2Authentication oauth)
+        {
+            if( oauth.isValid() )
+                login(oauth);
+        }
         return next.invoke(proxy, method, args);
     }
 
-    private void login()
+    private void login(OAuth2Authentication auth)
     {
         try
         {

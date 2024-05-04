@@ -19,23 +19,6 @@ public class BigDecimalPropertyControl extends NumericPropertyControl<BigDecimal
 {
     public BigDecimalPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new BigDecimalStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(BigDecimal value)
-    {
-        field.setText(value.toString());
-    }
-
-    protected BigDecimal currentValue()
-    {
-        return new BigDecimal(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

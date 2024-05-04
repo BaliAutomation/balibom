@@ -88,29 +88,34 @@ public interface ProductSearchApi
         @Override
         public ProductDetails productDetails(Supplier supplier, String productNumber)
         {
-            String path = supplier.paths().get().get(DigikeySupplier.PRODUCT_DETAILS_PATH);
+            String path = supplier.paths().get().get(DigikeySupplier.PRODUCT_DETAILS);
             path = path.replace("${productNumber}", productNumber);
             String resourcePath = createResourcePath(supplier, path);
+            System.out.println(resourcePath);
             return makeRequest(supplier, new HttpGet(resourcePath), ProductDetails.class);
         }
+
 
         private String createResourcePath(Supplier supplier, String path)
         {
             Map<String, String> urls = supplier.hosts().get();
-            String host = urls.get(DigikeySupplier.HOST);
+            String host = urls.get(DigikeySupplier.HOST_DEV);
             if (application.mode() == Application.Mode.production)
             {
-                host = urls.get(DigikeySupplier.HOST_DEV);
+                host = urls.get(DigikeySupplier.HOST);
             }
             return host + path;
         }
 
-        private <T> T makeRequest(OAuth2Authentication authMethod, HttpUriRequest request, Class<T> responseType)
+        private <T> T makeRequest(Supplier supplier, HttpUriRequest request, Class<T> responseType)
         {
+            OAuth2Authentication oauth2 = (OAuth2Authentication) supplier.authentication().get();
+            if( oauth2 == null || !oauth2.isValid())
+                return null;
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
-                request.addHeader("X-DIGIKEY-Client-Id", authMethod.loginClientId().get());
-                request.addHeader("Authorization", "Bearer " + authMethod.loginAccessToken().get());
+                request.addHeader("X-DIGIKEY-Client-Id", oauth2.loginClientId().get());
+                request.addHeader("Authorization", "Bearer " + oauth2.loginAccessToken().get());
                 request.addHeader("X-DIGIKEY-Locale-Language", "en");
                 request.addHeader("X-DIGIKEY-Locale-Currency", "USD");
                 System.out.println("Digikey Request: " + request);

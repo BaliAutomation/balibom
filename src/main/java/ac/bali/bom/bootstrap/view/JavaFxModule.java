@@ -1,7 +1,8 @@
-package ac.bali.bom.bootstrap;
+package ac.bali.bom.bootstrap.view;
 
 import org.qi4j.library.javafx.ui.ActionBar;
 import org.qi4j.library.javafx.ui.ArrayPropertyControl;
+import org.qi4j.library.javafx.ui.AssociationControl;
 import org.qi4j.library.javafx.ui.BigDecimalPropertyControl;
 import org.qi4j.library.javafx.ui.BigIntegerPropertyControl;
 import org.qi4j.library.javafx.ui.BooleanPropertyControl;
@@ -25,11 +26,14 @@ import org.qi4j.library.javafx.ui.LocalDatePropertyControl;
 import org.qi4j.library.javafx.ui.LocalDateTimePropertyControl;
 import org.qi4j.library.javafx.ui.LocalTimePropertyControl;
 import org.qi4j.library.javafx.ui.LongPropertyControl;
+import org.qi4j.library.javafx.ui.ManyAssociationControl;
 import org.qi4j.library.javafx.ui.MapPropertyControl;
 import org.qi4j.library.javafx.ui.NameListCell;
+import org.qi4j.library.javafx.ui.NamedAssociationControl;
 import org.qi4j.library.javafx.ui.OffsetDateTimePropertyControl;
 import org.qi4j.library.javafx.ui.PeriodPropertyControl;
 import org.qi4j.library.javafx.ui.PropertyCtrlFactory;
+import org.qi4j.library.javafx.ui.SetPropertyControl;
 import org.qi4j.library.javafx.ui.ShortPropertyControl;
 import org.qi4j.library.javafx.ui.StringPropertyControl;
 import org.qi4j.library.javafx.ui.ValueLinkControl;
@@ -52,6 +56,7 @@ public class JavaFxModule
         module.objects(
             ActionBar.class,
             ArrayPropertyControl.class,
+            AssociationControl.class,
             BigDecimalPropertyControl.class,
             BigIntegerPropertyControl.class,
             BooleanPropertyControl.class,
@@ -75,10 +80,13 @@ public class JavaFxModule
             LocalDateTimePropertyControl.class,
             LocalTimePropertyControl.class,
             LongPropertyControl.class,
+            ManyAssociationControl.class,
             MapPropertyControl.class,
+            NamedAssociationControl.class,
             NameListCell.class,
             OffsetDateTimePropertyControl.class,
             PeriodPropertyControl.class,
+            SetPropertyControl.class,
             ShortPropertyControl.class,
             StringPropertyControl.class,
             ValueLinkControl.class,

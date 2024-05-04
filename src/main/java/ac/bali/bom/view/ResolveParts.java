@@ -11,11 +11,13 @@ import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+
 @Mixins(ResolveParts.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface ResolveParts
 {
-    @UnitOfWorkPropagation(usecase = "Resolve Parts")
+    @UnitOfWorkPropagation(value = MANDATORY, usecase = "Resolve Parts")
     @Action(label="Resolve Parts", scope = ActionScope.composite)
     void resolveParts(Product product) throws Exception;
 
@@ -28,7 +30,7 @@ public interface ResolveParts
         public void resolveParts(Product product) throws Exception
         {
             Bom bom = product.bom().get();
-            bom.items().get().stream().sequential().forEach( item -> {
+            bom.items().get().stream().forEach( item -> {
                 partsService.resolve(item);
             });
         }

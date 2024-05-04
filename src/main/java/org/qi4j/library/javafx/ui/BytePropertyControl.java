@@ -18,23 +18,6 @@ public class BytePropertyControl extends NumericPropertyControl<Byte>
 {
     public BytePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new ByteStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(Byte value)
-    {
-        field.setText(String.valueOf(value));
-    }
-
-    protected Byte currentValue()
-    {
-        return Byte.parseByte(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

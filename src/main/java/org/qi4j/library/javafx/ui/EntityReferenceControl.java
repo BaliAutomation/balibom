@@ -18,8 +18,6 @@ import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
-import org.apache.polygene.api.usecase.Usecase;
-import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.spi.PolygeneSPI;
 
 public class EntityReferenceControl extends PropertyControl<EntityReference>
@@ -34,37 +32,34 @@ public class EntityReferenceControl extends PropertyControl<EntityReference>
                                   @Service PropertyCtrlFactory factory,
                                   @Uses AssociationDescriptor descriptor)
     {
-        super(factory, false, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
         field = new Hyperlink();
         field.setAlignment(Pos.CENTER_RIGHT);
         field.setPadding(PADDING);
         label = labelOf();
         label.setPadding(PADDING);
         Class<?> compositeType = (Class<?>) descriptor.type();
+        UnitOfWork uow = uowf.currentUnitOfWork();
         //noinspection unchecked
         valuePane = obf.newObject(CompositePane.class, compositeType, descriptor.metaInfo(Immutable.class) != null);
         field.setOnAction(ev ->
         {
-            Usecase usecase = UsecaseBuilder.newUsecase("View Association: " + value);
-            try (UnitOfWork uow = uowf.newUnitOfWork(usecase))
+            Object obj = uow.get((Class<?>) descriptor.type(), currentValue().identity());
+            valuePane.updateWith(obj);
+            VBox root = new VBox(valuePane);
+            root.setFillWidth(true);
+            VBox.setVgrow(valuePane, Priority.ALWAYS);
+            Scene scene = new Scene(root, 1200, 800);
+            Stage compositeStage = new Stage();
+            compositeStage.setTitle(label.getText());
+            compositeStage.setScene(scene);
+            compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt ->
             {
-                Object obj = uow.get((Class<?>) descriptor.type(), value.identity());
-                valuePane.updateWith(obj);
-                VBox root = new VBox(valuePane);
-                root.setFillWidth(true);
-                VBox.setVgrow(valuePane, Priority.ALWAYS);
-                Scene scene = new Scene(root, 1200, 800);
-                Stage compositeStage = new Stage();
-                compositeStage.setTitle(label.getText());
-                compositeStage.setScene(scene);
-                compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt ->
-                {
-                    compositeStage.setScene(null);
-                    compositeStage.close();
-                    root.getChildren().clear();
-                });
-                compositeStage.show();
-            }
+                compositeStage.setScene(null);
+                compositeStage.close();
+                root.getChildren().clear();
+            });
+            compositeStage.show();
         });
         HBox box = wrapInHBox(label, field);
         HBox.setHgrow(field, Priority.ALWAYS);
@@ -76,20 +71,7 @@ public class EntityReferenceControl extends PropertyControl<EntityReference>
     @Override
     public void clear()
     {
+        super.clear();
         field.setText("");
-    }
-
-    @Override
-    protected void updateTo(EntityReference value)
-    {
-        if (value != null)
-            field.setText(factory.nameOf(value));
-    }
-
-    @Override
-    protected EntityReference currentValue()
-    {
-//        EntityReference ref = EntityReference.parseEntityReference(field.getText());
-        return value;
     }
 }

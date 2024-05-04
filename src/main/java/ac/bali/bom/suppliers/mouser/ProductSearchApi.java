@@ -1,5 +1,6 @@
 package ac.bali.bom.suppliers.mouser;
 
+import ac.bali.bom.suppliers.apikeyauth.ApiKeyAuthentication;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.mouser.model.SearchByKeywordMfrNameRequestRoot;
 import ac.bali.bom.suppliers.mouser.model.SearchByPartMfrNameRequestRoot;
@@ -54,7 +55,8 @@ public interface ProductSearchApi
         {
             String host = supplier.hosts().get().get(MouserSupplier.HOST);
             String path = supplier.paths().get().get(pathEntry);
-            path = path.replace("${apiKey}", supplier.loginAccessToken().get());
+            ApiKeyAuthentication authenticationMethod = (ApiKeyAuthentication) supplier.authentication().get();
+            path = path.replace("${apiKey}", authenticationMethod.apiKey().get());
             HttpPost request = new HttpPost(host + path);
             System.out.println(body);
             HttpEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);

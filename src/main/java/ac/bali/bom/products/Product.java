@@ -1,5 +1,6 @@
 package ac.bali.bom.products;
 
+import org.qi4j.library.javafx.support.Delete;
 import org.qi4j.library.javafx.support.HasListViewController;
 import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsDescription;
@@ -11,7 +12,7 @@ import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.Property;
 
-@HasListViewController({ProductsService.class, ResolveParts.class})
+@HasListViewController({ProductsService.class, ResolveParts.class, Delete.class})
 public interface Product extends HasIdentity
 {
     @Order(1)

@@ -9,12 +9,14 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.qi4j.library.javafx.support.Action;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+
 @SuppressWarnings("unused")
 @Mixins(JobsService.Mixin.class)
 public interface JobsService
 {
     @Action(label="Create Job...")
-    @UnitOfWorkPropagation(usecase = "Create Job")
+    @UnitOfWorkPropagation(value = MANDATORY, usecase = "Create Job")
     Job createJob(Product product, int quantity);
 
     class Mixin

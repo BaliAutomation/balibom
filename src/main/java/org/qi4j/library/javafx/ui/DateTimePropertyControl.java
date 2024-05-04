@@ -9,6 +9,14 @@ public abstract class DateTimePropertyControl<T extends Temporal> extends Proper
 {
     public DateTimePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, "fix this");
+        super(factory, "fix this");
+    }
+
+
+    @Override
+    public void clear()
+    {
+        super.clear();
+
     }
 }

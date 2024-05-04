@@ -1,4 +1,4 @@
-package ac.bali.bom.bootstrap;
+package ac.bali.bom.bootstrap.infrastructure;
 
 import org.apache.polygene.api.common.Visibility;
 import org.apache.polygene.bootstrap.AssemblyException;

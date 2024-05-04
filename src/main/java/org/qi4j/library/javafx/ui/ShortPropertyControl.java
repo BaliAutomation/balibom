@@ -18,23 +18,6 @@ public class ShortPropertyControl extends NumericPropertyControl<Short>
 {
     public ShortPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new ShortStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(Short value)
-    {
-        field.setText(String.valueOf(value));
-    }
-
-    protected Short currentValue()
-    {
-        return Short.parseShort(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

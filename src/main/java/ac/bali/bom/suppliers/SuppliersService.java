@@ -21,6 +21,7 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 import static org.qi4j.library.javafx.support.ActionScope.type;
 
 @Mixins(SuppliersService.Mixin.class)
@@ -28,14 +29,14 @@ import static org.qi4j.library.javafx.support.ActionScope.type;
 public interface SuppliersService extends ServiceActivation
 {
     @Action(label = "Search MF/MPN...", scope = type)
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     List<Supply> searchSupply(String mf, String mpn);
 
     @Action(label = "Search MPN...", scope = type)
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     List<Supply> searchSupply(String mpn);
 
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     List<Supplier> suppliers();
 
     Supply findSupply(String supplier, String supplierPartNumber);

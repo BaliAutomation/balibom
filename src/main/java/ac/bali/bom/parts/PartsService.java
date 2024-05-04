@@ -5,9 +5,13 @@ import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SuppliersService;
 import ac.bali.bom.suppliers.Supply;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
 import org.apache.polygene.api.identity.Identity;
@@ -24,21 +28,26 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 import org.qi4j.library.javafx.support.Action;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 import static org.qi4j.library.javafx.support.ActionScope.composite;
 
 @Mixins(PartsService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface PartsService
 {
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     Part findPart(String mf, String mpn);
 
     @SuppressWarnings("unused")
     @Action(label = "Update Supply", scope = composite)
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     void updateSupply(Part part);
 
-    @UnitOfWorkPropagation
+    @Action(label = "Delete", scope = composite)
+    @UnitOfWorkPropagation(MANDATORY)
+    void delete(Part part);
+
+    @UnitOfWorkPropagation(MANDATORY)
     void resolve(BomItem item);
 
     Map<String, String> findAttributes(Part part);
@@ -89,6 +98,13 @@ public interface PartsService
             UnitOfWork uow = uowf.currentUnitOfWork();
             Part entity = uow.toEntity(Part.class, part);
             entity.supply().set(newSupply);
+        }
+
+        @Override
+        public void delete(Part part)
+        {
+            UnitOfWork uow = uowf.currentUnitOfWork();
+            uow.remove(part);
         }
 
         public Map<String, Supply> createSupply(BomItem item)
@@ -202,7 +218,14 @@ public interface PartsService
             EntityBuilder<Part> builder = uow.newEntityBuilder(Part.class, identityOf(mf, mpn));
             Part partPrototype = builder.instance();
             if (supply.size() > 0)
-                partPrototype.partIntro().set(supply.entrySet().iterator().next().getValue().productIntro().get());
+            {
+                Collection<Supply> supplies = supply.values();
+                Optional<String> intro = supplies.stream()
+                    .map(s -> s.productIntro().get())
+                    .max(Comparator.comparingInt(String::length));      // Find the longest part introduction, and use that.
+                partPrototype.partIntro().set(intro.orElse(""));
+            }
+            partPrototype.parameters().set(mergeParameters(supply));
             partPrototype.manufacturer().set(mf);
             partPrototype.mpn().set(mpn);
             partPrototype.supply().set(supply);
@@ -210,22 +233,19 @@ public interface PartsService
             builder.newInstance();
         }
 
+        private Map<String, String> mergeParameters(Map<String, Supply> supplies)
+        {
+            // TODO Check that the same parameters from different suppliers have the same values. Report errors to error() property.
+            return supplies.values()                                        // get the Supply instances
+                .stream()                                                   // stream the Supply instances
+                .flatMap(s -> s.parameters().get().entrySet().stream())     // stream the parameter pairs
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getValue));   // collect into a Map.
+        }
+
         @Override
-        public Map<String, String> findAttributes(Part part) {
-
-            Map<String,String> attributesMap= new HashMap<>();
-            Map<String,Supply> supplyList;
-            supplyList=part.supply().get();
-            while (supplyList.size() > 0 && supplyList.entrySet().iterator().hasNext()){
-                Map<String,String> attributes;
-                attributes=supplyList.entrySet().iterator().next().getValue().parameters().get();
-                while (attributes.size() > 0 && attributes.entrySet().iterator().hasNext()) {
-                    attributesMap.put(attributes.entrySet().iterator().next().getKey(),
-                            attributes.entrySet().iterator().next().getValue());
-                }
-            }
-
-            return attributesMap;
+        public Map<String, String> findAttributes(Part part)
+        {
+            return part.parameters().get();
         }
 
         private Identity identityOf(String mf, String mpn)

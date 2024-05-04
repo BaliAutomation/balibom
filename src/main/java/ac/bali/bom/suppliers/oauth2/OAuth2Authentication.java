@@ -1,31 +1,34 @@
 package ac.bali.bom.suppliers.oauth2;
 
+import ac.bali.bom.suppliers.AuthenticationMethod;
 import org.apache.polygene.api.common.Optional;
-import org.apache.polygene.api.common.UseDefaults;
+import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
-import org.qi4j.library.javafx.support.RenderAsValue;
 
-public interface OAuth2Authentication
+@Mixins(OAuth2Authentication.Mixin.class)
+public interface OAuth2Authentication extends AuthenticationMethod
 {
-    @RenderAsValue(title="Use OAuth2")
-    @UseDefaults
-    Property<Boolean> useOAuth2();
-
-    @Optional
     Property<String> loginClientId();
 
-    @Optional
     Property<String> loginClientSecret();
 
-    @Optional
     Property<String> loginAccessToken();
 
-    @Optional
     Property<String> loginRefreshToken();
 
-    @Optional
     Property<Long> loginExpirationDateTime();
 
-    @Optional
     Property<String> loginEndpoint();
+
+    abstract class Mixin
+        implements OAuth2Authentication
+    {
+        @Override
+        public boolean isValid()
+        {
+            String clientSecret = loginClientSecret().get();
+            String clientId = loginClientId().get();
+            return !clientId.isEmpty() && !clientSecret.isEmpty();
+        }
+    }
 }

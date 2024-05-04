@@ -18,23 +18,6 @@ public class FloatPropertyControl extends NumericPropertyControl<Float>
 {
     public FloatPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new FloatStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(Float value)
-    {
-        field.setText(String.valueOf(value));
-    }
-
-    protected Float currentValue()
-    {
-        return Float.parseFloat(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

@@ -1,39 +1,40 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.event.Event;
-import javafx.event.EventType;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.apache.polygene.api.association.Association;
+import org.apache.polygene.api.injection.scope.Structure;
+import org.apache.polygene.api.property.Property;
+import org.apache.polygene.spi.PolygeneSPI;
+import org.qi4j.library.javafx.support.ObservableAssociationWrapper;
+import org.qi4j.library.javafx.support.ObservablePropertyWrapper;
 
 public abstract class PropertyControl<T> extends VBox
 {
     static final Insets PADDING = new Insets(5, 10, 5, 10);
-    protected final PropertyCtrlFactory factory;
-    private final boolean immutable;
-    private final String labelText;
-    protected T value;
 
-    public PropertyControl(PropertyCtrlFactory factory, boolean immutable, String labelText)
+    @Structure
+    private PolygeneSPI spi;
+
+    private final String labelText;
+
+    protected final PropertyCtrlFactory factory;
+    private Property<T> property;
+
+    public PropertyControl(PropertyCtrlFactory factory, String labelText)
     {
         this.factory = factory;
-        this.immutable = immutable;
         this.labelText = labelText;
     }
 
-    public abstract void clear();
-
-    public void setValue(T value)
-    {
-        fireEvent(new PropertyDataEvent(this, this.value, value));
-        updateTo(value);
-        this.value = value;
+    public void clear() {
+        unbind();
     }
-
-    protected abstract void updateTo(T value);
 
     protected Label labelOf()
     {
@@ -62,45 +63,37 @@ public abstract class PropertyControl<T> extends VBox
         return box;
     }
 
-    public T valueOf()
+    public T currentValue()
     {
-        return currentValue();
+        return property.get();
     }
 
-    protected abstract T currentValue();
-
-    public static class DirtyEvent extends Event
-    {
-        public static final EventType<DirtyEvent> DIRTY = new EventType<>(Event.ANY, "DIRTY_FORM_DATA");
-        public static final EventType<DirtyEvent> ANY = DIRTY;
-
-        public DirtyEvent(PropertyControl source)
-        {
-            super(null, source, DIRTY);
-        }
+    public javafx.beans.property.Property<T> uiProperty(){
+        return null;
     }
 
-    public static class PropertyDataEvent extends Event
+    public void bind(Property<T> p)
     {
-        public static final EventType<Event> PROPERTY_DATA_CHANGED = new EventType<>(ANY, "PROPERTY_DATA_CHANGED");
-        private final Object oldValue;
-        private final Object newValue;
-
-        public PropertyDataEvent(PropertyControl propertyControl, Object oldValue, Object newValue)
+        unbind();
+        javafx.beans.property.Property<T> value = uiProperty();
+        if (value == null) return;
+        if( p instanceof ObservablePropertyWrapper<T> prop)
         {
-            super(null, propertyControl, PROPERTY_DATA_CHANGED);
-            this.oldValue = oldValue;
-            this.newValue = newValue;
+            property = prop;
+            Bindings.bindBidirectional(value, prop);
         }
 
-        public Object getOldValue()
-        {
-            return oldValue;
-        }
+    }
 
-        public Object getNewValue()
+    private void unbind()
+    {
+        javafx.beans.property.Property<T> value = uiProperty();
+        if( value == null)
         {
-            return newValue;
+            System.err.println("bind() not supported: " + this.getClass().getSimpleName());
+            return;
         }
+        if( property != null )
+            Bindings.unbindBidirectional(value, property);
     }
 }

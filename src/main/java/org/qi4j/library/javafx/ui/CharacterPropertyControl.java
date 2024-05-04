@@ -11,7 +11,6 @@ import javafx.scene.layout.Priority;
 import javafx.util.converter.CharacterStringConverter;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Uses;
-import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.PropertyDescriptor;
 
 public class CharacterPropertyControl extends PropertyControl<Character>
@@ -20,9 +19,9 @@ public class CharacterPropertyControl extends PropertyControl<Character>
 
     public CharacterPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
         field = new TextField();
-        field.textProperty().addListener((observable, oldValue, newValue) -> CharacterPropertyControl.this.fireEvent(new DirtyEvent(CharacterPropertyControl.this)));
+//        field.textProperty().addListener((observable, oldValue, newValue) -> CharacterPropertyControl.this.fireEvent(new DirtyEvent(CharacterPropertyControl.this)));
         field.setTextFormatter(new TextFormatter<>(new CharacterStringConverter()));
         Pane box;
         if (withLabel)
@@ -42,19 +41,9 @@ public class CharacterPropertyControl extends PropertyControl<Character>
     }
 
     @Override
-    protected void updateTo(Character value)
-    {
-        field.setText(value.toString());
-    }
-
-    protected Character currentValue()
-    {
-        return field.getText().charAt(0);
-    }
-
-    @Override
     public void clear()
     {
+        super.clear();
         field.setText("");
     }
 }

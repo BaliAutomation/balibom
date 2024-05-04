@@ -18,23 +18,6 @@ public class IntegerPropertyControl extends NumericPropertyControl<Integer>
 {
     public IntegerPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new IntegerStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(Integer value)
-    {
-        field.setText(String.valueOf(value));
-    }
-
-    protected Integer currentValue()
-    {
-        return Integer.parseInt(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

@@ -1,7 +1,7 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.bootstrap.ModelLayer;
-import ac.bali.bom.bootstrap.ProductsModule;
+import ac.bali.bom.bootstrap.model.ProductsModule;
 import ac.bali.bom.bootstrap.Qi4jApplicationAssembler;
 import java.io.File;
 import java.net.URL;

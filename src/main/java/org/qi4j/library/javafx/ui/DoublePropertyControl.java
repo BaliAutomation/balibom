@@ -18,23 +18,6 @@ public class DoublePropertyControl extends NumericPropertyControl<Double>
 {
     public DoublePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new DoubleStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(Double value)
-    {
-        field.setText(String.valueOf(value));
-    }
-
-    protected Double currentValue()
-    {
-        return Double.parseDouble(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

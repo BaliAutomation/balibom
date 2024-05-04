@@ -9,11 +9,13 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+
 @Mixins(IssuesService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface IssuesService
 {
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     void reportIssue(String topic, String issue);
 
     class Mixin

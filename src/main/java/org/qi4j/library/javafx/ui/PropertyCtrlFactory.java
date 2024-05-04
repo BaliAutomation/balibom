@@ -9,6 +9,7 @@ import org.apache.polygene.api.association.AssociationStateHolder;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.composite.ModelDescriptor;
 import org.apache.polygene.api.composite.StatefulAssociationCompositeDescriptor;
+import org.apache.polygene.api.entity.EntityComposite;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.object.ObjectFactory;
@@ -33,11 +34,11 @@ public interface PropertyCtrlFactory
 {
     PropertyControl<?> createPropertyControl(PropertyDescriptor descriptor, boolean withLabel);
 
-    PropertyControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
+    AssociationControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
 
-    PropertyControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
+    ManyAssociationControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
 
-    PropertyControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
+    NamedAssociationControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel);
 
     void registerPropertyControlFactory(ValueType type, BiFunction<PropertyDescriptor, Boolean, PropertyControl<?>> factory);
 
@@ -46,6 +47,7 @@ public interface PropertyCtrlFactory
     String nameOf(AssociationDescriptor descriptor);
 
     String nameOf(PropertyDescriptor property);
+
     String nameOf(ValueDescriptor property);
 
     String nameOf(@Optional PropertyDescriptor propDescriptor, @Optional AssociationDescriptor assocDescriptor);
@@ -72,12 +74,19 @@ public interface PropertyCtrlFactory
             if (propertyType instanceof StatefulAssociationValueType<?>)
             {
                 return objectFactory.newObject(EntityReferenceControl.class, descriptor, withLabel);
-            } else if (propertyType instanceof CollectionType)
+            } else if (propertyType instanceof CollectionType ctype)
             {
-                ValueDescriptor valueDescriptor = module.typeLookup().lookupValueModel(((CollectionType) propertyType).collectedType().primaryType());
+                ValueDescriptor valueDescriptor = module.typeLookup().lookupValueModel(ctype.collectedType().primaryType());
                 if (valueDescriptor == null)
                 {
-                    return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+                    if( ctype.isList() )
+                    {
+                        return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+                    }
+                    if( ctype.isSet() )
+                    {
+                        return objectFactory.newObject(SetPropertyControl.class, descriptor, withLabel);
+                    }
                 }
                 return objectFactory.newObject(CompositeListPropertyControl.class, valueDescriptor, withLabel);
             } else if (propertyType instanceof MapType)
@@ -100,21 +109,21 @@ public interface PropertyCtrlFactory
         }
 
         @Override
-        public PropertyControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        public AssociationControl<?> createAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
         {
-            return objectFactory.newObject(EntityReferenceControl.class, descriptor, withLabel);
+            return objectFactory.newObject(AssociationControl.class, descriptor, withLabel);
         }
 
         @Override
-        public PropertyControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        public ManyAssociationControl<?> createManyAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
         {
-            return objectFactory.newObject(ListPropertyControl.class, descriptor, withLabel);
+            return objectFactory.newObject(ManyAssociationControl.class, descriptor, withLabel);
         }
 
         @Override
-        public PropertyControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
+        public NamedAssociationControl<?> createNamedAssociationControl(AssociationDescriptor descriptor, boolean withLabel)
         {
-            return objectFactory.newObject(MapPropertyControl.class, descriptor, withLabel);
+            return objectFactory.newObject(NamedAssociationControl.class, descriptor, withLabel);
         }
 
         @Override
@@ -138,7 +147,13 @@ public interface PropertyCtrlFactory
                         .sorted(new MemberOrderComparator())
                         .map(p ->
                         {
-                            AssociationStateHolder state = spi.stateOf((ValueComposite) composite);
+                            AssociationStateHolder state;
+                            if (composite instanceof EntityComposite c)
+                                state = spi.stateOf(c);
+                            else if (composite instanceof ValueComposite c)
+                                state = spi.stateOf(c);
+                            else
+                                throw new IllegalArgumentException("Only Entities and Values can be used in JavaFX UI system");
                             Property<?> property = state.propertyFor(p.accessor());
                             return property.get().toString();
                         }).collect(Collectors.joining(" - "));

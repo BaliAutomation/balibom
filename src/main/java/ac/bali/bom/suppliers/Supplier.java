@@ -1,8 +1,9 @@
 package ac.bali.bom.suppliers;
 
-import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
+import ac.bali.bom.suppliers.oauth2.OAuth2LoginConcern;
 import java.util.List;
 import java.util.Map;
+import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.concern.Concerns;
@@ -17,8 +18,8 @@ import org.qi4j.library.javafx.support.Order;
 import org.qi4j.library.javafx.support.RenderAsName;
 
 @Mixins(Supplier.Mixin.class)
-@Concerns(OAuth2LoginConcern.class)
-public interface Supplier extends HasIdentity, OAuth2Authentication
+@Concerns({OAuth2LoginConcern.class})
+public interface Supplier extends HasIdentity
 {
     @LoginRequired
     Supply searchSupplierPartNumber(String supplierPartNumber);
@@ -46,9 +47,13 @@ public interface Supplier extends HasIdentity, OAuth2Authentication
 
     Property<String> website();
 
+    @Optional
+    Association<AuthenticationMethod> authentication();
+
     abstract class Mixin
         implements Supplier
     {
+
         @This
         Supplier meAsSupplier;
 

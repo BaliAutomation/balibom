@@ -8,7 +8,7 @@ import org.qi4j.library.javafx.support.Action;
 
 public interface OrderService
 {
-//    @UnitOfWorkPropagation(usecase = "Import BOM")
+//    @UnitOfWorkPropagation(value = MANDATORY, usecase = "Import BOM")
 //    @Action(label="Create Orders")
 //    List<Order> createOrders(Map<Product,Integer> quantities) throws Exception;
 

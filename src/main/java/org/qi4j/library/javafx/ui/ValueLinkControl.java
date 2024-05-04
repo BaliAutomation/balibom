@@ -1,5 +1,6 @@
 package org.qi4j.library.javafx.ui;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
@@ -26,10 +27,10 @@ import org.apache.polygene.spi.PolygeneSPI;
  */
 public class ValueLinkControl<T> extends PropertyControl<T>
 {
-
     private final CompositePane<T> valuePane;
     private final Hyperlink field;
     private final Label label;
+    private final SimpleObjectProperty<T> uiProperty = new SimpleObjectProperty<>();
 
     @SuppressWarnings("unchecked")
     public ValueLinkControl(@Structure PolygeneSPI spi,
@@ -37,7 +38,7 @@ public class ValueLinkControl<T> extends PropertyControl<T>
                             @Service PropertyCtrlFactory factory,
                             @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
         Class<?> compositeType = descriptor.valueType().primaryType();
         valuePane = obf.newObject(CompositePane.class, compositeType, descriptor.metaInfo(Immutable.class) != null);
         field = new Hyperlink();
@@ -46,18 +47,25 @@ public class ValueLinkControl<T> extends PropertyControl<T>
         label = labelOf();
         label.setPadding(PADDING);
 
+        uiProperty.addListener((observable, oldValue, newValue) ->
+        {
+            String name = factory.nameOf(newValue);
+            field.setText(name);
+        });
+
         field.setOnAction(ev ->
         {
             valuePane.updateWith(currentValue());
             VBox root = new VBox(valuePane);
             root.setFillWidth(true);
             VBox.setVgrow(valuePane, Priority.ALWAYS);
-            Scene scene = new Scene(root,1200,800);
+            Scene scene = new Scene(root, 1200, 800);
             Stage compositeStage = new Stage();
             compositeStage.setScene(scene);
             compositeStage.setTitle(label.getText());
             compositeStage.show();
-            compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt -> {
+            compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt ->
+            {
                 compositeStage.setScene(null);
                 compositeStage.close();
                 root.getChildren().clear();
@@ -73,21 +81,15 @@ public class ValueLinkControl<T> extends PropertyControl<T>
     @Override
     public void clear()
     {
+        super.clear();
         field.setText("");
     }
 
     @Override
-    protected void updateTo(T value)
+    public javafx.beans.property.Property<T> uiProperty()
     {
-        field.setText(factory.nameOf(value));
+        return uiProperty;
     }
-
-    @Override
-    protected T currentValue()
-    {
-        return value;
-    }
-
 
 }
 

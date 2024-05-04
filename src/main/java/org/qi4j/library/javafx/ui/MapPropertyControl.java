@@ -2,9 +2,10 @@ package org.qi4j.library.javafx.ui;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -35,6 +36,7 @@ import org.qi4j.library.javafx.support.RenderAsValue;
 public class MapPropertyControl<K, V> extends PropertyControl<Map<K, V>>
 {
     private final TableView<Map.Entry<K, V>> tableView;
+    private final SimpleObjectProperty<Map<K,V>> uiProperty = new SimpleObjectProperty<>();
 
     @Structure
     private ObjectFactory obf;
@@ -48,13 +50,17 @@ public class MapPropertyControl<K, V> extends PropertyControl<Map<K, V>>
         @Service PropertyCtrlFactory factory,
         @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
 
         // TableView
         tableView = new TableView<>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 //        tableView.setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
-
+        uiProperty.addListener((observable, oldValue, newValue) ->
+        {
+            ObservableList<Map.Entry<K, V>> list = FXCollections.observableList(newValue.entrySet().stream().toList());
+            tableView.setItems(list);
+        });
         ScrollPane scroll = new ScrollPane(tableView);
         scroll.setFitToHeight(true);
         scroll.setFitToWidth(true);
@@ -125,22 +131,14 @@ public class MapPropertyControl<K, V> extends PropertyControl<Map<K, V>>
     @Override
     public void clear()
     {
-        tableView.getItems().clear();
+        super.clear();
+        tableView.setItems(FXCollections.emptyObservableList());
     }
 
     @Override
-    protected void updateTo(Map<K, V> value)
+    public javafx.beans.property.Property<Map<K, V>> uiProperty()
     {
-        ObservableList<Map.Entry<K, V>> data = FXCollections.observableArrayList(value.entrySet());
-        tableView.setItems(data);
-    }
-
-    @Override
-    protected Map<K, V> currentValue()
-    {
-        Map<K, V> result = new HashMap<>();
-        tableView.getItems().forEach(entry -> result.put(entry.getKey(), entry.getValue()));
-        return result;
+        return uiProperty;
     }
 
     ObservableValue<String> renderValueCell(V composite)
@@ -200,6 +198,5 @@ public class MapPropertyControl<K, V> extends PropertyControl<Map<K, V>>
                 setText(item.toString());
             }
         }
-
     }
 }

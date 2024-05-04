@@ -1,9 +1,10 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventType;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,8 @@ import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.mixin.Initializable;
 import org.apache.polygene.api.object.ObjectFactory;
+import org.apache.polygene.api.unitofwork.UnitOfWork;
+import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 
 public class EntityPane<T extends HasIdentity> extends VBox
     implements Initializable
@@ -25,6 +28,9 @@ public class EntityPane<T extends HasIdentity> extends VBox
     EntityListController<T> controller;
 
     @Structure
+    UnitOfWorkFactory uowf;
+
+    @Structure
     ObjectFactory obf;
 
     @Uses
@@ -35,21 +41,34 @@ public class EntityPane<T extends HasIdentity> extends VBox
     public void initialize() throws Exception
     {
         actionBar = obf.newObject(ActionBar.class, entityType);
-        actionBar.addEventHandler(ActionEvent.ANY, event -> loadAll());
-        compositeForm = obf.newObject(CompositePane.class, entityType, false);
-        entityList = obf.newObject(ListPropertyControl.class, entityType);
-        entityList.addSelectionHandler(new ChangeListener<T>()
+        actionBar.addEventHandler(ActionEvent.ANY, event ->
         {
-            @Override
-            public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue)
+            if (uowf.isUnitOfWorkActive())
             {
-                actionBar.onSelected(entityList.listView.getSelectionModel().getSelectedItems());
+                UnitOfWork uow = uowf.currentUnitOfWork();
+                uow.complete();
             }
+            uowf.newUnitOfWork();
+            loadAll();
+        });
+        compositeForm = obf.newObject(CompositePane.class, entityType, false);
+        compositeForm.addEventHandler(EventType.ROOT, evt ->
+        {
+            if (evt instanceof MouseEvent)
+                return;
+            actionBar.onEdit();
+        });
+        entityList = obf.newObject(ListPropertyControl.class, entityType);
+        entityList.addSelectionHandler((observable, oldValue, newValue) ->
+        {
+            ObservableList<T> selectedItems = entityList.listView.getSelectionModel().getSelectedItems();
+            actionBar.onSelected(selectedItems);
         });
         controller = obf.newObject(EntityListController.class, entityType, compositeForm, actionBar, entityList);
         SplitPane split = new SplitPane(entityList, compositeForm);
         split.setDividerPosition(0, 0.25);
-        split.widthProperty().addListener((obs, oldVal, newVal) -> {
+        split.widthProperty().addListener((obs, oldVal, newVal) ->
+        {
             double totalWidth = newVal.doubleValue();
             // At 1920, divider = 0.2
             // At 500, divider = 0.5

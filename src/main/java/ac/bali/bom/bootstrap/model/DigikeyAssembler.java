@@ -1,4 +1,4 @@
-package ac.bali.bom.bootstrap;
+package ac.bali.bom.bootstrap.model;
 
 import ac.bali.bom.suppliers.digikey.DigikeySupplier;
 import ac.bali.bom.suppliers.digikey.ProductSearchApi;
@@ -51,7 +51,6 @@ import ac.bali.bom.suppliers.digikey.model.SortOptions;
 import ac.bali.bom.suppliers.digikey.model.Supplier;
 import ac.bali.bom.suppliers.digikey.model.TopCategory;
 import ac.bali.bom.suppliers.digikey.model.TopCategoryNode;
-import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
 import org.apache.polygene.bootstrap.Assembler;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.ModuleAssembly;

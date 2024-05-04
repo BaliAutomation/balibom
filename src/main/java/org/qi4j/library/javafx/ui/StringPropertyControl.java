@@ -1,7 +1,7 @@
 package org.qi4j.library.javafx.ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -12,29 +12,36 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Uses;
-import org.apache.polygene.api.property.Immutable;
+import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.property.PropertyDescriptor;
+import org.qi4j.library.javafx.support.ObservablePropertyWrapper;
 import org.qi4j.library.javafx.support.RenderAsDescription;
 
 public class StringPropertyControl extends PropertyControl<String>
 {
     private final TextInputControl field;
+    private ObservablePropertyWrapper<String> property;
 
     public StringPropertyControl(@Service PropertyCtrlFactory factory,
                                  @Uses PropertyDescriptor descriptor,
                                  @Uses Boolean withLabel)
     {
-        super(factory, descriptor.metaInfo(Immutable.class) != null, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
         if (descriptor.metaInfo(RenderAsDescription.class) == null)
         {
             field = new TextField();
+
         } else
         {
             TextArea ta = new TextArea();
             ta.setWrapText(true);
             field = ta;
         }
-        field.textProperty().addListener((observable, oldValue, newValue) -> StringPropertyControl.this.fireEvent(new DirtyEvent(StringPropertyControl.this)));
+        if (descriptor.isImmutable())
+        {
+            field.setEditable(false);
+        }
+//        field.textProperty().addListener((observable, oldValue, newValue) -> StringPropertyControl.this.fireEvent(new DirtyEvent(StringPropertyControl.this)));
         Pane box;
         if (withLabel)
         {
@@ -57,19 +64,28 @@ public class StringPropertyControl extends PropertyControl<String>
     }
 
     @Override
-    protected void updateTo(String value)
+    public void bind(Property<String> p)
     {
-        field.setText(value == null ? "" : value);
-    }
-
-    protected String currentValue()
-    {
-        return field.getText();
+        StringProperty property1 = field.textProperty();
+        if (property != null)
+            Bindings.unbindBidirectional(property1, property);
+        if (p instanceof ObservablePropertyWrapper<String> prop)
+        {
+            property = prop;
+            Bindings.bindBidirectional(property1, prop);
+        }
     }
 
     @Override
     public void clear()
     {
+        super.clear();
         field.setText("");
+    }
+
+    @Override
+    public javafx.beans.property.Property<String> uiProperty()
+    {
+        return field.textProperty();
     }
 }

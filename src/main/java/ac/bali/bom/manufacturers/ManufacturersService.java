@@ -13,21 +13,23 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+
 @SuppressWarnings("resource")
 @Mixins(ManufacturersService.Mixin.class)
 @Concerns( UnitOfWorkConcern.class )
 public interface ManufacturersService
 {
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     Manufacturer findManufacturer(String identifier);
 
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     void addManufacturer(Manufacturer manufacturer);
 
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     void removeManufacturer(Manufacturer manufacturer);
 
-    @UnitOfWorkPropagation
+    @UnitOfWorkPropagation(MANDATORY)
     Manufacturer newManufacturer();
 
     class Mixin

@@ -1,6 +1,7 @@
 package ac.bali.bom.parts;
 
 import ac.bali.bom.suppliers.Supply;
+import org.qi4j.library.javafx.support.Delete;
 import org.qi4j.library.javafx.support.HasListViewController;
 import org.qi4j.library.javafx.support.Height;
 import org.qi4j.library.javafx.support.Order;
@@ -15,7 +16,7 @@ import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.api.property.Property;
 
 @SuppressWarnings("unused")
-@HasListViewController({PartsService.class})
+@HasListViewController({PartsService.class, Delete.class})
 public interface Part extends HasIdentity
 {
 

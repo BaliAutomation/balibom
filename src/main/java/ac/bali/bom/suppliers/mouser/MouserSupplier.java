@@ -1,6 +1,7 @@
 package ac.bali.bom.suppliers.mouser;
 
 import ac.bali.bom.parts.Price;
+import ac.bali.bom.suppliers.apikeyauth.ApiKeyAuthentication;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
@@ -45,6 +46,7 @@ public interface MouserSupplier extends SupplierProvider
     {
         private static final String NAME = "Mouser";
         public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.Mouser");
+        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("Authentication.Mouser");
 
 
         @Structure
@@ -175,9 +177,19 @@ public interface MouserSupplier extends SupplierProvider
                 instance.bomColumns().get().add("Mouser_PN");
                 instance.bomColumns().get().add("MouserPN");
                 instance.bomColumns().get().add("Mouser-PN");
+
+                ApiKeyAuthentication authMethod = createAuthMethod(uow);
+                instance.authentication().set(authMethod);
                 instance.enabled().set(false);
                 eb.newInstance();
             }
+        }
+
+        private static ApiKeyAuthentication createAuthMethod(UnitOfWork uow)
+        {
+            EntityBuilder<ApiKeyAuthentication> builder = uow.newEntityBuilder(ApiKeyAuthentication.class, AUTH_IDENTITY);
+            builder.instance().apiKey().set("");
+            return builder.newInstance();
         }
     }
 }

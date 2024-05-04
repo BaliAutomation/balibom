@@ -3,8 +3,13 @@ package org.qi4j.library.javafx.ui;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
@@ -25,6 +30,7 @@ import org.qi4j.library.javafx.support.MemberOrderComparator;
 public class CompositeListPropertyControl<T> extends PropertyControl<List<T>>
 {
     private final TableView<T> tableView;
+    private final SimpleObjectProperty<List<T>> uiProperty = new SimpleObjectProperty<>();
 
     @Structure
     private ObjectFactory obf;
@@ -38,12 +44,16 @@ public class CompositeListPropertyControl<T> extends PropertyControl<List<T>>
         @Service PropertyCtrlFactory factory,
         @Uses ValueDescriptor descriptor)
     {
-        super(factory, false, factory.nameOf(descriptor));
+        super(factory, factory.nameOf(descriptor));
 
         // TableView
         tableView = new TableView<>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 //        tableView.setStyle("-fx-border-style: solid; -fx-border-color: blue; -fx-border-width: 2px");
+
+        uiProperty.addListener((observable, oldValue, newValue) -> {
+            tableView.setItems(FXCollections.observableList(newValue));
+        });
 
         ScrollPane scroll = new ScrollPane(tableView);
         scroll.setFitToHeight(true);
@@ -83,20 +93,13 @@ public class CompositeListPropertyControl<T> extends PropertyControl<List<T>>
     @Override
     public void clear()
     {
+        super.clear();
         tableView.getItems().clear();
     }
 
     @Override
-    protected void updateTo(List<T> list)
+    public Property<List<T>> uiProperty()
     {
-        tableView.getItems().clear();
-        tableView.getItems().addAll(list);
-        this.value = list;
-    }
-
-    @Override
-    protected List<T> currentValue()
-    {
-        return value;
+        return uiProperty;
     }
 }

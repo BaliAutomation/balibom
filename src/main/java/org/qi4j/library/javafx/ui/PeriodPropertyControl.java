@@ -9,24 +9,14 @@ public class PeriodPropertyControl extends PropertyControl<Period>
 {
     public PeriodPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, false, "fix this");
+        super(factory, "fix this");
     }
 
     @Override
     public void clear()
     {
+        super.clear();
 
     }
 
-    @Override
-    protected void updateTo(Period value)
-    {
-
-    }
-
-    @Override
-    protected Period currentValue()
-    {
-        return null;
-    }
 }

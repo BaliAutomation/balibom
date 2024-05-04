@@ -1,4 +1,4 @@
-package ac.bali.bom.bootstrap;
+package ac.bali.bom.bootstrap.model;
 
 import ac.bali.bom.suppliers.mouser.MouserSupplier;
 import ac.bali.bom.suppliers.mouser.ProductSearchApi;
@@ -53,7 +53,7 @@ public class MouserAssembler
             UnitWeightKg.class
         );
 
-        module.addServices(ProductSearchApi .class)
+        module.addServices(ProductSearchApi.class)
             .instantiateOnStartup()
         ;
 

@@ -11,22 +11,4 @@ public class ZonedDateTimePropertyControl extends DateTimePropertyControl<ZonedD
     {
         super(factory, descriptor);
     }
-
-    @Override
-    public void clear()
-    {
-
-    }
-
-    @Override
-    protected void updateTo(ZonedDateTime value)
-    {
-
-    }
-
-    @Override
-    protected ZonedDateTime currentValue()
-    {
-        return null;
-    }
 }

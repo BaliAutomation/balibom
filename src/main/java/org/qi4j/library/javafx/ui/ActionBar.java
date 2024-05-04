@@ -1,5 +1,6 @@
 package org.qi4j.library.javafx.ui;
 
+import ac.bali.bom.ModelException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -11,7 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ToolBar;
 import javafx.stage.FileChooser;
 import org.apache.polygene.api.entity.EntityDescriptor;
@@ -42,7 +45,6 @@ public class ActionBar<T> extends ToolBar
 
     private Button saveButton;
     private Button cancelButton;
-    private Button deleteButton;
     private List<ActionCall> actions;
     private List<T> selectedItems;
 
@@ -51,8 +53,7 @@ public class ActionBar<T> extends ToolBar
     {
         saveButton = new Button("Save");
         cancelButton = new Button("Cancel");
-        deleteButton = new Button("Delete");
-        getItems().addAll(saveButton, cancelButton, deleteButton);
+        getItems().addAll(saveButton, cancelButton);
         actions = findActions();
         for (ActionCall action : actions)
         {
@@ -74,7 +75,6 @@ public class ActionBar<T> extends ToolBar
     {
         saveButton.setDisable(true);
         cancelButton.setDisable(true);
-        deleteButton.setDisable(true);
         for (ActionCall a : actions)
         {
             a.button().setDisable(a.actionScope() == ActionScope.composite);
@@ -85,7 +85,6 @@ public class ActionBar<T> extends ToolBar
     {
         saveButton.setDisable(false);
         cancelButton.setDisable(false);
-        deleteButton.setDisable(true);
         for (ActionCall a : actions)
         {
             a.button().setDisable(true);
@@ -96,7 +95,6 @@ public class ActionBar<T> extends ToolBar
     {
         saveButton.setDisable(true);
         cancelButton.setDisable(true);
-        deleteButton.setDisable(false);
         selectedItems = items;
         for (ActionCall a : actions)
         {
@@ -149,11 +147,6 @@ public class ActionBar<T> extends ToolBar
         cancelButton.addEventHandler(ActionEvent.ANY, onCancel);
     }
 
-    public void addDeleteActionHandler(EventHandler<ActionEvent> onDelete)
-    {
-        deleteButton.addEventHandler(ActionEvent.ANY, onDelete);
-    }
-
     private void onAction(ActionCall action, ActionEvent event)
     {
         try
@@ -175,8 +168,8 @@ public class ActionBar<T> extends ToolBar
                         if (f != null)
                         {
                             method.invoke(service, f);
-                            return;
                         }
+                        return;
                     }
                 }
             } else if (action.actionScope() == ActionScope.composite)
@@ -200,9 +193,19 @@ public class ActionBar<T> extends ToolBar
             Optional<Object[]> result = parametersForm.showAndWait();
             if (result.isPresent())
                 method.invoke(service, result.get());
-        } catch (IllegalAccessException | InvocationTargetException e)
+        } catch (IllegalAccessException e)
         {
             throw new RuntimeException(e);
+        } catch (InvocationTargetException e)
+        {
+            if( e.getTargetException() instanceof ModelException )
+            {
+                new Alert(Alert.AlertType.ERROR, e.getTargetException().getMessage()).showAndWait();
+            }
+            else
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

@@ -1,36 +1,31 @@
 package org.qi4j.library.javafx.ui;
 
-import java.util.AbstractMap.SimpleEntry;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.AssociationStateDescriptor;
 import org.apache.polygene.api.association.AssociationStateHolder;
 import org.apache.polygene.api.entity.EntityComposite;
 import org.apache.polygene.api.entity.EntityDescriptor;
-import org.apache.polygene.api.entity.EntityReference;
-import org.apache.polygene.api.identity.Identity;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.mixin.Initializable;
+import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.property.PropertyDescriptor;
 import org.apache.polygene.api.structure.MetaInfoHolder;
-import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
-import org.apache.polygene.api.usecase.Usecase;
-import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
 import org.apache.polygene.api.value.ValueComposite;
 import org.apache.polygene.api.value.ValueDescriptor;
@@ -42,7 +37,10 @@ import org.qi4j.library.javafx.support.MemberOrderComparator;
 public class CompositePane<T> extends VBox
     implements Initializable
 {
-    private final Map<String, PropertyControl<?>> controls = new HashMap<>();
+    private final Map<AssociationStateDescriptor, Map<String, PropertyControl<?>>> properties = new HashMap<>();
+    private final Map<AssociationStateDescriptor,Map<String, AssociationControl<?>>> associations = new HashMap<>();
+    private final Map<String, ManyAssociationControl<?>> manyAssociations = new HashMap<>();
+    private final Map<String, NamedAssociationControl<?>> namedAssociations = new HashMap<>();
 
     @Uses
     private Class<T> compositeType;
@@ -66,212 +64,226 @@ public class CompositePane<T> extends VBox
     ModuleSpi module;
 
     T currentValue;
+    private final HashMap<AssociationStateDescriptor, HBox> forms = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public void updateWith(T newValue)
     {
-        T oldValue = currentValue;
         AssociationStateHolder state;
+        AssociationStateDescriptor associationStateDescriptor;
         if (newValue instanceof ValueComposite)
+        {
             state = spi.stateOf((ValueComposite) newValue);
+            associationStateDescriptor = spi.valueDescriptorFor(newValue).state();
+        }
         else if (newValue instanceof EntityComposite)
+        {
             state = spi.stateOf((EntityComposite) newValue);
+            associationStateDescriptor = spi.entityDescriptorFor(newValue).state();
+        }
         else
             return;
-        AssociationStateDescriptor compositeState = module.typeLookup().lookupValueModel(compositeType).state();
-        compositeState.properties().forEach(p ->
+        getChildren().clear();
+        HBox hBox = forms.get(associationStateDescriptor);
+        getChildren().add(hBox);
+        state.properties().forEach(p ->
         {
-            String name = factory.nameOf(p);
-            PropertyControl<Object> ctrl = (PropertyControl<Object>) controls.get(name);
-            if (ctrl != null)
+            PropertyDescriptor descriptor = spi.propertyDescriptorFor(p);
+            try
             {
-                Object value = state.propertyFor(p.accessor()).get();
-                ctrl.setValue(value);
+                String name = factory.nameOf(descriptor);
+                Property<?> wrapped = (Property<?>) ((Method) descriptor.accessor()).invoke(newValue);
+                Map<String, PropertyControl<?>> properties = this.properties.get(associationStateDescriptor);
+                //noinspection rawtypes
+                PropertyControl ctrl = properties.get(name);
+                ctrl.bind(wrapped);
+            } catch (IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException("Problem in " + descriptor, e);
             }
         });
-        compositeState.associations().forEach(assoc ->
+        state.allAssociations().forEach(p ->
         {
-            String name = factory.nameOf(assoc);
-            PropertyControl<Object> ctrl = (PropertyControl<Object>) controls.get(name);
-            if (ctrl != null)
+            AssociationDescriptor descriptor = spi.associationDescriptorFor(p);
+            try
             {
-                Usecase usecase = UsecaseBuilder.newUsecase("Dereference " + assoc.qualifiedName());
-                //noinspection unused
-                try (UnitOfWork uow = uowf.newUnitOfWork(usecase))
-                {
-                    Object value = state.associationFor(assoc.accessor()).reference();
-                    ctrl.setValue(value);
-                }
+                String name = factory.nameOf(descriptor);
+                Association<?> wrapped = (Association<?>) ((Method) descriptor.accessor()).invoke(newValue);
+                Map<String, AssociationControl<?>> associations = this.associations.get(associationStateDescriptor);
+                //noinspection rawtypes
+                AssociationControl ctrl = associations.get(name);
+                ctrl.bind(wrapped);
+            } catch (IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException("Problem in " + descriptor, e);
             }
         });
-        fireEvent(new DataEvent<T>(this, oldValue, newValue));
+        state.allManyAssociations().forEach(p ->
+        {
+            AssociationDescriptor descriptor = spi.associationDescriptorFor(p);
+            String name = factory.nameOf(descriptor);
+
+            //noinspection rawtypes
+            ManyAssociationControl ctrl = manyAssociations.get(name);
+            ctrl.load(p);
+        });
+        state.allNamedAssociations().forEach(p ->
+        {
+            AssociationDescriptor descriptor = spi.associationDescriptorFor(p);
+            String name = factory.nameOf(descriptor);
+
+            //noinspection rawtypes
+            NamedAssociationControl ctrl = namedAssociations.get(name);
+            ctrl.load(p);
+        });
     }
 
     public void clearForm()
     {
-        controls.values().forEach(PropertyControl::clear);
+        properties.values().stream().flatMap(m -> m.values().stream()).forEach(PropertyControl::clear);
+        associations.values().stream().flatMap(m -> m.values().stream()).forEach(AssociationControl::clear);
+        manyAssociations.values().forEach(ManyAssociationControl::clear);
+        namedAssociations.values().forEach(NamedAssociationControl::clear);
+        currentValue = null;
     }
 
-    private Node createForm()
+    private Map<AssociationStateDescriptor, Node> createForms()
     {
-        this.controls.clear();
-        VBox vbox = new VBox();
-        ValueDescriptor valueDescriptor = module.typeLookup().lookupValueModel(compositeType);
-        AssociationStateDescriptor state;
-        state = getState(valueDescriptor);
-        if (state == null)
-            throw new IllegalArgumentException(compositeType.getName() + " is not a ValueComposite or EntityComposite.");
+        Map<AssociationStateDescriptor, Node> result = new HashMap<>();
 
-        List<MetaInfoHolder> members = new ArrayList<>();
-        List<PropertyDescriptor> descs = state.properties().collect(Collectors.toList());
-        List<AssociationDescriptor> assocs = state.associations().collect(Collectors.toList());
-        List<AssociationDescriptor> many = state.manyAssociations().collect(Collectors.toList());
-        List<AssociationDescriptor> named = state.namedAssociations().collect(Collectors.toList());
-        members.addAll(descs);
-        members.addAll(assocs);
-        members.addAll(named);
-        members.addAll(many);
-        members.stream()
-            .filter(property -> property.metaInfo(Ignore.class) == null)
-            .sorted(new MemberOrderComparator())
-            .map(member ->
-            {
-                switch( member.getClass().getSimpleName() )
-                {
-                    case "PropertyModel":
-                    {
-                        PropertyDescriptor property = (PropertyDescriptor) member;
-                        PropertyControl<?> control = factory.createPropertyControl(property, true);
-                        if (control == null)
-                            return null;
-                        return new SimpleEntry<>(factory.nameOf(property), control);
-                    }
-                    case "AssociationModel":
-                    {
-                        AssociationDescriptor assoc = (AssociationDescriptor) member;
-                        PropertyControl<?> control = factory.createAssociationControl(assoc, true);
-                        if (control == null)
-                            return null;
-                        return new SimpleEntry<>(factory.nameOf(assoc), control);
-                    }
-                    case "ManyAssociationModel":
-                    {
-                        AssociationDescriptor assoc = (AssociationDescriptor) member;
-                        PropertyControl<?> control = factory.createManyAssociationControl(assoc, true);
-                        if (control == null)
-                            return null;
-                        return new SimpleEntry<>(factory.nameOf(assoc), control);
-                    }
-                    case "NamedAssociationModel":
-                    {
-                        AssociationDescriptor assoc = (AssociationDescriptor) member;
-                        PropertyControl<?> control = factory.createNamedAssociationControl(assoc, true);
-                        if (control == null)
-                            return null;
-                        return new SimpleEntry<>(factory.nameOf(assoc), control);
-                    }
-                    default:
-                        return null;
-                }
-            })
-            .filter(Objects::nonNull)
-            .forEach(entry ->
-            {
-                PropertyControl<?> valueCtrl = entry.getValue();
-                vbox.getChildren().add(valueCtrl);
-                this.controls.put(entry.getKey(), valueCtrl);
-            });
-        vbox.setFillWidth(true);
-//        vbox.setStyle("-fx-border-color: blue;");
-        return vbox;
-    }
+        this.properties.clear();
+        this.associations.clear();
+        this.manyAssociations.clear();
+        this.namedAssociations.clear();
 
-    private AssociationStateDescriptor getState(ValueDescriptor valueDescriptor)
-    {
-        AssociationStateDescriptor state;
-        if (valueDescriptor != null)
+        List<AssociationStateDescriptor> stateDescriptors = getState();
+        if (stateDescriptors.size() == 0)
         {
-            state = valueDescriptor.state();
+            throw new IllegalArgumentException(compositeType.getName() + " is not a ValueComposite or EntityComposite.");
+        }
+
+        for( AssociationStateDescriptor state : stateDescriptors)
+        {
+            VBox vbox = new VBox();
+            Map<String, PropertyControl<?>> properties = new HashMap<>();
+            Map<String, AssociationControl<?>> associations = new HashMap<>();
+            this.properties.put(state, properties);
+            this.associations.put(state, associations);
+
+            List<MetaInfoHolder> members = new ArrayList<>();
+            List<PropertyDescriptor> descs = state.properties().collect(Collectors.toList());
+            List<AssociationDescriptor> assocs = state.associations().collect(Collectors.toList());
+            List<AssociationDescriptor> many = state.manyAssociations().collect(Collectors.toList());
+            List<AssociationDescriptor> named = state.namedAssociations().collect(Collectors.toList());
+            members.addAll(descs);
+            members.addAll(assocs);
+            members.addAll(named);
+            members.addAll(many);
+            members.stream()
+                .filter(property -> property.metaInfo(Ignore.class) == null)
+                .sorted(new MemberOrderComparator())
+                .forEach(member ->
+                {
+                    switch (member.getClass().getSimpleName())
+                    {
+                        case "PropertyModel" ->
+                        {
+                            PropertyDescriptor property = (PropertyDescriptor) member;
+                            PropertyControl<?> control = factory.createPropertyControl(property, true);
+                            if (control != null)
+                            {
+                                String name = factory.nameOf(property);
+                                vbox.getChildren().add(control);
+                                properties.put(name, control);
+                            }
+                        }
+                        case "AssociationModel" ->
+                        {
+                            AssociationDescriptor assoc = (AssociationDescriptor) member;
+                            AssociationControl<?> control = factory.createAssociationControl(assoc, true);
+                            if (control != null)
+                            {
+                                String name = factory.nameOf(assoc);
+                                vbox.getChildren().add(control);
+                                associations.put(name, control);
+                            }
+                        }
+                        case "ManyAssociationModel" ->
+                        {
+                            AssociationDescriptor assoc = (AssociationDescriptor) member;
+                            ManyAssociationControl<?> control = factory.createManyAssociationControl(assoc, true);
+                            if (control != null)
+                            {
+                                String name = factory.nameOf(assoc);
+                                vbox.getChildren().add(control);
+                                this.manyAssociations.put(name, control);
+                            }
+                        }
+                        case "NamedAssociationModel" ->
+                        {
+                            AssociationDescriptor assoc = (AssociationDescriptor) member;
+                            NamedAssociationControl<?> control = factory.createNamedAssociationControl(assoc, true);
+                            if (control != null)
+                            {
+                                String name = factory.nameOf(assoc);
+                                vbox.getChildren().add(control);
+                                this.namedAssociations.put(name, control);
+                            }
+                        }
+                    }
+                });
+            vbox.setFillWidth(true);
+//        vbox.setStyle("-fx-border-color: blue;");
+            result.put(state, vbox);
+        }
+        return result;
+    }
+
+    private List<AssociationStateDescriptor> getState()
+    {
+        List<AssociationStateDescriptor> result = new ArrayList<>();
+        List<ValueDescriptor> valueDescriptors = module.typeLookup()
+            .allValues()
+            .filter(type -> compositeType.isAssignableFrom(type.primaryType()))
+            .toList();
+        if (valueDescriptors.size() > 0)
+        {
+            for (ValueDescriptor desc : valueDescriptors)
+                result.add(desc.state());
         } else
         {
-            EntityDescriptor entityDescriptor = module.typeLookup().lookupEntityModel(compositeType);
-            if (entityDescriptor != null)
+            List<EntityDescriptor> entityDescriptors = module.typeLookup()
+                .allEntities()
+                .filter(type -> compositeType.isAssignableFrom(type.primaryType()))
+                .toList();
+            for( EntityDescriptor desc: entityDescriptors)
             {
-                state = entityDescriptor.state();
-            } else
-            {
-                return null;
+                result.add(desc.state());
             }
         }
-        return state;
+        return result;
     }
 
     @Override
     public void initialize() throws Exception
     {
         setFillWidth(true);
-        Node form = createForm();
-        ScrollPane scroll = new ScrollPane(form);
-        scroll.setFitToWidth(true);
-        scroll.setFitToHeight(true);
-        HBox.setHgrow(scroll, Priority.ALWAYS);
-        HBox box = new HBox(scroll);
-        VBox.setVgrow(box, Priority.ALWAYS);
-        box.setFillHeight(true);
-        getChildren().add(box);
+        this.forms.clear();
+        Map<AssociationStateDescriptor, Node> forms = createForms();
+        for( Map.Entry<AssociationStateDescriptor, Node> entry : forms.entrySet() )
+        {
+            Node form = entry.getValue();
+            ScrollPane scroll = new ScrollPane(form);
+            scroll.setFitToWidth(true);
+            scroll.setFitToHeight(true);
+            HBox.setHgrow(scroll, Priority.ALWAYS);
+            HBox box = new HBox(scroll);
+            VBox.setVgrow(box, Priority.ALWAYS);
+            box.setFillHeight(true);
 //        box.setStyle("-fx-border-color: green;");
-        VBox.setVgrow(form, Priority.ALWAYS);
+            VBox.setVgrow(form, Priority.ALWAYS);
 //        setStyle("-fx-border-color: red;");
-    }
-
-    public T toValue()
-    {
-        //noinspection UnnecessaryLocalVariable
-        T value = vbf.newValueBuilderWithState(
-            compositeType,
-            p ->
-            {
-                PropertyControl<?> control = controls.get(factory.nameOf(p));
-                return control.valueOf();
-            },
-            a ->
-            {
-                PropertyControl<?> control = controls.get(factory.nameOf(a));
-                Object v = control.valueOf();
-                if (v instanceof String)
-                    return EntityReference.parseEntityReference((String) v);
-                else if (v instanceof Identity)
-                    return EntityReference.create((Identity) v);
-                else
-                    throw new InternalError("Associations should be serialized to strings");
-            },
-            m -> null,
-            n -> null
-        ).newInstance();
-        return value;
-    }
-
-    private static class DataEvent<T> extends Event
-    {
-        private static final EventType<DataEvent<?>> COMPOSITE_EVENT = new EventType<>(EventType.ROOT, "COMPOSITEPANE_DATA_EVENT");
-        private final T oldValue;
-        private final T newValue;
-
-        public DataEvent(CompositePane<T> pane, T oldValue, T newValue)
-        {
-            super(pane, pane, COMPOSITE_EVENT);
-            this.oldValue = oldValue;
-            this.newValue = newValue;
-        }
-
-        public T getOldValue()
-        {
-            return oldValue;
-        }
-
-        public T getNewValue()
-        {
-            return newValue;
+            this.forms.put(entry.getKey(), box);
         }
     }
 }

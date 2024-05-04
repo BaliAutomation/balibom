@@ -11,22 +11,4 @@ public class OffsetDateTimePropertyControl extends DateTimePropertyControl<Offse
     {
         super(factory, descriptor);
     }
-
-    @Override
-    public void clear()
-    {
-
-    }
-
-    @Override
-    protected void updateTo(OffsetDateTime value)
-    {
-
-    }
-
-    @Override
-    protected OffsetDateTime currentValue()
-    {
-        return null;
-    }
 }

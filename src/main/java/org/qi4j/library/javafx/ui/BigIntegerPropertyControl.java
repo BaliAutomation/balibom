@@ -19,23 +19,6 @@ public class BigIntegerPropertyControl extends NumericPropertyControl<BigInteger
 {
     public BigIntegerPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor, @Uses boolean withLabel)
     {
-        super(factory, descriptor, new TextFormatter<>(new BigIntegerStringConverter()));
-    }
-
-    @Override
-    protected void updateTo(BigInteger value)
-    {
-        field.setText(value.toString());
-    }
-
-    protected BigInteger currentValue()
-    {
-        return new BigInteger(field.getText() );
-    }
-
-    @Override
-    public void clear()
-    {
-        field.setText("");
+        super(factory, descriptor, withLabel);
     }
 }

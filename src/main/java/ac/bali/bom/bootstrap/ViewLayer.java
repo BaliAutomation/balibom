@@ -1,5 +1,6 @@
 package ac.bali.bom.bootstrap;
 
+import ac.bali.bom.bootstrap.view.JavaFxModule;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.layered.LayerAssembler;

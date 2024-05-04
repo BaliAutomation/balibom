@@ -1,8 +1,9 @@
 package org.qi4j.library.javafx.ui;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -26,9 +27,10 @@ import org.apache.polygene.api.structure.MetaInfoHolder;
 import org.qi4j.library.javafx.support.Height;
 import org.qi4j.library.javafx.support.ListRenderer;
 
-public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
+public class ListPropertyControl<T> extends PropertyControl<List<T>>
 {
     ListView<T> listView;
+    SimpleObjectProperty<List<T>> uiProperty = new SimpleObjectProperty<>();
 
     @SuppressWarnings("unchecked")
     public ListPropertyControl(@Service PropertyCtrlFactory factory,
@@ -37,9 +39,12 @@ public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
                                @Uses @Optional AssociationDescriptor assocDescriptor,
                                @Structure ObjectFactory obf, @Uses @Optional Boolean withLabel)
     {
-        super(factory, false, null);
+        super(factory, null);
         listView = new ListView<>();
         listView.setPadding(PADDING);
+        uiProperty.addListener((observable, oldValue, newValue) -> {
+            listView.setItems(FXCollections.observableList(newValue));
+        });
         ScrollPane scrollPane2 = new ScrollPane(listView);
         scrollPane2.setFitToWidth(true);
         scrollPane2.setFitToHeight(true);
@@ -94,6 +99,7 @@ public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
     @Override
     public void clear()
     {
+        super.clear();
         listView.getItems().clear();
     }
 
@@ -117,23 +123,14 @@ public class ListPropertyControl<T> extends PropertyControl<Collection<T>>
         listView.getSelectionModel().getSelectedItems().forEach(selected);
     }
 
-    @Override
-    protected void updateTo(Collection<T> value)
+    public void setValue(ObservableList<T> items)
     {
-        ObservableList<T> items;
-        if (value instanceof ObservableList<T>)
-        {
-            items = (ObservableList<T>) value;
-        } else
-        {
-            items = FXCollections.observableArrayList(value);
-        }
         listView.setItems(items);
     }
 
     @Override
-    protected List<T> currentValue()
+    public Property<List<T>> uiProperty()
     {
-        return listView.getItems();
+        return uiProperty;
     }
 }

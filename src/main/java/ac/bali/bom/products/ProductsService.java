@@ -1,10 +1,6 @@
 package ac.bali.bom.products;
 
-import ac.bali.bom.order.Order;
 import ac.bali.bom.parts.PartsService;
-import org.apache.polygene.library.fileconfig.FileConfiguration;
-import org.apache.polygene.library.fileconfig.FileConfigurationService;
-import org.qi4j.library.javafx.support.Action;
 import java.io.File;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
@@ -17,16 +13,24 @@ import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
+import org.apache.polygene.library.fileconfig.FileConfiguration;
+import org.apache.polygene.library.fileconfig.FileConfigurationService;
+import org.qi4j.library.javafx.support.Action;
 import org.qi4j.library.javafx.support.ActionScope;
+
+import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 
 @SuppressWarnings("unused")
 @Mixins(ProductsService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface ProductsService
 {
-    @UnitOfWorkPropagation(usecase = "Import BOM")
+    @UnitOfWorkPropagation(value= MANDATORY, usecase = "Import BOM")
     @Action(label="Import BOM...")
     Product importBom(File bomFile) throws Exception;
+
+    @Action(label="Delete", scope = ActionScope.composite)
+    void delete(Product p) throws Exception;
 
     String parseNameFromFile(File bomFile);
 
@@ -63,6 +67,13 @@ public interface ProductsService
             instance.revision().set(revision);
             instance.bom().set(bom);
             return builder.newInstance();
+        }
+
+        @Override
+        public void delete(Product p) throws Exception
+        {
+            UnitOfWork uow = uowf.currentUnitOfWork();
+            uow.remove(p);
         }
 
         @Override

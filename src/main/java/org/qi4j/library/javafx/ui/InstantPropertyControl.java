@@ -15,18 +15,8 @@ public class InstantPropertyControl extends DateTimePropertyControl<Instant>
     @Override
     public void clear()
     {
+        super.clear();
 
     }
 
-    @Override
-    protected void updateTo(Instant value)
-    {
-
-    }
-
-    @Override
-    protected Instant currentValue()
-    {
-        return null;
-    }
 }

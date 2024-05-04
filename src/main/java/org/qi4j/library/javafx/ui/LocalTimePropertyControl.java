@@ -11,22 +11,4 @@ public class LocalTimePropertyControl extends DateTimePropertyControl<LocalTime>
     {
         super(factory, descriptor);
     }
-
-    @Override
-    public void clear()
-    {
-
-    }
-
-    @Override
-    protected void updateTo(LocalTime value)
-    {
-
-    }
-
-    @Override
-    protected LocalTime currentValue()
-    {
-        return null;
-    }
 }
