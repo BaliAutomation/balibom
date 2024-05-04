@@ -41,6 +41,8 @@ public interface PartsService
     @UnitOfWorkPropagation
     void resolve(BomItem item);
 
+    Map<String, String> findAttributes(Part part);
+
     @SuppressWarnings("resource")
     class Mixin
         implements PartsService
@@ -206,6 +208,24 @@ public interface PartsService
             partPrototype.supply().set(supply);
             partPrototype.errors().set(errors);
             builder.newInstance();
+        }
+
+        @Override
+        public Map<String, String> findAttributes(Part part) {
+
+            Map<String,String> attributesMap= new HashMap<>();
+            Map<String,Supply> supplyList;
+            supplyList=part.supply().get();
+            while (supplyList.size() > 0 && supplyList.entrySet().iterator().hasNext()){
+                Map<String,String> attributes;
+                attributes=supplyList.entrySet().iterator().next().getValue().parameters().get();
+                while (attributes.size() > 0 && attributes.entrySet().iterator().hasNext()) {
+                    attributesMap.put(attributes.entrySet().iterator().next().getKey(),
+                            attributes.entrySet().iterator().next().getValue());
+                }
+            }
+
+            return attributesMap;
         }
 
         private Identity identityOf(String mf, String mpn)
