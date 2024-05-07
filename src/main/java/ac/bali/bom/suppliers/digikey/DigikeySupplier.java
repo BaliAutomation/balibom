@@ -114,7 +114,7 @@ public interface DigikeySupplier extends SupplierProvider
             }
             Integer count = response.ProductsCount().get();
             if( count > 1 )
-                System.err.println("WARNING: More than one search result for " + mf + " " + mpn);
+                System.err.println("WARNING: Digikey: More than one search result for " + mf + " " + mpn);
             List<Product> exactMatches = response.ExactMatches().get();
             if( exactMatches.size() == 1)
             {
@@ -234,6 +234,7 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.website().set(WEBSITE_PATH);
 
                 instance.bomColumns().get().add(NAME);
+                instance.bomColumns().get().add("DigiKey");
                 instance.bomColumns().get().add("DigiKey_PN");
                 instance.bomColumns().get().add("DigiKeyPN");
                 instance.bomColumns().get().add("Digi-KeyPN");

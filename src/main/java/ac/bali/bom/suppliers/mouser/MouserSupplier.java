@@ -46,7 +46,9 @@ public interface MouserSupplier extends SupplierProvider
     String PRODUCTS = "products";
     String PRODUCT_DETAILS_API_PATH = "/api/v2/search/partnumberandmanufacturer?apiKey=${apiKey}";
     String SEARCH = "search";
-    String SEARCH_API_PATH = "/api/v2/search";
+    String SEARCH_API_PATH = "/api/v2/search/keywordandmanufacturer";
+    String MANUFACTURER_LIST = "manufacturerList";
+    String MANUFACTURER_LIST_PATH = "/api/v2/search/manufacturerlist";
     String WEBSITE = "https://eu.mouser.com/";
 
     class Mixin
@@ -101,7 +103,7 @@ public interface MouserSupplier extends SupplierProvider
             SearchResponseRoot response = products.searchByPartMfrName(supplier, search);
             List<Supply> supply = createSupply(supplier, response);
             if (supply.size() > 1)
-                System.err.println("WARNING: More than one search result for " + mf + " " + mpn);
+                System.err.println("WARNING: Mouser: More than one search result for " + mf + " " + mpn);
             if (supply.size() == 0)
                 return null;
             return supply.get(0);
@@ -161,6 +163,7 @@ public interface MouserSupplier extends SupplierProvider
             return list;
         }
 
+        @SuppressWarnings("SameParameterValue")
         private Integer integerOf(Property<String> prop, int defaultValue)
         {
             if (prop.get() == null)
@@ -253,10 +256,12 @@ public interface MouserSupplier extends SupplierProvider
                 Map<String, String> paths = new HashMap<>();
                 paths.put(PRODUCTS, PRODUCT_DETAILS_API_PATH);
                 paths.put(SEARCH, SEARCH_API_PATH);
+                paths.put(MANUFACTURER_LIST, MANUFACTURER_LIST_PATH);
                 instance.paths().set(paths);
 
                 instance.website().set(WEBSITE);
                 instance.bomColumns().get().add(NAME);
+                instance.bomColumns().get().add("Mouser");
                 instance.bomColumns().get().add("Mouser_PN");
                 instance.bomColumns().get().add("MouserPN");
                 instance.bomColumns().get().add("Mouser-PN");

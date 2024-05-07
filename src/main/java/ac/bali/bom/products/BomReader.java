@@ -68,6 +68,11 @@ public interface BomReader
                         String[] parts = parseLine(line);
                         validateParts(parts, columns);
                         String designator = parts[columns.designatorColumn];
+                        int multiple = 1;                       // Multiple is for footprints with more than one of the part, examples; battery holder, Rpi CM4, Link2Web module
+                        if( columns.multipleColumn != -1 )
+                        {
+                            multiple = Integer.parseInt(parts[columns.multipleColumn]);
+                        }
                         int quantity;
                         if (columns.quantityColumn == -1)
                         {
@@ -78,7 +83,7 @@ public interface BomReader
                             quantity = Integer.parseInt(parts[columns.quantityColumn]);
                         }
                         bomItemP.designator().set(designator);
-                        bomItemP.quantity().set(quantity);
+                        bomItemP.quantity().set(quantity * multiple);
                         if( columns.valueColumn >= 0 )
                         {
                             String value = parts[columns.valueColumn].trim();
@@ -190,6 +195,10 @@ public interface BomReader
                 else if (part.equalsIgnoreCase("Qty") || part.equalsIgnoreCase("Quantity"))
                 {
                     columns.quantityColumn = index;
+                }
+                else if (part.equalsIgnoreCase("Multiple"))
+                {
+                    columns.multipleColumn = index;
                 } else {
                     columns.attributes.put(part, index);
                 }
@@ -213,6 +222,7 @@ public interface BomReader
             private int mpnColumn = -1;
             private int mfColumn = -1;
             private int quantityColumn = -1;
+            private int multipleColumn = -1;
             private final Map<String, Integer> attributes = new HashMap<>();
         }
 

@@ -238,25 +238,28 @@ public interface PartsService
 
         private Map<String, String> mergeParameters(Map<String, Supply> supplies)
         {
-            // TODO Check that the same parameters from different suppliers have the same values. Report errors to error() property.
-            return supplies.values()                                        // get the Supply instances
-                .stream()                                                   // stream the Supply instances
-                .flatMap(s -> s.parameters().get().entrySet().stream())     // stream the parameter pairs
-                .filter(a ->
-                {
-                    if (a.getKey().equals("-"))
-                    {
-                        System.err.println("Error in parameters: " + a.getKey() + "=" + a.getValue());
-                        return false;
-                    }
-                    if (a.getValue().equals("-"))
-                    {
-                        System.err.println("Error in parameters: " + a.getKey() + "=" + a.getValue());
-                        return false;
-                    }
-                    return true;
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));   // collect into a Map.
+            // TODO Check that the same parameters from different suppliers have the same values. This can be tricky,
+            //  as texts may vary a little bit, but mean the same thing. Report errors to error() property.
+            Map<String, String> result = new HashMap<>();
+            supplies.values()                                        // get the Supply instances
+                .forEach( supplier -> {
+                    supplier.parameters().get().entrySet().forEach( param -> {
+                        String key = param.getKey().trim();
+                        String value = param.getValue().trim();
+                        if( key.equals("-") )
+                        {
+                            System.err.println("Error in parameters: " + key + "=" + value);
+                        }
+                        else if( value.equals("-") || value.length() == 0)
+                        {
+                            // skip the parameters that are unspecified
+                        } else
+                        {
+                            result.put(key, value);
+                        }
+                    });
+                });
+            return result;
         }
 
         private Identity identityOf(String mf, String mpn)
