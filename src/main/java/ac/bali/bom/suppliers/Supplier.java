@@ -1,5 +1,6 @@
 package ac.bali.bom.suppliers;
 
+import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.oauth2.OAuth2LoginConcern;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public interface Supplier extends HasIdentity
     Supply searchSupplierPartNumber(String supplierPartNumber);
 
     @LoginRequired
-    Supply searchManufacturerPartNumber(String mf, String mpn);
+    Supply searchManufacturerPartNumber(Manufacturer mf, String mpn);
 
     @LoginRequired
     List<Supply> searchKeywords(String keywords);
@@ -71,13 +72,13 @@ public interface Supplier extends HasIdentity
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Manufacturer mf, String mpn)
         {
             if (!enabled().get())
             {
                 return null;
             }
-            return provider().searchManufacturerPartNumber(meAsSupplier, mf, mpn);
+            return provider().searchManufacturerPartNumber(meAsSupplier, mf.identifier().get(), mpn);
         }
 
         @Override

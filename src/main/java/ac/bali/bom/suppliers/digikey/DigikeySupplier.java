@@ -1,5 +1,7 @@
 package ac.bali.bom.suppliers.digikey;
 
+import ac.bali.bom.manufacturers.Manufacturer;
+import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.AuthenticationMethod;
 import ac.bali.bom.suppliers.Supplier;
@@ -73,6 +75,9 @@ public interface DigikeySupplier extends SupplierProvider
         @Service
         ProductSearchApi products;
 
+        @Service
+        ManufacturersService manufacturers;
+
         @Override
         public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
         {
@@ -140,7 +145,8 @@ public interface DigikeySupplier extends SupplierProvider
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.updatedOn().set(LocalDate.now());
-            p.mf().set(product.Manufacturer().get().Name().get());
+            Manufacturer mf = manufacturers.findManufacturer(product.Manufacturer().get().Name().get());
+            p.mf().set(mf);
             p.mpn().set(product.ManufacturerProductNumber().get());
             p.supplier().set(supplier);
             p.supplierPartNumber().set(product.ProductVariations().get().get(0).DigiKeyProductNumber().get());

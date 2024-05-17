@@ -1,5 +1,7 @@
 package ac.bali.bom.suppliers.lcsc;
 
+import ac.bali.bom.manufacturers.Manufacturer;
+import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
@@ -63,6 +65,9 @@ public interface LcscSupplier extends SupplierProvider
         @Service
         private Serialization serialization;
 
+        @Service
+        private ManufacturersService manufacturers;
+
         @Structure
         private UnitOfWorkFactory uowf;
 
@@ -105,7 +110,9 @@ public interface LcscSupplier extends SupplierProvider
             ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
             Supply p = builder.prototype();
             p.updatedOn().set(LocalDate.now());
-            p.mf().set(product.brandNameEn().get());
+
+            Manufacturer mf = manufacturers.findManufacturer(product.brandNameEn().get());
+            p.mf().set(mf);
             p.mpn().set(product.productModel().get());
             p.supplier().set(supplier);
             p.supplierPartNumber().set(product.productCode().get());

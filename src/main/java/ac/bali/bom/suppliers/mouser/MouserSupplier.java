@@ -1,5 +1,7 @@
 package ac.bali.bom.suppliers.mouser;
 
+import ac.bali.bom.manufacturers.Manufacturer;
+import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.parts.Price;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
@@ -71,6 +73,9 @@ public interface MouserSupplier extends SupplierProvider
         @Service
         ProductSearchApi products;
 
+        @Service
+        ManufacturersService manufacturers;
+
         @Override
         public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
         {
@@ -126,7 +131,8 @@ public interface MouserSupplier extends SupplierProvider
                     ValueBuilder<Supply> builder = vbf.newValueBuilder(Supply.class);
                     Supply p = builder.prototype();
                     p.updatedOn().set(LocalDate.now());
-                    p.mf().set(mp.Manufacturer().get());
+                    Manufacturer mf = manufacturers.findManufacturer(mp.Manufacturer().get());
+                    p.mf().set(mf);
                     p.mpn().set(mp.ManufacturerPartNumber().get());
                     p.supplier().set(supplier);
                     p.supplierPartNumber().set(mp.MouserPartNumber().get());

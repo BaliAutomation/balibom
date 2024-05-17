@@ -1,5 +1,6 @@
 package ac.bali.bom.suppliers;
 
+import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.parts.Price;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface Supply {
     @Order(1)
     Association<Supplier> supplier();
 
-    Property<String> mf();
+    Association<Manufacturer> mf();
 
     Property<String> mpn();
 

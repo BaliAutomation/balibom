@@ -57,9 +57,9 @@ public interface BomReader
                 EntityBuilder<BomItem> builder2 = uow.newEntityBuilder(BomItem.class);
                 BomItem bomItemP = builder2.instance();
                 String line = lines.get(i);
-                if( line.contains("-- mixed values --"))
+                if (line.contains("-- mixed values --"))
                 {
-                    throw new InvalidBomException("BOM is invalid, containing '-- mixed values--' on line " + (i+1) + " : " + line );
+                    throw new InvalidBomException("BOM is invalid, containing '-- mixed values--' on line " + (i + 1) + " : " + line);
                 }
                 if (line.trim().length() > 0)
                 {
@@ -69,43 +69,47 @@ public interface BomReader
                         validateParts(parts, columns);
                         String designator = parts[columns.designatorColumn];
                         int multiple = 1;                       // Multiple is for footprints with more than one of the part, examples; battery holder, Rpi CM4, Link2Web module
-                        if( columns.multipleColumn != -1 )
+                        if (columns.multipleColumn != -1)
                         {
-                            multiple = Integer.parseInt(parts[columns.multipleColumn]);
+                            String multipleValue = parts[columns.multipleColumn];
+                            if (multipleValue.trim().length() > 0)
+                                multiple = Integer.parseInt(multipleValue);
                         }
-                        int quantity;
-                        if (columns.quantityColumn == -1)
+                        int quantity = -1;
+                        if (columns.quantityColumn != -1)
                         {
-                            quantity = countDesignators(parts[columns.designatorColumn]);
+                            String quantityValue = parts[columns.quantityColumn];
+                            if( quantityValue.trim().length() > 0 )
+                                quantity = Integer.parseInt(quantityValue);
                         }
-                        else
+                        if( quantity == -1 )
                         {
-                            quantity = Integer.parseInt(parts[columns.quantityColumn]);
+                            quantity = countDesignators(designator);
                         }
                         bomItemP.designator().set(designator);
                         bomItemP.quantity().set(quantity * multiple);
-                        if( columns.valueColumn >= 0 )
+                        if (columns.valueColumn >= 0)
                         {
                             String value = parts[columns.valueColumn].trim();
                             bomItemP.value().set(value);
                         }
-                        if( columns.mfColumn >= 0 )
+                        if (columns.mfColumn >= 0)
                         {
                             String mf = parts[columns.mfColumn].trim();
                             bomItemP.mf().set(mf);
                         }
-                        if( columns.mpnColumn >= 0 )
+                        if (columns.mpnColumn >= 0)
                         {
                             String mpn = parts[columns.mpnColumn].trim();
                             bomItemP.mpn().set(mpn);
                         }
-                        if( columns.footprintColumn >= 0)
+                        if (columns.footprintColumn >= 0)
                         {
                             String footprint = parts[columns.footprintColumn];
                             bomItemP.footprint().set(footprint);
                         }
-                        Map<String,String> attributes = new HashMap<>();
-                        for( Map.Entry<String, Integer> attr : columns.attributes.entrySet())
+                        Map<String, String> attributes = new HashMap<>();
+                        for (Map.Entry<String, Integer> attr : columns.attributes.entrySet())
                         {
                             String attrName = attr.getKey();
                             int attrColumn = attr.getValue();
@@ -175,31 +179,26 @@ public interface BomReader
                 if (part.equalsIgnoreCase("MF") || part.equalsIgnoreCase("Manufacturer"))
                 {
                     columns.mfColumn = index;
-                }
-                else if (part.equalsIgnoreCase("MPN"))
+                } else if (part.equalsIgnoreCase("MPN"))
                 {
                     columns.mpnColumn = index;
-                }
-                else if (part.equalsIgnoreCase("Designator") || part.equalsIgnoreCase("Reference"))
+                } else if (part.equalsIgnoreCase("Designator") || part.equalsIgnoreCase("Reference") || part.equalsIgnoreCase("Ref"))
                 {
                     columns.designatorColumn = index;
-                }
-                else if ((part.equalsIgnoreCase("Comment") && columns.valueColumn == -1) || part.equalsIgnoreCase("Value"))
+                } else if ((part.equalsIgnoreCase("Comment") && columns.valueColumn == -1) || part.equalsIgnoreCase("Value"))
                 {
                     columns.valueColumn = index;
-                }
-                else if (part.equalsIgnoreCase("Footprint"))
+                } else if (part.equalsIgnoreCase("Footprint"))
                 {
                     columns.footprintColumn = index;
-                }
-                else if (part.equalsIgnoreCase("Qty") || part.equalsIgnoreCase("Quantity"))
+                } else if (part.equalsIgnoreCase("Qty") || part.equalsIgnoreCase("Quantity"))
                 {
                     columns.quantityColumn = index;
-                }
-                else if (part.equalsIgnoreCase("Multiple"))
+                } else if (part.equalsIgnoreCase("Multiple"))
                 {
                     columns.multipleColumn = index;
-                } else {
+                } else
+                {
                     columns.attributes.put(part, index);
                 }
                 index++;

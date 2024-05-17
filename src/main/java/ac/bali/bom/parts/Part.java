@@ -1,7 +1,9 @@
 package ac.bali.bom.parts;
 
+import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.Supply;
 import ac.bali.bom.view.Deleter;
+import org.apache.polygene.api.association.Association;
 import org.qi4j.library.javafx.support.HasListViewController;
 import org.qi4j.library.javafx.support.Height;
 import org.qi4j.library.javafx.support.Order;
@@ -22,7 +24,7 @@ public interface Part extends HasIdentity
 
     @RenderAsName
     @Order(1)
-    Property<String> manufacturer();
+    Association<Manufacturer> manufacturer();
 
     @RenderAsName
     @Order(2)

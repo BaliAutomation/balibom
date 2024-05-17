@@ -1,5 +1,6 @@
 package ac.bali.bom.suppliers;
 
+import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.digikey.DigikeySupplier;
 import ac.bali.bom.suppliers.lcsc.LcscSupplier;
 import ac.bali.bom.suppliers.mouser.MouserSupplier;
@@ -31,7 +32,7 @@ public interface SuppliersService extends ServiceActivation
 {
     @Action(label = "Search MF/MPN...", scope = type)
     @UnitOfWorkPropagation(MANDATORY)
-    List<Supply> searchSupply(String mf, String mpn);
+    List<Supply> searchSupply(Manufacturer mf, String mpn);
 
     @Action(label = "Search MPN...", scope = type)
     @UnitOfWorkPropagation(MANDATORY)
@@ -42,7 +43,7 @@ public interface SuppliersService extends ServiceActivation
 
     Supply findSupply(String supplier, String supplierPartNumber);
 
-    Supply findSupply(String supplierName, String mf, String mpn);
+    Supply findSupply(String supplierName, Manufacturer mf, String mpn);
 
     class Mixin
         implements SuppliersService
@@ -60,7 +61,7 @@ public interface SuppliersService extends ServiceActivation
         ValueBuilderFactory vbf;
 
         @Override
-        public List<Supply> searchSupply(String mf, String mpn)
+        public List<Supply> searchSupply(Manufacturer mf, String mpn)
         {
             return suppliers().stream()
                 .filter(Objects::nonNull)
@@ -80,7 +81,7 @@ public interface SuppliersService extends ServiceActivation
         }
 
         @Override
-        public Supply findSupply(String supplierName, String mf, String mpn)
+        public Supply findSupply(String supplierName, Manufacturer mf, String mpn)
         {
             Supplier supplier = supplierNamed(supplierName);
             return supplier.searchManufacturerPartNumber(mf, mpn);

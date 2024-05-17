@@ -1,5 +1,7 @@
 package ac.bali.bom.parts;
 
+import ac.bali.bom.manufacturers.Manufacturer;
+import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.products.BomItem;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SuppliersService;
@@ -11,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
 import org.apache.polygene.api.identity.Identity;
@@ -36,7 +37,7 @@ import static org.qi4j.library.javafx.support.ActionScope.composite;
 public interface PartsService
 {
     @UnitOfWorkPropagation(MANDATORY)
-    Part findPart(String mf, String mpn);
+    Part findPart(Manufacturer mf, String mpn);
 
     @SuppressWarnings("unused")
     @Action(label = "Update Supply", scope = composite)
@@ -62,9 +63,12 @@ public interface PartsService
         @Service
         SuppliersService suppliersService;
 
+        @Service
+        ManufacturersService manufacturers;
+
 
         @Override
-        public Part findPart(String manufacturer, String partNumber)
+        public Part findPart(Manufacturer manufacturer, String partNumber)
         {
             if (partNumber == null || partNumber.trim().length() < 4)
                 return null;
@@ -109,7 +113,7 @@ public interface PartsService
 
         public Map<String, Supply> createSupply(BomItem item)
         {
-            String mf = item.mf().get();
+            Manufacturer mf = manufacturers.findManufacturer(item.mf().get());
             String mpn = item.mpn().get();
             Map<String, Supply> result = new HashMap<>();
             // Get supply from Supplier Part Number
@@ -156,7 +160,7 @@ public interface PartsService
         @Override
         public void resolve(BomItem item)
         {
-            String mf = item.mf().get();
+            Manufacturer mf = manufacturers.findManufacturer(item.mf().get());
             String mpn = item.mpn().get();
             Part existingpart = findPart(mf, mpn);
             if (existingpart != null)
@@ -169,14 +173,14 @@ public interface PartsService
             {
                 if (s == null)
                     continue;
-                String smf = s.mf().get();
+                Manufacturer smf = s.mf().get();
                 String smpn = s.mpn().get();
-                if (mf == null || mf.length() == 0)
+                if (mf == null)
                 {
                     mf = smf;
                 } else
                 {
-                    if (!smf.equalsIgnoreCase(mf))
+                    if (!smf.equals(mf))
                     {
                         errors.add("Manufacturer from " + s.supplier().get().name().get() + " is " + smf + " and doesn't match BOM MF of " + mf);
                     }
@@ -206,15 +210,10 @@ public interface PartsService
             }
         }
 
-        private void buildNewPart(String mf, String mpn, Map<String, Supply> supply)
+        private void buildNewPart(Manufacturer mf, String mpn, Map<String, Supply> supply)
         {
             UnitOfWork uow = uowf.currentUnitOfWork();
-            mf = mf.trim();
             mpn = mpn.trim();
-            if (mf.length() == 0)
-            {
-                return;
-            }
             if (mpn.length() == 0)
             {
                 return;
@@ -262,9 +261,9 @@ public interface PartsService
             return result;
         }
 
-        private Identity identityOf(String mf, String mpn)
+        private Identity identityOf(Manufacturer mf, String mpn)
         {
-            return StringIdentity.identityOf("part_" + mf + "." + mpn);
+            return StringIdentity.identityOf("part_" + mf.identifier().get() + "." + mpn);
         }
     }
 }
