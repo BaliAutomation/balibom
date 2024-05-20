@@ -9,7 +9,7 @@ public class InstantPropertyControl extends DateTimePropertyControl<Instant>
 {
     public InstantPropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, descriptor);
+        super(factory, factory.nameOf(descriptor));
     }
 
     @Override

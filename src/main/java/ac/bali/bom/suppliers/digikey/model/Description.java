@@ -6,5 +6,6 @@ import org.apache.polygene.api.property.Property;
 public interface Description
 {
     Property<String> ProductDescription();
+
     Property<String> DetailedDescription();
 }

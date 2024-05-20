@@ -17,10 +17,6 @@ public class Qi4jApplicationAssembler extends LayeredApplicationAssembler
         LayerAssembly configLayer = createLayer(ConfigurationLayer.class);
         LayerAssembly infraLayer = createLayer(InfrastructureLayer.class);
         LayerAssembly modelLayer = createLayer(ModelLayer.class);
-        LayerAssembly viewLayer = createLayer(ViewLayer.class);
-        viewLayer.uses(modelLayer);
-        viewLayer.uses(infraLayer);
-        viewLayer.uses(configLayer);
         modelLayer.uses(infraLayer);
         modelLayer.uses(configLayer);
         infraLayer.uses(configLayer);

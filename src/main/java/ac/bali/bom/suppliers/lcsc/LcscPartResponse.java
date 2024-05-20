@@ -5,6 +5,7 @@ import org.apache.polygene.api.property.Property;
 
 public interface LcscPartResponse
 {
+    @Optional
     Property<Integer> code();
 
     @Optional

@@ -10,14 +10,17 @@ repositories {
     mavenCentral()
 }
 
+compileJava {
+    options.compilerArgs << '-parameters'
+}
+
 javafx {
     version = "21"
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
 application {
-    mainClass = "ac.bali.bom.Main"
-//    mainModule = "ac.bali.bom"
+    mainClass = 'ac.bali.bom.Main'
 }
 
 

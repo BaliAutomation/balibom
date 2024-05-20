@@ -27,6 +27,7 @@ public class SuppliersModule
 
         new LcscAssembler().assemble(module);
         new DigikeyAssembler().assemble(module);
+        new ManualSupplierAssembler().assemble(module);
         new MouserAssembler().assemble(module);
         new Oauth2Assembler().assemble(module);
         new ApiKeyAssembler().assemble(module);

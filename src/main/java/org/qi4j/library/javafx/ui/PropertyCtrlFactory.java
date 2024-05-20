@@ -1,9 +1,15 @@
 package org.qi4j.library.javafx.ui;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.association.AssociationStateHolder;
 import org.apache.polygene.api.common.Optional;
@@ -15,6 +21,7 @@ import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.property.PropertyDescriptor;
+import org.apache.polygene.api.structure.MetaInfoHolder;
 import org.apache.polygene.api.type.ArrayType;
 import org.apache.polygene.api.type.CollectionType;
 import org.apache.polygene.api.type.EnumType;
@@ -88,7 +95,8 @@ public interface PropertyCtrlFactory
                         return objectFactory.newObject(SetPropertyControl.class, descriptor, withLabel);
                     }
                 }
-                return objectFactory.newObject(CompositeListPropertyControl.class, valueDescriptor, withLabel);
+                PropertyDescriptor propDescr = descriptor;
+                return objectFactory.newObject(CompositeListPropertyControl.class, propDescr, valueDescriptor, withLabel);
             } else if (propertyType instanceof MapType)
             {
                 return objectFactory.newObject(MapPropertyControl.class, descriptor, withLabel);
@@ -141,11 +149,19 @@ public interface PropertyCtrlFactory
             {
                 ModelDescriptor modelDescriptor = spi.modelDescriptorFor(composite);
                 if (modelDescriptor instanceof StatefulAssociationCompositeDescriptor descriptor)
-                    return descriptor.state()
+                {
+                    List<? extends MetaInfoHolder> props = descriptor.state()
                         .properties()
+                        .toList();
+                    List<? extends MetaInfoHolder> assocs = descriptor.state()
+                        .associations()
+                        .toList();
+                    List<MetaInfoHolder> list = new ArrayList<>(props);
+                    list.addAll(assocs);
+                    String result = list.stream()
                         .filter(p -> p.metaInfo(RenderAsName.class) != null)
                         .sorted(new MemberOrderComparator())
-                        .map(p ->
+                        .map(m ->
                         {
                             AssociationStateHolder state;
                             if (composite instanceof EntityComposite c)
@@ -154,11 +170,37 @@ public interface PropertyCtrlFactory
                                 state = spi.stateOf(c);
                             else
                                 throw new IllegalArgumentException("Only Entities and Values can be used in JavaFX UI system");
-                            Property<?> property = state.propertyFor(p.accessor());
-                            return property.get().toString();
-                        }).collect(Collectors.joining(" - "));
+                            Function<Object, String> formatter = instantiateFormatter(m.metaInfo(RenderAsName.class).format());
+                            if (m instanceof PropertyDescriptor p)
+                            {
+                                Property<Object> property = state.propertyFor(p.accessor());
+                                return formatter.apply(property);
+                            }
+                            if (m instanceof AssociationDescriptor a)
+                            {
+                                Association<?> assoc = state.associationFor(a.accessor());
+                                return formatter.apply(assoc);
+                            }
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.joining(" - "));
+                    return result;
+                }
             }
             throw new IllegalArgumentException("Only Stateful Composites can be used as PropertyControl: " + composite);
+        }
+
+        private Function<Object, String> instantiateFormatter(Class<? extends Function<Object, String>> format)
+        {
+            try
+            {
+                return format.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override

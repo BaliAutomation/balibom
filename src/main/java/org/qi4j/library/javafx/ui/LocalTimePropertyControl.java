@@ -9,6 +9,6 @@ public class LocalTimePropertyControl extends DateTimePropertyControl<LocalTime>
 {
     public LocalTimePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, descriptor);
+        super(factory, factory.nameOf(descriptor));
     }
 }

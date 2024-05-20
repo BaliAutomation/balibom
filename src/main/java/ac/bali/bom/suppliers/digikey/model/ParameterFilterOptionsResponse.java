@@ -7,8 +7,12 @@ import org.apache.polygene.api.property.Property;
 public interface ParameterFilterOptionsResponse
 {
     Property<BaseFilterV4> Category();
+
     Property<String> ParameterType();
+
     Property<Integer> ParameterId();
+
     Property<String> ParameterName();
+
     Property<List<FilterValue>> FilterValues();
 }

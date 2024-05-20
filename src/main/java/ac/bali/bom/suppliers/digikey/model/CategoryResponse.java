@@ -6,5 +6,6 @@ import org.apache.polygene.api.property.Property;
 public interface CategoryResponse
 {
     Property<Category> Category();
+
     Property<IsoSearchLocale> SearchLocaleUsed();
 }

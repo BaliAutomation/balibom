@@ -7,6 +7,8 @@ import org.apache.polygene.api.property.Property;
 public interface PriceBreak
 {
     Property<Integer> BreakQuantity();
+
     Property<BigDecimal> UnitPrice();
+
     Property<BigDecimal> TotalPrice();
 }

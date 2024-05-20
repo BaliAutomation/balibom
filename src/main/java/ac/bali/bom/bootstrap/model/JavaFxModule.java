@@ -1,5 +1,7 @@
-package ac.bali.bom.bootstrap.view;
+package ac.bali.bom.bootstrap.model;
 
+import org.apache.polygene.api.common.Visibility;
+import org.qi4j.library.javafx.support.FieldDescriptor;
 import org.qi4j.library.javafx.ui.ActionBar;
 import org.qi4j.library.javafx.ui.ArrayPropertyControl;
 import org.qi4j.library.javafx.ui.AssociationControl;
@@ -31,6 +33,7 @@ import org.qi4j.library.javafx.ui.MapPropertyControl;
 import org.qi4j.library.javafx.ui.NameListCell;
 import org.qi4j.library.javafx.ui.NamedAssociationControl;
 import org.qi4j.library.javafx.ui.OffsetDateTimePropertyControl;
+import org.qi4j.library.javafx.ui.ParametersForm;
 import org.qi4j.library.javafx.ui.PeriodPropertyControl;
 import org.qi4j.library.javafx.ui.PropertyCtrlFactory;
 import org.qi4j.library.javafx.ui.SetPropertyControl;
@@ -43,6 +46,8 @@ import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.bootstrap.layered.ModuleAssembler;
 
+import static org.apache.polygene.api.common.Visibility.application;
+
 public class JavaFxModule
     implements ModuleAssembler
 {
@@ -53,6 +58,7 @@ public class JavaFxModule
     {
         module.defaultServices();
         module.services(PropertyCtrlFactory.class);
+        module.values(FieldDescriptor.class).visibleIn(Visibility.layer);
         module.objects(
             ActionBar.class,
             ArrayPropertyControl.class,
@@ -85,13 +91,14 @@ public class JavaFxModule
             NamedAssociationControl.class,
             NameListCell.class,
             OffsetDateTimePropertyControl.class,
+            ParametersForm.class,
             PeriodPropertyControl.class,
             SetPropertyControl.class,
             ShortPropertyControl.class,
             StringPropertyControl.class,
             ValueLinkControl.class,
             ZonedDateTimePropertyControl.class
-        );
+        ).visibleIn(Visibility.layer);
         return module;
     }
 }

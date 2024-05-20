@@ -7,5 +7,6 @@ import org.apache.polygene.api.property.Property;
 public interface ParameterFilterRequest
 {
     Property<FilterId> CategoryFilter();
+
     Property<List<ParametricCategory>> ParameterFilters();
 }

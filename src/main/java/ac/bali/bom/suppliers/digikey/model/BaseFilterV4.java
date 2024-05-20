@@ -7,6 +7,7 @@ import org.apache.polygene.api.property.Property;
 public interface BaseFilterV4
 {
     Property<Integer> Id();
+
     Property<String> Value();
 
     @Optional

@@ -6,6 +6,8 @@ import org.apache.polygene.api.property.Property;
 public interface Parameter
 {
     Property<Integer> Id();
+
     Property<String> Text();
+
     Property<Integer> Priority();
 }

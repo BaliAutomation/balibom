@@ -133,7 +133,9 @@ public interface ProductSearchApi
                     {
                         case 200:
                             return serialization.deserialize(module, responseType, response);
-                        case 400, 404, 415:
+                        case 404:
+                            return null;
+                        case 400, 415:
                             throw new IOException("Digikey Error: " + r.getStatusLine());
                         case 429:
                             throw new IOException("Digikey RateLimit");

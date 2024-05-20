@@ -9,14 +9,16 @@ public class ActionCall
     private final Class<?> serviceType;
     private final String label;
     private final ActionScope actionScope;
+    private final boolean showResult;
     private Button button;
 
-    public ActionCall(Class<?> serviceType, Method actionMethod, String label, ActionScope actionScope)
+    public ActionCall(Class<?> serviceType, Method actionMethod, String label, ActionScope actionScope, boolean showResult)
     {
         this.actionMethod = actionMethod;
         this.serviceType = serviceType;
         this.label = label;
         this.actionScope = actionScope;
+        this.showResult = showResult;
     }
 
     public Method actionMethod()
@@ -32,6 +34,11 @@ public class ActionCall
     public String label()
     {
         return label;
+    }
+
+    public boolean showResult()
+    {
+        return showResult;
     }
 
     public ActionScope actionScope() {

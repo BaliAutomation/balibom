@@ -7,6 +7,8 @@ import org.apache.polygene.api.property.Property;
 public interface ProductSubstitutesResponse
 {
     Property<Integer> ProductSubstitutesCount();
+
     Property<List<ProductSubstitute>> ProductSubstitutes();
+
     Property<IsoSearchLocale> SearchLocaleUsed();
 }

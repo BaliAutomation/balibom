@@ -3,8 +3,11 @@ package ac.bali.bom.suppliers;
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.digikey.DigikeySupplier;
 import ac.bali.bom.suppliers.lcsc.LcscSupplier;
+import ac.bali.bom.suppliers.manual.ManualSupplier;
 import ac.bali.bom.suppliers.mouser.MouserSupplier;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.polygene.api.concern.Concerns;
@@ -41,9 +44,9 @@ public interface SuppliersService extends ServiceActivation
     @UnitOfWorkPropagation(MANDATORY)
     List<Supplier> suppliers();
 
-    Supply findSupply(String supplier, String supplierPartNumber);
+    Supply findSupply(String supplier, String supplierPartNumber, Map<String,String> attributes);
 
-    Supply findSupply(String supplierName, Manufacturer mf, String mpn);
+    Supply findSupply(String supplierName, Manufacturer mf, String mpn, Map<String,String> attributes);
 
     class Mixin
         implements SuppliersService
@@ -65,7 +68,7 @@ public interface SuppliersService extends ServiceActivation
         {
             return suppliers().stream()
                 .filter(Objects::nonNull)
-                .map( supplier -> supplier.searchManufacturerPartNumber(mf, mpn))
+                .map( supplier -> supplier.searchManufacturerPartNumber(mf, mpn, Collections.emptyMap()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         }
@@ -81,16 +84,16 @@ public interface SuppliersService extends ServiceActivation
         }
 
         @Override
-        public Supply findSupply(String supplierName, Manufacturer mf, String mpn)
+        public Supply findSupply(String supplierName, Manufacturer mf, String mpn, Map<String,String> attributes)
         {
             Supplier supplier = supplierNamed(supplierName);
-            return supplier.searchManufacturerPartNumber(mf, mpn);
+            return supplier.searchManufacturerPartNumber(mf, mpn, attributes);
         }
 
         @Override
-        public Supply findSupply(String supplierName, String supplierPartNumber)
+        public Supply findSupply(String supplierName, String supplierPartNumber, Map<String,String> attributes)
         {
-            return supplierNamed(supplierName).searchSupplierPartNumber(supplierPartNumber);
+            return supplierNamed(supplierName).searchSupplierPartNumber(supplierPartNumber, attributes);
         }
 
         @Override
@@ -116,6 +119,7 @@ public interface SuppliersService extends ServiceActivation
                 DigikeySupplier.Mixin.createSupplier(uow, application.mode());
                 LcscSupplier.Mixin.createSupplier(uow);
                 MouserSupplier.Mixin.createSupplier(uow);
+                ManualSupplier.Mixin.createSupplier(uow);
                 uow.complete();
             }
         }

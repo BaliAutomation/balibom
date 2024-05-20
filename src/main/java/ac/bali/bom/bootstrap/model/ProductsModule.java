@@ -3,6 +3,9 @@ package ac.bali.bom.bootstrap.model;
 import ac.bali.bom.products.Bom;
 import ac.bali.bom.products.BomItem;
 import ac.bali.bom.products.BomReader;
+import ac.bali.bom.products.CostItem;
+import ac.bali.bom.products.CostReport;
+import ac.bali.bom.products.PartQuantity;
 import ac.bali.bom.products.Product;
 import ac.bali.bom.products.ProductsService;
 import org.apache.polygene.api.common.Visibility;
@@ -28,8 +31,8 @@ public class ProductsModule
     {
         module.defaultServices();
         module.services(FileConfigurationService.class);
-        module.services(ProductsService.class).visibleIn(Visibility.application);
-        module.services(BomReader.class).visibleIn(Visibility.application);
+        module.services(ProductsService.class).visibleIn(application);
+        module.services(BomReader.class).visibleIn(application);
 
         module.entities(Product.class, Bom.class, BomItem.class)
             .withConcerns(
@@ -38,7 +41,8 @@ public class ProductsModule
                 ObservableAssociationConcern.class,
                 ObservableNamedAssociationConcern.class
             ).visibleIn(application);
-
+        module.values(PartQuantity.class).visibleIn(application);
+        module.values(CostReport.class, CostItem.class).visibleIn(application);
         return module;
     }
 }

@@ -11,7 +11,7 @@ public class MarginNeededRule
     @Override
     public Outcome checkRule(Supply supply, int[] modifiableQuantity )
     {
-        BigDecimal price = supply.priceof( 10 );
+        BigDecimal price = supply.priceOf( 10 );
         if( price.doubleValue() < 5.0 )
         {
             modifiableQuantity[ 0 ] += 10;

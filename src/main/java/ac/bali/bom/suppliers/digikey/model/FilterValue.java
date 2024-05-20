@@ -7,7 +7,9 @@ import org.apache.polygene.api.property.Property;
 public interface FilterValue
 {
     Property<Long> ProductCount();
+
     Property<String> ValueId();
+
     Property<String> ValueName();
 
     @Optional

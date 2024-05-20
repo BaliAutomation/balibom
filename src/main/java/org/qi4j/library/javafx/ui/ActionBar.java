@@ -5,8 +5,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,23 +12,30 @@ import java.util.List;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.mixin.Initializable;
 import org.apache.polygene.api.structure.Module;
 import org.apache.polygene.api.type.HasTypes;
-import org.apache.polygene.api.util.Methods;
+import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.spi.PolygeneSPI;
 import org.qi4j.library.javafx.support.Action;
 import org.qi4j.library.javafx.support.ActionCall;
 import org.qi4j.library.javafx.support.ActionScope;
+import org.qi4j.library.javafx.support.FieldDescriptor;
 import org.qi4j.library.javafx.support.HasListViewController;
+import org.qi4j.library.javafx.support.ParameterName;
 
 import static org.qi4j.library.javafx.ui.PropertyCtrlFactory.Mixin.humanize;
 
@@ -132,7 +137,7 @@ public class ActionBar<T> extends ToolBar
                     {
                         label = humanize(method.getName());
                     }
-                    return new ActionCall(service, method, label, a.scope());
+                    return new ActionCall(service, method, label, a.scope(), a.showResult());
                 })
                 .toList();
             result.addAll(actions);
@@ -157,12 +162,12 @@ public class ActionBar<T> extends ToolBar
             Module m = module.typeLookup().lookupEntityModel(entityType).module().instance();
             Object service = m.serviceFinder().findService(action.serviceType()).get();
             Method method = action.actionMethod();
-            Parameter[] parameters = method.getParameters();
+            FieldDescriptor[] fields = createFieldDescriptors(method.getParameters());
             if (action.actionScope() == ActionScope.type)
             {
-                if (parameters.length == 1)
+                if (fields.length == 1)
                 {
-                    Class<?> pType = parameters[0].getType();
+                    Class<?> pType = fields[0].type().get();
                     if (pType.equals(File.class))
                     {
                         FileChooser chooser = new FileChooser();
@@ -177,9 +182,9 @@ public class ActionBar<T> extends ToolBar
                 }
             } else if (action.actionScope() == ActionScope.composite)
             {
-                if (parameters.length == 1)
+                if (fields.length == 1)
                 {
-                    Class<?> parameter1Type = parameters[0].getType();
+                    Class<?> parameter1Type = fields[0].type().get();
                     if (Collection.class.isAssignableFrom(parameter1Type))
                     {
                         method.invoke(service, selectedItems);
@@ -193,23 +198,86 @@ public class ActionBar<T> extends ToolBar
                     return;
                 }
             }
-            ParametersForm parametersForm = new ParametersForm(action.label(), parameters);
+            ParametersForm parametersForm = module.objectFactory().newObject(ParametersForm.class, action.label(), fields);
+            Object t = selectedItems.get(0);
+            parametersForm.setValue(fields[0].name().get(), t);
             Optional<Object[]> result = parametersForm.showAndWait();
             if (result.isPresent())
-                method.invoke(service, result.get());
+            {
+                Object[] args = result.get();
+                Object retValue = method.invoke(service, args);
+                if (action.showResult() && retValue != null)
+                {
+                    show(action.label(), retValue);
+                }
+            }
         } catch (IllegalAccessException e)
         {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e)
         {
-            if( e.getTargetException() instanceof ModelException )
+            if (e.getTargetException() instanceof ModelException)
             {
                 new Alert(Alert.AlertType.ERROR, e.getTargetException().getMessage()).showAndWait();
-            }
-            else
+            } else
             {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void show(String title, Object retValue)
+    {
+        if (!spi.isComposite(retValue))
+            return;
+        Class<?> compositeType = spi.compositeDescriptorFor(retValue).primaryType();
+
+        //noinspection unchecked
+        CompositePane<Object> valuePane = module.newObject(CompositePane.class, compositeType, true);
+
+        valuePane.updateWith(retValue);
+        VBox root = new VBox(valuePane);
+        root.setFillWidth(true);
+        VBox.setVgrow(valuePane, Priority.ALWAYS);
+        Scene scene = new Scene(root, 1200, 800);
+        Stage compositeStage = new Stage();
+        compositeStage.setScene(scene);
+        compositeStage.setTitle(title);
+        compositeStage.show();
+        compositeStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, evt ->
+        {
+            compositeStage.setScene(null);
+            compositeStage.close();
+            root.getChildren().clear();
+        });
+    }
+
+    private FieldDescriptor[] createFieldDescriptors(Parameter[] parameters)
+    {
+        int height = (int) new Label("Abc").getHeight();
+        FieldDescriptor[] result = new FieldDescriptor[parameters.length];
+        for (int i = 0; i < parameters.length; i++)
+        {
+            Parameter parameter = parameters[i];
+
+            ValueBuilder<FieldDescriptor> builder = module.newValueBuilder(FieldDescriptor.class);
+            FieldDescriptor proto = builder.prototype();
+            ParameterName annotation = parameter.getAnnotation(ParameterName.class);
+            String name;
+            if (annotation != null)
+            {
+                name = annotation.value();
+            } else
+            {
+                name = humanize(parameter.getName());
+            }
+            proto.name().set(name);
+            Class<?> parameterType = parameter.getType();
+            proto.type().set(parameterType);
+            proto.height().set(height);
+            proto.width().set(300);
+            result[i] = builder.newInstance();
+        }
+        return result;
     }
 }

@@ -3,7 +3,6 @@ package ac.bali.bom.suppliers.digikey;
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.manufacturers.ManufacturersService;
 import ac.bali.bom.parts.Price;
-import ac.bali.bom.suppliers.AuthenticationMethod;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SupplierProvider;
 import ac.bali.bom.suppliers.Supply;
@@ -79,7 +78,7 @@ public interface DigikeySupplier extends SupplierProvider
         ManufacturersService manufacturers;
 
         @Override
-        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
+        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber, Map<String, String> attributes)
         {
             ProductDetails prodDetails = products.productDetails(supplier, supplierPartNumber);
             if (prodDetails == null)
@@ -89,7 +88,7 @@ public interface DigikeySupplier extends SupplierProvider
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn, Map<String, String> attributes)
         {
             if (mf == null || mf.trim().length() == 0)
             {
@@ -112,16 +111,25 @@ public interface DigikeySupplier extends SupplierProvider
             prototype3.FilterOptionsRequest().set(filterOptions);
             KeywordRequest search = builder3.newInstance();
             KeywordResponse response = products.keywordSearch(supplier, search);
-            if( response == null )
+            if (response == null)
             {
                 System.err.println();
                 return null;
             }
             Integer count = response.ProductsCount().get();
-            if( count > 1 )
-                System.err.println("WARNING: Digikey: More than one search result for " + mf + " " + mpn);
             List<Product> exactMatches = response.ExactMatches().get();
-            if( exactMatches.size() == 1)
+            List<Product> products = response.Products().get();
+            if (count > 1)
+            {
+                Product product = findExact(mpn, products);
+                if (product == null)
+                {
+                    System.err.println("WARNING: Digikey: More than one search result for " + mf + " " + mpn + ", but unable to identify a correct one.");
+                    return null;
+                }
+                return createSupply(supplier, product);
+            }
+            if (exactMatches.size() > 0)
             {
                 Product product = exactMatches.get(0);
                 return createSupply(supplier, product);
@@ -130,6 +138,16 @@ public interface DigikeySupplier extends SupplierProvider
             {
                 Product product = response.Products().get().get(0);
                 return createSupply(supplier, product);
+            }
+            return null;
+        }
+
+        private Product findExact(String mpn, List<Product> products)
+        {
+            for (Product p : products)
+            {
+                if (p.ManufacturerProductNumber().get().equals(mpn))
+                    return p;
             }
             return null;
         }
@@ -181,15 +199,21 @@ public interface DigikeySupplier extends SupplierProvider
         {
             TreeSet<Price> result = new TreeSet<>(new Price.PriceComparator());
             ValueBuilder<Price> builder = vbf.newValueBuilder(Price.class);
-            List<PriceBreak> prices = product.ProductVariations().get().get(0).StandardPricing().get();
-            prices.forEach(p ->
-            {
-                Price prototype = builder.prototype();
-                prototype.quantity().set(p.BreakQuantity().get());
-                prototype.price().set(p.UnitPrice().get());
-                result.add(builder.newInstance());
-            });
+            List<Price> prices = product.ProductVariations().get().stream()
+                .filter( pv -> pv.PackageType().get().Id().get() != 243)                // Don't support Digi-Reel for now.
+                .flatMap(pv -> pv.StandardPricing().get().stream())
+                .map(pb -> createPrice(builder, pb))
+                .toList();
+            result.addAll(prices);
             return result;
+        }
+
+        private static Price createPrice(ValueBuilder<Price> builder, PriceBreak p)
+        {
+            Price prototype = builder.prototype();
+            prototype.quantity().set(p.BreakQuantity().get());
+            prototype.price().set(p.UnitPrice().get());
+            return builder.newInstance();
         }
 
         private Boolean isReel(Product product)
@@ -250,7 +274,6 @@ public interface DigikeySupplier extends SupplierProvider
                 instance.authentication().set(authMethod);
                 instance.enabled().set(false);
                 setLoginEndpoint(instance, uow, mode);
-
                 eb.newInstance();
             }
         }

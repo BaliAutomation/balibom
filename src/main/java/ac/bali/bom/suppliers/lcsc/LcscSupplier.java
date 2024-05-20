@@ -73,7 +73,7 @@ public interface LcscSupplier extends SupplierProvider
 
 
         @Override
-        public Supply searchSupplierPartNumber(Supplier supplier, String spn)
+        public Supply searchSupplierPartNumber(Supplier supplier, String spn, Map<String,String> attributes)
         {
             try (final CloseableHttpClient httpclient = HttpClients.createDefault())
             {
@@ -90,7 +90,7 @@ public interface LcscSupplier extends SupplierProvider
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn, Map<String,String> attributes)
         {
             // TODO: LCSC's search is from experience pretty poor and always returns "too much". Let's do this later, if ever.
             return null;
@@ -149,12 +149,12 @@ public interface LcscSupplier extends SupplierProvider
 
         private LcscPart convertToPart(HttpResponse response) throws IOException
         {
-            InputStream content = response.getEntity().getContent();
-            LcscPartResponse r = serialization.deserialize(module, LcscPartResponse.class, content);
-            if (r.code().get() != 200)
+            if (response.getStatusLine().getStatusCode() != 200)
             {
                 return null;
             }
+            InputStream content = response.getEntity().getContent();
+            LcscPartResponse r = serialization.deserialize(module, LcscPartResponse.class, content);
             return r.result().get();
         }
 

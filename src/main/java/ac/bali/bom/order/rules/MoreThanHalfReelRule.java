@@ -15,8 +15,8 @@ public class MoreThanHalfReelRule
         if( supply.isReel().get() )
         {
             int reelSize = supply.reelSize().get();
-            BigDecimal exactPrice = supply.priceof( quantity );
-            BigDecimal reelPrice = supply.priceof( reelSize );
+            BigDecimal exactPrice = supply.priceOf( quantity );
+            BigDecimal reelPrice = supply.priceOf( reelSize );
             if( (reelPrice.doubleValue() / 2) < exactPrice.doubleValue() )
             {
                 modifiableQuantity[0] = reelSize;

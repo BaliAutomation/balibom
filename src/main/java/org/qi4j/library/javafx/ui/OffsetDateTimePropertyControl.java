@@ -9,6 +9,6 @@ public class OffsetDateTimePropertyControl extends DateTimePropertyControl<Offse
 {
     public OffsetDateTimePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, descriptor);
+        super(factory, factory.nameOf(descriptor));
     }
 }

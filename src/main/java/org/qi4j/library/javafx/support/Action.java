@@ -17,4 +17,6 @@ public @interface Action
     String description() default "";
 
     ActionScope scope() default ActionScope.type;
+
+    boolean showResult() default false;
 }

@@ -8,10 +8,16 @@ import org.apache.polygene.api.property.Property;
 public interface DKProblemDetails
 {
     Property<String> type();
+
     Property<String> title();
+
     Property<Integer> status();
+
     Property<String> detail();
+
     Property<String> instance();
+
     Property<String> correlationId();
+
     Property<Map<String, List<String>>> errors();
 }

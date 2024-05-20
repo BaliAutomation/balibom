@@ -1,6 +1,7 @@
 package ac.bali.bom.suppliers.digikey.model;
 
-public enum FieldEnum {
+public enum FieldEnum
+{
     None,
     Packaging,
     ProductStatus,
@@ -12,4 +13,4 @@ public enum FieldEnum {
     Price,
     Supplier,
     PriceManufacturerStandardPackage
-  }
+}

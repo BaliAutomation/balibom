@@ -2,29 +2,33 @@ package ac.bali.bom.suppliers;
 
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.parts.Price;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsName;
-import org.qi4j.library.javafx.support.RenderAsValue;
-import java.math.BigDecimal;
-import java.util.SortedSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.Property;
+import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.javafx.support.RenderAsName;
+import org.qi4j.library.javafx.support.RenderAsValue;
 
 @Mixins(Supply.Mixin.class)
-public interface Supply {
+public interface Supply
+{
 
-    BigDecimal priceof(int quantity);
+    BigDecimal priceOf(int quantity);
 
     Property<LocalDate> updatedOn();
 
     @RenderAsName
-    @RenderAsValue(title="SPN")
+    @RenderAsValue(title = "SPN")
     @Immutable
     @Order(2)
     Property<String> supplierPartNumber();
@@ -38,10 +42,10 @@ public interface Supply {
 
     Property<Integer> availableSupply();
 
-    @RenderAsValue(title="Reel Size")
+    @RenderAsValue(title = "Reel Size")
     Property<Integer> reelSize();
 
-    Property<SortedSet<Price>> prices();
+    Property<Set<Price>> prices();
 
     @UseDefaults
     Property<Boolean> isReel();
@@ -50,7 +54,7 @@ public interface Supply {
     Property<Integer> inStock();
 
     @UseDefaults
-    @RenderAsValue(title="Stock")
+    @RenderAsValue(title = "Stock")
     Property<Integer> canShipWithInWeek();
 
     @UseDefaults
@@ -65,19 +69,20 @@ public interface Supply {
 
     Property<Map<String, String>> parameters();
 
-    abstract class Mixin implements Supply {
-
+    abstract class Mixin implements Supply
+    {
         @Override
-        public BigDecimal priceof(int quantity) {
-            BigDecimal myPrice = new BigDecimal( 0 );
-            for( Price price : prices().get() )
-            {
-                if( price.quantity().get() <= quantity )
-                {
-                    myPrice = price.price().get();
-                }
-            }
-            return myPrice.multiply( new BigDecimal( quantity ) );
+        public BigDecimal priceOf(int quantity)
+        {
+            Price unitPrice = prices().get()
+                .stream()
+                .filter(Objects::nonNull)
+                .sorted(new Price.PriceComparator().reversed())
+                .filter(p -> quantity >= p.quantity().get())
+                .findFirst().orElse(null);
+            if (unitPrice == null)
+                return null;
+            return unitPrice.price().get().multiply(new BigDecimal(quantity));
         }
     }
 }

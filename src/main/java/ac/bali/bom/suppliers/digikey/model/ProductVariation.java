@@ -7,15 +7,26 @@ import org.apache.polygene.api.property.Property;
 public interface ProductVariation
 {
     Property<String> DigiKeyProductNumber();
+
     Property<PackageType> PackageType();
+
     Property<List<PriceBreak>> StandardPricing();
+
     Property<List<PriceBreak>> MyPricing();
+
     Property<Boolean> MarketPlace();
+
     Property<Boolean> TariffActive();
+
     Property<Supplier> Supplier();
+
     Property<Integer> QuantityAvailableforPackageType();
+
     Property<Long> MaxQuantityForDistribution();
+
     Property<Integer> MinimumOrderQuantity();
+
     Property<Integer> StandardPackage();
+
     Property<Double> DigiReelFee();
 }

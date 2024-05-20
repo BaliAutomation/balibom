@@ -7,6 +7,8 @@ import org.apache.polygene.api.property.Property;
 public interface CategoriesResponse
 {
     Property<Integer> ProductCount();
+
     Property<List<Category>> Categories();
+
     Property<IsoSearchLocale> SearchLocaleUsed();
 }

@@ -6,5 +6,6 @@ import org.apache.polygene.api.property.Property;
 public interface BreakPrice
 {
     Property<Double> Price();
+
     Property<Integer> Quantity();
 }

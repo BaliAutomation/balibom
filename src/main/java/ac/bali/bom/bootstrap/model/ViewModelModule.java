@@ -1,4 +1,4 @@
-package ac.bali.bom.bootstrap.view;
+package ac.bali.bom.bootstrap.model;
 
 import ac.bali.bom.view.Deleter;
 import org.apache.polygene.bootstrap.AssemblyException;

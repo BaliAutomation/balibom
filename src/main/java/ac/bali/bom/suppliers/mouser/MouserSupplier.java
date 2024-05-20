@@ -77,13 +77,13 @@ public interface MouserSupplier extends SupplierProvider
         ManufacturersService manufacturers;
 
         @Override
-        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber)
+        public Supply searchSupplierPartNumber(Supplier supplier, String supplierPartNumber, Map<String,String> attributes)
         {
             return null;
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn)
+        public Supply searchManufacturerPartNumber(Supplier supplier, String mf, String mpn, Map<String,String> attributes)
         {
             if (mf == null || mf.trim().length() == 0)
             {

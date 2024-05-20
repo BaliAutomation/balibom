@@ -6,5 +6,6 @@ import org.apache.polygene.api.property.Property;
 public interface ProductDetails
 {
     Property<IsoSearchLocale> SearchLocaleUsed();
+
     Property<Product> Product();
 }

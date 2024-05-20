@@ -22,11 +22,13 @@ import org.qi4j.library.javafx.support.RenderAsName;
 @Concerns({OAuth2LoginConcern.class})
 public interface Supplier extends HasIdentity
 {
-    @LoginRequired
-    Supply searchSupplierPartNumber(String supplierPartNumber);
+    SupplierProvider provider();
 
     @LoginRequired
-    Supply searchManufacturerPartNumber(Manufacturer mf, String mpn);
+    Supply searchSupplierPartNumber(String supplierPartNumber, Map<String,String> attributes);
+
+    @LoginRequired
+    Supply searchManufacturerPartNumber(Manufacturer mf, String mpn, Map<String,String> attributes);
 
     @LoginRequired
     List<Supply> searchKeywords(String keywords);
@@ -62,23 +64,23 @@ public interface Supplier extends HasIdentity
         Iterable<ServiceReference<SupplierProvider>> providers;
 
         @Override
-        public Supply searchSupplierPartNumber(String supplierPartNumber)
+        public Supply searchSupplierPartNumber(String supplierPartNumber, Map<String,String> attributes)
         {
             if (!enabled().get())
             {
                 return null;
             }
-            return provider().searchSupplierPartNumber(meAsSupplier, supplierPartNumber);
+            return provider().searchSupplierPartNumber(meAsSupplier, supplierPartNumber, attributes);
         }
 
         @Override
-        public Supply searchManufacturerPartNumber(Manufacturer mf, String mpn)
+        public Supply searchManufacturerPartNumber(Manufacturer mf, String mpn, Map<String,String> attributes)
         {
             if (!enabled().get())
             {
                 return null;
             }
-            return provider().searchManufacturerPartNumber(meAsSupplier, mf.identifier().get(), mpn);
+            return provider().searchManufacturerPartNumber(meAsSupplier, mf.identifier().get(), mpn, attributes);
         }
 
         @Override
@@ -91,7 +93,7 @@ public interface Supplier extends HasIdentity
             return provider().searchKeywords(meAsSupplier, keywords);
         }
 
-        private SupplierProvider provider()
+        public SupplierProvider provider()
         {
             for (ServiceReference<SupplierProvider> ref : providers)
             {

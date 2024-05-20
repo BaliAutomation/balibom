@@ -6,6 +6,8 @@ import org.apache.polygene.api.property.Property;
 public interface IsoSearchLocale
 {
     Property<String> Site();
+
     Property<String> Language();
+
     Property<String> Currency();
 }

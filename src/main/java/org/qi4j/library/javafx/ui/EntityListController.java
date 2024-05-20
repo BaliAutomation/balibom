@@ -1,6 +1,7 @@
 package org.qi4j.library.javafx.ui;
 
 import java.util.List;
+import java.util.Objects;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -58,8 +59,10 @@ public class EntityListController<T extends HasIdentity>
         UnitOfWork uow = uowf.currentUnitOfWork();
         QueryBuilder<T> builder = qbf.newQueryBuilder(entityType);
         Query<T> query = uow.newQuery(builder);
+        EntityNameComparator sorter = obf.newObject(EntityNameComparator.class);
         query.stream()
-            .sorted(obf.newObject(EntityNameComparator.class))
+            .filter(Objects::nonNull)
+            .sorted(sorter)
             .forEach(items::add);
         listCtrl.setValue(items);
         items.subscribe(() -> dirty = true);

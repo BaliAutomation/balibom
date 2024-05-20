@@ -14,7 +14,7 @@ public class CheapReelRule
         if( supply.isReel().get())
         {
             int reelSize = supply.reelSize().get();
-            if( supply.priceof(reelSize).doubleValue() < 50.0)
+            if( supply.priceOf(reelSize).doubleValue() < 50.0)
             {
                 // we are buying a whole reel
                 modifiableQuantity[0] = reelSize;

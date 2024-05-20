@@ -1,14 +1,16 @@
 package ac.bali.bom.bootstrap;
 
+import ac.bali.bom.bootstrap.model.CustomersModule;
 import ac.bali.bom.bootstrap.model.InventoryModule;
 import ac.bali.bom.bootstrap.model.IssuesModule;
+import ac.bali.bom.bootstrap.model.JavaFxModule;
 import ac.bali.bom.bootstrap.model.JobsModule;
 import ac.bali.bom.bootstrap.model.ManufacturersModule;
 import ac.bali.bom.bootstrap.model.OrderModule;
 import ac.bali.bom.bootstrap.model.PartsModule;
 import ac.bali.bom.bootstrap.model.ProductsModule;
 import ac.bali.bom.bootstrap.model.SuppliersModule;
-import ac.bali.bom.bootstrap.view.ViewModelModule;
+import ac.bali.bom.bootstrap.model.ViewModelModule;
 import java.lang.annotation.Annotation;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
@@ -40,6 +42,9 @@ public class ModelLayer extends LayeredLayerAssembler
     @Override
     public LayerAssembly assemble(LayerAssembly layer) throws AssemblyException
     {
+        createModule(layer, JavaFxModule.class);
+
+        createModule(layer, CustomersModule.class);
         createModule(layer, InventoryModule.class);
         createModule(layer, IssuesModule.class);
         createModule(layer, JobsModule.class);

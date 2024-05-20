@@ -19,6 +19,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.apache.polygene.api.association.AssociationDescriptor;
 import org.apache.polygene.api.common.Optional;
+import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
@@ -37,6 +38,7 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
     public ListPropertyControl(@Service PropertyCtrlFactory factory,
                                @Uses @Optional MetaInfoHolder meta,
                                @Uses @Optional PropertyDescriptor propDescriptor,
+                               @Uses @Optional EntityDescriptor entityDescriptor,
                                @Uses @Optional AssociationDescriptor assocDescriptor,
                                @Structure ObjectFactory obf, @Uses @Optional Boolean withLabel)
     {
@@ -85,7 +87,7 @@ public class ListPropertyControl<T> extends PropertyControl<List<T>>
             String name = factory.nameOf(propDescriptor, assocDescriptor);
             Label label = new Label(name);
             label.setPrefWidth(150);
-            label.setAlignment(Pos.CENTER_RIGHT);
+            label.setAlignment(Pos.TOP_RIGHT);
             label.setPadding(PADDING);
             box = new HBox(label, scrollPane);
         }

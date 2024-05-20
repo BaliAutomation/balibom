@@ -24,4 +24,5 @@ public interface Bom
 
     @UseDefaults
     Property<List<String>> errors();
+
 }

@@ -7,7 +7,10 @@ import org.apache.polygene.api.property.Property;
 public interface ProductAssociations
 {
     Property<List<ProductSummary>> Kits();
+
     Property<List<ProductSummary>> MatingProducts();
+
     Property<List<ProductSummary>> AssociatedProducts();
+
     Property<List<ProductSummary>> ForUseWithProducts();
 }

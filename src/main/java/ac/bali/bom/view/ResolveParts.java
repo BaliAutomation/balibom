@@ -1,9 +1,14 @@
 package ac.bali.bom.view;
 
+import ac.bali.bom.parts.Part;
 import ac.bali.bom.parts.PartsService;
 import ac.bali.bom.products.Bom;
 import ac.bali.bom.products.BomItem;
+import ac.bali.bom.products.PartQuantity;
 import ac.bali.bom.products.Product;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.injection.scope.Service;
 import org.apache.polygene.api.injection.scope.Structure;
@@ -12,6 +17,8 @@ import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
+import org.apache.polygene.api.value.ValueBuilder;
+import org.apache.polygene.api.value.ValueBuilderFactory;
 import org.qi4j.library.javafx.support.Action;
 import org.qi4j.library.javafx.support.ActionScope;
 
@@ -31,17 +38,41 @@ public interface ResolveParts
         PartsService partsService;
 
         @Structure
+        ValueBuilderFactory vbf;
+
+        @Structure
         UnitOfWorkFactory uowf;
 
         @Override
         public void resolveParts(Product product) throws Exception
         {
+            List<String> resolveErrors = new ArrayList<>();
             UnitOfWork uow = uowf.currentUnitOfWork();
             Bom bom = product.bom().get();
-            bom.items()
+            List<PartQuantity> parts = bom.items()
                 .references()
                 .map(ref -> uow.get(BomItem.class, ref.identity()))
-                .forEach(item -> partsService.resolve(item));
+                .map(item ->
+                {
+                    List<String> errors = new ArrayList<>();
+                    Part part = partsService.resolve(item.mf().get(), item.mpn().get(), item.attributes().get(), errors);
+                    if (part == null)
+                    {
+                        resolveErrors.add("ERROR: Unable to RESOLVE " + item.mf().get() + " - " + item.mpn().get());
+                        return null;
+                    }
+                    item.errors().set(errors);
+                    Integer quantity = item.quantity().get();
+                    ValueBuilder<PartQuantity> builder = vbf.newValueBuilder(PartQuantity.class);
+                    PartQuantity prototype = builder.prototype();
+                    prototype.part().set(part);
+                    prototype.quantity().set(quantity);
+                    return builder.newInstance();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+            product.parts().set(parts);
+            product.resolveErrors().set(resolveErrors);
         }
     }
 }

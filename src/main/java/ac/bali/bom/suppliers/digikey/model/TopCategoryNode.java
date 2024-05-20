@@ -6,6 +6,8 @@ import org.apache.polygene.api.property.Property;
 public interface TopCategoryNode
 {
     Property<Integer> Id();
+
     Property<String> Name();
+
     Property<Long> ProductCount();
 }

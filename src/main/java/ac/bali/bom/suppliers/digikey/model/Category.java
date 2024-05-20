@@ -7,8 +7,12 @@ import org.apache.polygene.api.property.Property;
 public interface Category
 {
     Property<Integer> CategoryId();
+
     Property<Integer> ParentId();
+
     Property<String> Name();
+
     Property<Long> ProductCount();
+
     Property<List<Category>> Children();
 }

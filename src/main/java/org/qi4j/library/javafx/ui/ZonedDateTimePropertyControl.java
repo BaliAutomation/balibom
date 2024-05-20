@@ -9,6 +9,6 @@ public class ZonedDateTimePropertyControl extends DateTimePropertyControl<ZonedD
 {
     public ZonedDateTimePropertyControl(@Service PropertyCtrlFactory factory, @Uses PropertyDescriptor descriptor)
     {
-        super(factory, descriptor);
+        super(factory, factory.nameOf(descriptor));
     }
 }
