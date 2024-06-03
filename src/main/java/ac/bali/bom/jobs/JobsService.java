@@ -2,10 +2,10 @@ package ac.bali.bom.jobs;
 
 import ac.bali.bom.customers.Customer;
 import ac.bali.bom.inventory.parts.PartsInventoryService;
-import ac.bali.bom.order.OrderService;
+import ac.bali.bom.supply.order.SupplierOrderService;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.products.Product;
-import ac.bali.bom.rules.RuleSet;
+import ac.bali.bom.supply.rules.RuleSet;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,7 @@ public interface JobsService
         PartsInventoryService partsInventoryService;
 
         @Service
-        OrderService orderService;
+        SupplierOrderService supplierOrderService;
 
         @Service
         private QueryBuilderFactory qbf;
@@ -122,7 +122,7 @@ public interface JobsService
             Map<Part, Integer> totalParts = query.stream()
                 .flatMap(j -> j.product().get().parts().get().stream())
                 .collect(Collectors.groupingBy(pq -> pq.part().get(), summingInt(pq -> pq.quantity().get())));
-            orderService.createOrders(totalParts, ruleSet);
+            supplierOrderService.createOrders(totalParts, ruleSet);
 
             query = uow.newQuery(qb);
             query.forEach( job -> job.state().set(JobState.ordered));

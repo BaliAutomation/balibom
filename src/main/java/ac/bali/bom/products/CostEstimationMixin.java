@@ -2,8 +2,8 @@ package ac.bali.bom.products;
 
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.parts.PartsService;
-import ac.bali.bom.suppliers.Supplier;
-import ac.bali.bom.suppliers.Supply;
+import ac.bali.bom.supply.Supplier;
+import ac.bali.bom.supply.Supply;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;

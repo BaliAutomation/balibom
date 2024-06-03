@@ -1,8 +1,8 @@
 package ac.bali.bom.bootstrap.model;
 
-import ac.bali.bom.suppliers.oauth2.OAuth2AccessToken;
-import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
-import ac.bali.bom.suppliers.oauth2.OAuth2Service;
+import ac.bali.bom.supply.oauth2.OAuth2AccessToken;
+import ac.bali.bom.supply.oauth2.OAuth2Authentication;
+import ac.bali.bom.supply.oauth2.OAuth2Service;
 import org.apache.polygene.bootstrap.Assembler;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.ModuleAssembly;

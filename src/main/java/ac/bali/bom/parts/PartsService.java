@@ -2,10 +2,10 @@ package ac.bali.bom.parts;
 
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.manufacturers.ManufacturersService;
-import ac.bali.bom.suppliers.Supplier;
-import ac.bali.bom.suppliers.SuppliersService;
-import ac.bali.bom.suppliers.Supply;
-import ac.bali.bom.suppliers.manual.ManualSupplier;
+import ac.bali.bom.supply.Supplier;
+import ac.bali.bom.supply.SuppliersService;
+import ac.bali.bom.supply.Supply;
+import ac.bali.bom.supply.manual.ManualSupplier;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;

@@ -1,7 +1,7 @@
 package ac.bali.bom.view;
 
-import ac.bali.bom.suppliers.Supplier;
-import ac.bali.bom.suppliers.manual.model.Product;
+import ac.bali.bom.supply.Supplier;
+import ac.bali.bom.supply.manual.model.Product;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;

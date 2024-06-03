@@ -1,7 +1,7 @@
 package ac.bali.bom.products;
 
 import ac.bali.bom.parts.Part;
-import ac.bali.bom.suppliers.Supplier;
+import ac.bali.bom.supply.Supplier;
 import java.math.BigDecimal;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.property.Property;

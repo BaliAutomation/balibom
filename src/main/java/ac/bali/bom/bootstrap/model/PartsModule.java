@@ -3,7 +3,7 @@ package ac.bali.bom.bootstrap.model;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.parts.PartsService;
 import ac.bali.bom.parts.Price;
-import ac.bali.bom.suppliers.Supply;
+import ac.bali.bom.supply.Supply;
 import ac.bali.bom.products.ResolveParts;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
