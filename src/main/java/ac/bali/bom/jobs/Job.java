@@ -17,7 +17,7 @@ import org.qi4j.library.crudui.RenderAsName;
 public interface Job extends HasIdentity
 {
     @RenderAsName(format = AssociationFormatter.class )
-    @Order(10)
+    @Order(50)
     Association<Customer> customer();
 
     @Order(20)

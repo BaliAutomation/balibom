@@ -266,7 +266,6 @@ public interface MouserSupplier extends SupplierProvider
                 instance.paths().set(paths);
 
                 instance.website().set(WEBSITE);
-                instance.bomColumns().get().add(NAME);
                 instance.bomColumns().get().add("Mouser");
                 instance.bomColumns().get().add("Mouser_PN");
                 instance.bomColumns().get().add("MouserPN");

@@ -25,13 +25,16 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.polygene.api.composite.AmbiguousTypeException;
 import org.apache.polygene.api.entity.EntityDescriptor;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.injection.scope.Uses;
 import org.apache.polygene.api.mixin.Initializable;
 import org.apache.polygene.api.structure.Module;
+import org.apache.polygene.api.structure.TypeLookup;
 import org.apache.polygene.api.type.ArrayType;
 import org.apache.polygene.api.type.CollectionType;
+import org.apache.polygene.api.type.EntityCompositeType;
 import org.apache.polygene.api.type.EnumType;
 import org.apache.polygene.api.type.HasTypes;
 import org.apache.polygene.api.type.MapType;
@@ -39,12 +42,12 @@ import org.apache.polygene.api.type.ValueType;
 import org.apache.polygene.api.util.Classes;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.spi.PolygeneSPI;
-import org.qi4j.library.crudui.ParameterName;
 import org.qi4j.library.crudui.Action;
-import org.qi4j.library.crudui.javafx.support.ActionCall;
 import org.qi4j.library.crudui.ActionScope;
 import org.qi4j.library.crudui.FieldDescriptor;
 import org.qi4j.library.crudui.HasListViewController;
+import org.qi4j.library.crudui.ParameterName;
+import org.qi4j.library.crudui.javafx.support.ActionCall;
 
 public class ActionBar<T> extends ToolBar
     implements Initializable
@@ -339,6 +342,16 @@ public class ActionBar<T> extends ToolBar
         if (Enum.class.isAssignableFrom(clazz))
         {
             return EnumType.of(clazz);
+        }
+        TypeLookup lookup = module.typeLookup();
+        try
+        {
+            EntityDescriptor model = lookup.lookupEntityModel(clazz);
+            if (model != null)
+                return new EntityCompositeType(model);
+        } catch (AmbiguousTypeException e)
+        {
+            throw new RuntimeException(e);
         }
         return ValueType.of(clazz);
     }
