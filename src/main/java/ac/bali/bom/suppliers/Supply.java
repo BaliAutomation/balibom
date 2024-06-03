@@ -4,20 +4,18 @@ import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.parts.Price;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Immutable;
 import org.apache.polygene.api.property.Property;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsName;
-import org.qi4j.library.javafx.support.RenderAsValue;
+import org.qi4j.library.crudui.Order;
+import org.qi4j.library.crudui.RenderAsName;
+import org.qi4j.library.crudui.RenderAsValue;
 
 @Mixins(Supply.Mixin.class)
 public interface Supply

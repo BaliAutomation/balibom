@@ -15,9 +15,9 @@ import java.lang.annotation.Annotation;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.layered.LayeredLayerAssembler;
-import org.qi4j.library.javafx.support.ObservableAssociationConcern;
-import org.qi4j.library.javafx.support.ObservablePropertyConcern;
-import org.qi4j.library.javafx.support.Order;
+import org.qi4j.library.crudui.javafx.support.ObservableAssociationConcern;
+import org.qi4j.library.crudui.javafx.support.ObservablePropertyConcern;
+import org.qi4j.library.crudui.Order;
 
 import static org.apache.polygene.api.common.Visibility.application;
 

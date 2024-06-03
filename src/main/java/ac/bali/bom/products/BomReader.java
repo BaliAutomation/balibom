@@ -46,7 +46,7 @@ public interface BomReader
         {
             Columns columns = new Columns();
             UnitOfWork uow = uowf.currentUnitOfWork();
-            Identity identity = StringIdentity.identityOf("bom." + product + "-" + revision);
+            Identity identity = StringIdentity.identityOf("bom/" + product + "-" + revision);
             EntityBuilder<Bom> builder = uow.newEntityBuilder(Bom.class, identity);
             Bom bomP = builder.instance();
             bomP.product().set(product);

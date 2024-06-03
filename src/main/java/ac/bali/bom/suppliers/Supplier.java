@@ -4,6 +4,7 @@ import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.oauth2.OAuth2LoginConcern;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.polygene.api.association.Association;
 import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.common.UseDefaults;
@@ -14,9 +15,9 @@ import org.apache.polygene.api.injection.scope.This;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
 import org.apache.polygene.api.service.ServiceReference;
-import org.qi4j.library.javafx.support.Height;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsName;
+import org.qi4j.library.crudui.Height;
+import org.qi4j.library.crudui.Order;
+import org.qi4j.library.crudui.RenderAsName;
 
 @Mixins(Supplier.Mixin.class)
 @Concerns({OAuth2LoginConcern.class})
@@ -41,7 +42,7 @@ public interface Supplier extends HasIdentity
 
     @UseDefaults
     @Height(min=100, pref=100, max=300)
-    Property<List<String>> bomColumns();
+    Property<Set<String>> bomColumns();
 
     @Order(2)
     Property<Map<String,String>> hosts();

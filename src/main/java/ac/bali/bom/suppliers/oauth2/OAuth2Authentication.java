@@ -1,15 +1,16 @@
 package ac.bali.bom.suppliers.oauth2;
 
 import ac.bali.bom.suppliers.AuthenticationMethod;
-import org.apache.polygene.api.common.Optional;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.property.Property;
+import org.qi4j.library.crudui.SecretField;
 
 @Mixins(OAuth2Authentication.Mixin.class)
 public interface OAuth2Authentication extends AuthenticationMethod
 {
     Property<String> loginClientId();
 
+    @SecretField
     Property<String> loginClientSecret();
 
     Property<String> loginAccessToken();

@@ -1,16 +1,12 @@
 package ac.bali.bom.bootstrap.model;
 
-import ac.bali.bom.bootstrap.ModelLayer;
 import ac.bali.bom.suppliers.Supplier;
 import ac.bali.bom.suppliers.SuppliersService;
-import javafx.beans.value.ObservableValue;
-import org.apache.polygene.api.identity.HasIdentity;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.bootstrap.layered.ModuleAssembler;
-import org.qi4j.library.javafx.support.ObservablePropertyConcern;
-import org.qi4j.library.javafx.support.ObservablePropertyWrapper;
+import org.qi4j.library.crudui.javafx.support.ObservablePropertyConcern;
 
 import static org.apache.polygene.api.common.Visibility.application;
 

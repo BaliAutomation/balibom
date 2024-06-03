@@ -24,10 +24,10 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.usecase.UsecaseBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
-import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.crudui.Action;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
-import static org.qi4j.library.javafx.support.ActionScope.type;
+import static org.qi4j.library.crudui.ActionScope.type;
 
 @Mixins(SuppliersService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)

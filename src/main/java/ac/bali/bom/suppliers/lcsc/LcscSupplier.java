@@ -51,7 +51,7 @@ public interface LcscSupplier extends SupplierProvider
         implements LcscSupplier
     {
         private static final String NAME = "LCSC";
-        public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.LCSC");
+        public static final Identity IDENTITY = StringIdentity.identityOf("supplier/LCSC");
 
         @Structure
         private ModuleDescriptor module;

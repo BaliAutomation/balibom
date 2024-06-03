@@ -8,7 +8,7 @@ import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.UnitOfWork;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
-import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.crudui.Action;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 
@@ -28,7 +28,7 @@ public interface CustomerService
         public Customer createCustomer(String name)
         {
             UnitOfWork uow = uowf.currentUnitOfWork();
-            Identity identity = StringIdentity.identityOf("cust_" + name);
+            Identity identity = StringIdentity.identityOf("customer/" + name);
             EntityBuilder<Customer> builder = uow.newEntityBuilder(Customer.class, identity);
             builder.instance().name().set(name);
             return builder.newInstance();

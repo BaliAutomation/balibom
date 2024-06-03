@@ -4,11 +4,13 @@ import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.suppliers.Supply;
 import ac.bali.bom.view.Deleter;
 import org.apache.polygene.api.association.Association;
-import org.qi4j.library.javafx.support.HasListViewController;
-import org.qi4j.library.javafx.support.Height;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsDescription;
-import org.qi4j.library.javafx.support.RenderAsName;
+import org.apache.polygene.api.identity.Identity;
+import org.apache.polygene.api.property.Immutable;
+import org.qi4j.library.crudui.HasListViewController;
+import org.qi4j.library.crudui.Height;
+import org.qi4j.library.crudui.Order;
+import org.qi4j.library.crudui.RenderAsDescription;
+import org.qi4j.library.crudui.RenderAsName;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,51 +23,50 @@ import org.apache.polygene.api.property.Property;
 @HasListViewController({PartsService.class, Deleter.class})
 public interface Part extends HasIdentity
 {
-
     @RenderAsName
-    @Order(1)
+    @Order(4)
     Association<Manufacturer> manufacturer();
 
     @RenderAsName
-    @Order(2)
+    @Order(5)
     Property<String> mpn();
 
     @UseDefaults
     @RenderAsDescription
-    @Order(3)
+    @Order(8)
     Property<String> partIntro();
 
     @UseDefaults
-    @Order(4)
+    @Order(10)
     @Height(pref=150)
     Property<Set<String>> datasheetUrls();
 
     @UseDefaults
-    @Order(5)
+    @Order(15)
     @Height(pref=200)
     Property<Set<String>> imageUrls();
 
     @UseDefaults
-    @Order(10)
+    @Order(20)
     @Height(pref=300)
     ManyAssociation<Part> alternates();
 
     @UseDefaults("1")
-    @Order(7)
+    @Order(30)
     Property<Float> wastePercentage();
 
     @UseDefaults("5")
-    @Order(6)
+    @Order(40)
     Property<Integer> wastePieces();
 
     @UseDefaults
-    @Order(20)
-    @Height(min=300, pref=500)
+    @Order(50)
+    @Height(min=300, pref=600)
     Property<Map<String, String>> parameters();
 
     @UseDefaults
-    @Order(30)
-    @Height(pref=300, min=300, max=300)
+    @Order(60)
+    @Height(pref=300, min=300, max=600)
     Property<Map<String, Supply>> supply();
 
     @UseDefaults

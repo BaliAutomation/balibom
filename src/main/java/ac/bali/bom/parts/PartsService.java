@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.entity.EntityBuilder;
@@ -26,10 +27,10 @@ import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilderFactory;
-import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.crudui.Action;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
-import static org.qi4j.library.javafx.support.ActionScope.composite;
+import static org.qi4j.library.crudui.ActionScope.composite;
 
 @Mixins(PartsService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
@@ -242,6 +243,7 @@ public interface PartsService
             {
                 Collection<Supply> supplies = supply.values();
                 Optional<String> intro = supplies.stream()
+                    .filter(Objects::nonNull)
                     .map(s -> s.productIntro().get())
                     .max(Comparator.comparingInt(String::length));      // Find the longest part introduction, and use that.
                 partPrototype.partIntro().set(intro.orElse(""));
@@ -259,6 +261,8 @@ public interface PartsService
             //  as texts may vary a little bit, but mean the same thing. Report errors to error() property.
             Map<String, String> result = new HashMap<>();
             supplies.values()                                        // get the Supply instances
+                .stream()
+                .filter(Objects::nonNull)
                 .forEach(supplier ->
                 {
                     supplier.parameters().get().entrySet().forEach(param ->
@@ -282,7 +286,7 @@ public interface PartsService
 
         private Identity identityOf(Manufacturer mf, String mpn)
         {
-            return StringIdentity.identityOf("part_" + mf.identifier().get() + "." + mpn);
+            return StringIdentity.identityOf("part/" + mf.identifier().get() + "." + mpn);
         }
     }
 }

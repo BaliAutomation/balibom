@@ -35,7 +35,7 @@ public abstract class ImportBomMixin
         String revision = parseRevisionFromFile(bomFile);
         Bom bom = bomReader.load(product, revision, bomFile);
         UnitOfWork uow = uowf.currentUnitOfWork();
-        Identity identity = StringIdentity.identityOf("product_" + product + "_" + revision);
+        Identity identity = StringIdentity.identityOf("product/" + product + "_" + revision);
         EntityBuilder<Product> builder = uow.newEntityBuilder(Product.class, identity);
         Product instance = builder.instance();
         instance.bomFile().set(bomFile.getAbsolutePath());

@@ -5,9 +5,10 @@ import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
-import org.qi4j.library.javafx.support.Action;
+import org.qi4j.library.crudui.Action;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+import static org.qi4j.library.crudui.ActionScope.composite;
 
 @SuppressWarnings("unused")
 @Mixins({ImportBomMixin.class, CostEstimationMixin.class})
@@ -19,7 +20,7 @@ public interface ProductsService
     Product importBom(File bomFile) throws Exception;
 
     @UnitOfWorkPropagation(value= MANDATORY, usecase = "Cost Estimation")
-    @Action(label="Estimate Cost...", showResult = true)
+    @Action(label="Estimate Cost...", showResult = true, scope = composite)
     CostReport estimateCost(Product product, Integer quantity);
 
     String parseNameFromFile(File bomFile);

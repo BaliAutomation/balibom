@@ -43,14 +43,17 @@ public abstract class CostEstimationMixin
             String spn = null;
             for (Supply supply : supplies.values())
             {
-                BigDecimal price = supply.priceOf(totalQuantity);
-                if (price != null)
+                if( supply != null )
                 {
-                    if (price.compareTo(bestPrice) < 0)
+                    BigDecimal price = supply.priceOf(totalQuantity);
+                    if (price != null)
                     {
-                        bestPrice = price;
-                        supplier = supply.supplier().get();
-                        spn = supply.supplierPartNumber().get();
+                        if (price.compareTo(bestPrice) < 0)
+                        {
+                            bestPrice = price;
+                            supplier = supply.supplier().get();
+                            spn = supply.supplierPartNumber().get();
+                        }
                     }
                 }
             }

@@ -5,8 +5,8 @@ import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.unitofwork.UnitOfWorkFactory;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
-import org.qi4j.library.javafx.support.Action;
-import org.qi4j.library.javafx.support.ActionScope;
+import org.qi4j.library.crudui.Action;
+import org.qi4j.library.crudui.ActionScope;
 
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
 

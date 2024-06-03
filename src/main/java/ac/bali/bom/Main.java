@@ -4,11 +4,14 @@ import ac.bali.bom.bootstrap.ModelLayer;
 import ac.bali.bom.bootstrap.Qi4jApplicationAssembler;
 import ac.bali.bom.bootstrap.model.JavaFxModule;
 import ac.bali.bom.customers.Customer;
-import ac.bali.bom.inventory.PartsInventory;
-import ac.bali.bom.inventory.ProductsInventory;
+import ac.bali.bom.inventory.parts.PartsInventory;
+import ac.bali.bom.inventory.products.ProductsInventory;
+import ac.bali.bom.issues.Issue;
 import ac.bali.bom.jobs.Job;
 import ac.bali.bom.manufacturers.Manufacturer;
 import ac.bali.bom.order.Order;
+import ac.bali.bom.rules.RuleEntity;
+import ac.bali.bom.rules.RuleSet;
 import ac.bali.bom.parts.Part;
 import ac.bali.bom.products.Product;
 import ac.bali.bom.suppliers.Supplier;
@@ -39,7 +42,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.apache.polygene.api.object.ObjectFactory;
 import org.apache.polygene.api.structure.Module;
-import org.qi4j.library.javafx.ui.EntityPane;
+import org.qi4j.library.crudui.javafx.ui.EntityPane;
 
 import static org.apache.polygene.api.structure.Application.Mode.production;
 
@@ -63,15 +66,18 @@ public class Main extends Application
 
         stage.setTitle("Bill Of Materials");
         EntityPane<Product> productsPane = objectFactory.newObject(EntityPane.class, Product.class, "Products");
+        EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class, "Product Inventory");
         EntityPane<Part> jobsPane = objectFactory.newObject(EntityPane.class, Job.class, "Jobs");
         EntityPane<Part> partsPane = objectFactory.newObject(EntityPane.class, Part.class, "Parts");
-        EntityPane<Order> ordersPane = objectFactory.newObject(EntityPane.class, Order.class, "Orders");
-        EntityPane<ProductsInventory> productsInventoryPane = objectFactory.newObject(EntityPane.class, ProductsInventory.class, "Product Inventory");
         EntityPane<PartsInventory> partsInventoryPane = objectFactory.newObject(EntityPane.class, PartsInventory.class, "Parts Inventory");
+        EntityPane<Order> ordersPane = objectFactory.newObject(EntityPane.class, Order.class, "Orders");
         EntityPane<Customer> customersPane = objectFactory.newObject(EntityPane.class, Customer.class, "Customers");
         EntityPane<Manufacturer> manufacturersPane = objectFactory.newObject(EntityPane.class, Manufacturer.class, "Manufacturers");
         EntityPane<Supplier> suppliersPane = objectFactory.newObject(EntityPane.class, Supplier.class, "Suppliers");
-        TabPane tabs = setupNavigationTabs(productsPane, jobsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, customersPane, manufacturersPane, suppliersPane);
+        EntityPane<RuleEntity> rulesPane = objectFactory.newObject(EntityPane.class, RuleEntity.class, "Rules");
+        EntityPane<RuleSet> ruleSetsPane = objectFactory.newObject(EntityPane.class, RuleSet.class, "Rule Sets");
+        EntityPane<Issue> issuesPane = objectFactory.newObject(EntityPane.class, Issue.class, "Issues");
+        TabPane tabs = setupNavigationTabs(productsPane, jobsPane, partsPane, ordersPane, productsInventoryPane, partsInventoryPane, customersPane, manufacturersPane, suppliersPane, rulesPane, ruleSetsPane, issuesPane);
         Scene mainScene = new Scene(tabs, 1200, 800);
 //        mainScene.addPreLayoutPulseListener(() -> module.unitOfWorkFactory().newUnitOfWork());
 //        mainScene.addPostLayoutPulseListener(() -> module.unitOfWorkFactory().currentUnitOfWork().complete());
@@ -116,6 +122,7 @@ public class Main extends Application
         httpLogger.setFilter(record -> false);
     }
 
+    // Trial application for Table edit.
     public static class Sample extends Application
     {
 
@@ -134,6 +141,7 @@ public class Main extends Application
             launch(args);
         }
 
+        @SuppressWarnings({"rawtypes", "unchecked"})
         @Override
         public void start(Stage stage)
         {

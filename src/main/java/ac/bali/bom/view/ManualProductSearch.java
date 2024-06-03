@@ -9,10 +9,13 @@ import javafx.scene.control.Label;
 import org.apache.polygene.api.injection.scope.Structure;
 import org.apache.polygene.api.mixin.Mixins;
 import org.apache.polygene.api.object.ObjectFactory;
+import org.apache.polygene.api.type.CollectionType;
+import org.apache.polygene.api.type.MapType;
+import org.apache.polygene.api.type.ValueType;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
-import org.qi4j.library.javafx.support.FieldDescriptor;
-import org.qi4j.library.javafx.ui.ParametersForm;
+import org.qi4j.library.crudui.FieldDescriptor;
+import org.qi4j.library.crudui.javafx.ui.ParametersForm;
 
 @Mixins({ManualProductSearch.Mixin.class})
 public interface ManualProductSearch
@@ -37,17 +40,17 @@ public interface ManualProductSearch
             this.obf = obf;
             this.vbf = vbf;
             fields = new FieldDescriptor[]{
-                createField("Sources", List.class, 4, vbf),
-                createField("Manufacturer", String.class, vbf),
-                createField("Manufacturer Part Number", String.class, vbf),
-                createField("Supplier Part Number", String.class, vbf),
-                createField("Part Description", String.class, vbf),
-                createField("Datasheet Url", String.class, vbf),
-                createField("Quantity Available", Integer.class, vbf),
-                createField("Is Reel", Boolean.class, vbf),
-                createField("Reel Size", Integer.class, vbf),
-                createField("Minimum Purchase", Integer.class, vbf),
-                createField("Prices", Map.class, 6, vbf)
+                createField("Sources", CollectionType.listOf(String.class), 4, vbf),
+                createField("Manufacturer", ValueType.STRING, vbf),
+                createField("Manufacturer Part Number", ValueType.STRING, vbf),
+                createField("Supplier Part Number", ValueType.STRING, vbf),
+                createField("Part Description", ValueType.STRING, vbf),
+                createField("Datasheet Url", ValueType.STRING, vbf),
+                createField("Quantity Available", ValueType.INTEGER, vbf),
+                createField("Is Reel", ValueType.BOOLEAN, vbf),
+                createField("Reel Size", ValueType.INTEGER, vbf),
+                createField("Minimum Purchase", ValueType.INTEGER, vbf),
+                createField("Prices", MapType.of(ValueType.INTEGER, ValueType.BIG_DECIMAL), 6, vbf)
             };
             form = obf.newObject(ParametersForm.class, "Manual Supply", fields);
         }
@@ -83,12 +86,12 @@ public interface ManualProductSearch
             return builder.newInstance();
         }
 
-        private FieldDescriptor createField(String name, Class<?> type, ValueBuilderFactory vbf)
+        private FieldDescriptor createField(String name, ValueType type, ValueBuilderFactory vbf)
         {
             return createField(name, type, 1, vbf);
         }
 
-        private static FieldDescriptor createField(String name, Class<?> type, int height, ValueBuilderFactory vbf)
+        private static FieldDescriptor createField(String name, ValueType type, int height, ValueBuilderFactory vbf)
         {
             Label label = new Label("Abc");
             ValueBuilder<FieldDescriptor> builder = vbf.newValueBuilder(FieldDescriptor.class);

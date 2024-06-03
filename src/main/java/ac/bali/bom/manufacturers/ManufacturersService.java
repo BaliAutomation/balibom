@@ -1,6 +1,8 @@
 package ac.bali.bom.manufacturers;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.polygene.api.concern.Concerns;
 import org.apache.polygene.api.identity.Identity;
 import org.apache.polygene.api.identity.StringIdentity;
@@ -16,16 +18,22 @@ import org.apache.polygene.api.unitofwork.concern.UnitOfWorkConcern;
 import org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation;
 import org.apache.polygene.api.value.ValueBuilder;
 import org.apache.polygene.api.value.ValueBuilderFactory;
+import org.qi4j.library.crudui.Action;
 
 import static org.apache.polygene.api.query.QueryExpressions.contains;
 import static org.apache.polygene.api.query.QueryExpressions.templateFor;
 import static org.apache.polygene.api.unitofwork.concern.UnitOfWorkPropagation.Propagation.MANDATORY;
+import static org.qi4j.library.crudui.ActionScope.composite;
 
 @SuppressWarnings("resource")
 @Mixins(ManufacturersService.Mixin.class)
 @Concerns(UnitOfWorkConcern.class)
 public interface ManufacturersService
 {
+    @UnitOfWorkPropagation(MANDATORY)
+    @Action(label = "Merge...", scope = composite)
+    void mergeManufacturers(List<Manufacturer> sameManufacturers);
+
     @UnitOfWorkPropagation(MANDATORY)
     Manufacturer findManufacturer(String identifier);
 
@@ -49,6 +57,24 @@ public interface ManufacturersService
 
         @Structure
         private QueryBuilderFactory qbf;
+
+        @Override
+        public void mergeManufacturers(List<Manufacturer> sameManufacturers)
+        {
+            for (Manufacturer mf : sameManufacturers)
+            {
+                Set<String> aliases = createAliases(sameManufacturers);
+                aliases.remove(mf.identifier().get());
+                Set<String> existingAlternates = mf.alternateNames().get();
+                aliases.addAll(existingAlternates);
+                mf.alternateNames().set(aliases);
+            }
+        }
+
+        private Set<String> createAliases(List<Manufacturer> sameManufacturers)
+        {
+            return sameManufacturers.stream().map(mf -> mf.identifier().get()).collect(Collectors.toSet());
+        }
 
         @Override
         public Manufacturer findManufacturer(String identifier)
@@ -93,13 +119,13 @@ public interface ManufacturersService
             return list.get(0);
         }
 
-        private Manufacturer createNewManufacturer(String identifier)
+        private Manufacturer createNewManufacturer(String name)
         {
             UnitOfWork uow = uowf.currentUnitOfWork();
-            Identity identity = StringIdentity.identityOf(identifier);
+            Identity identity = StringIdentity.identityOf("manufacturer/" + name);
             Manufacturer entity = uow.newEntity(Manufacturer.class, identity);
-            entity.identifier().set(identifier);
-            entity.fullName().set(identifier);
+            entity.identifier().set(name);
+            entity.fullName().set(name);
             return entity;
         }
 

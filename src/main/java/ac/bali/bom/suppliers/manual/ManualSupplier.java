@@ -37,7 +37,7 @@ public interface ManualSupplier extends SupplierProvider
     class Mixin
         implements ManualSupplier
     {
-        public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.ManualEntry");
+        public static final Identity IDENTITY = StringIdentity.identityOf("supplier/ManualEntry");
 
         @Structure
         UnitOfWorkFactory uowf;

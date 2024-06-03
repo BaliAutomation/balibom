@@ -2,8 +2,8 @@ package ac.bali.bom.products;
 
 import org.apache.polygene.api.association.ManyAssociation;
 import org.apache.polygene.api.entity.Aggregated;
-import org.qi4j.library.javafx.support.Order;
-import org.qi4j.library.javafx.support.RenderAsName;
+import org.qi4j.library.crudui.Order;
+import org.qi4j.library.crudui.RenderAsName;
 import java.util.List;
 import org.apache.polygene.api.common.UseDefaults;
 import org.apache.polygene.api.property.Property;

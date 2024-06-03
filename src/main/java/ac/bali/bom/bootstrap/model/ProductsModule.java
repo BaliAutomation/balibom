@@ -8,16 +8,15 @@ import ac.bali.bom.products.CostReport;
 import ac.bali.bom.products.PartQuantity;
 import ac.bali.bom.products.Product;
 import ac.bali.bom.products.ProductsService;
-import org.apache.polygene.api.common.Visibility;
 import org.apache.polygene.bootstrap.AssemblyException;
 import org.apache.polygene.bootstrap.LayerAssembly;
 import org.apache.polygene.bootstrap.ModuleAssembly;
 import org.apache.polygene.bootstrap.layered.ModuleAssembler;
 import org.apache.polygene.library.fileconfig.FileConfigurationService;
-import org.qi4j.library.javafx.support.ObservableAssociationConcern;
-import org.qi4j.library.javafx.support.ObservableManyAssociationConcern;
-import org.qi4j.library.javafx.support.ObservableNamedAssociationConcern;
-import org.qi4j.library.javafx.support.ObservablePropertyConcern;
+import org.qi4j.library.crudui.javafx.support.ObservableAssociationConcern;
+import org.qi4j.library.crudui.javafx.support.ObservableManyAssociationConcern;
+import org.qi4j.library.crudui.javafx.support.ObservableNamedAssociationConcern;
+import org.qi4j.library.crudui.javafx.support.ObservablePropertyConcern;
 
 import static org.apache.polygene.api.common.Visibility.application;
 
@@ -40,7 +39,8 @@ public class ProductsModule
                 ObservableManyAssociationConcern.class,
                 ObservableAssociationConcern.class,
                 ObservableNamedAssociationConcern.class
-            ).visibleIn(application);
+            )
+            .visibleIn(application);
         module.values(PartQuantity.class).visibleIn(application);
         module.values(CostReport.class, CostItem.class).visibleIn(application);
         return module;

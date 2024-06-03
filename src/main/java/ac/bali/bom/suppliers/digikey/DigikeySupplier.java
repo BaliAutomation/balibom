@@ -18,8 +18,10 @@ import ac.bali.bom.suppliers.digikey.model.SortOptions;
 import ac.bali.bom.suppliers.oauth2.OAuth2Authentication;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.polygene.api.entity.EntityBuilder;
@@ -61,8 +63,8 @@ public interface DigikeySupplier extends SupplierProvider
         implements DigikeySupplier
     {
         private static final String NAME = "DigiKey";
-        public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.DigiKey");
-        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("Authentication.DigiKey");
+        public static final Identity IDENTITY = StringIdentity.identityOf("supplier/DigiKey");
+        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("authentication/DigiKey");
 
 
         @Structure
@@ -240,9 +242,10 @@ public interface DigikeySupplier extends SupplierProvider
 
         public static void createSupplier(UnitOfWork uow, Application.Mode mode) throws Exception
         {
+            Supplier supplier;
             try
             {
-                Supplier supplier = uow.get(Supplier.class, IDENTITY);
+                supplier = uow.get(Supplier.class, IDENTITY);
                 setLoginEndpoint(supplier, uow, mode);
             } catch (NoSuchEntityException e)
             {
@@ -263,19 +266,20 @@ public interface DigikeySupplier extends SupplierProvider
 
                 instance.website().set(WEBSITE_PATH);
 
-                instance.bomColumns().get().add(NAME);
-                instance.bomColumns().get().add("DigiKey");
-                instance.bomColumns().get().add("DigiKey_PN");
-                instance.bomColumns().get().add("DigiKeyPN");
-                instance.bomColumns().get().add("Digi-KeyPN");
-                instance.bomColumns().get().add("Digi-Key_PN");
-
                 OAuth2Authentication authMethod = createAuthMethod(uow);
                 instance.authentication().set(authMethod);
                 instance.enabled().set(false);
                 setLoginEndpoint(instance, uow, mode);
-                eb.newInstance();
+                supplier = eb.newInstance();
             }
+            Set<String> newBomColumns = new HashSet<>(supplier.bomColumns().get());
+            newBomColumns.add(NAME);
+            newBomColumns.add("DigiKey_PN");
+            newBomColumns.add("DigiKeyPN");
+            newBomColumns.add("Digi-Key");
+            newBomColumns.add("Digi-Key_PN");
+            newBomColumns.add("Digi-KeyPN");
+            supplier.bomColumns().set(newBomColumns);   // trigger the update if any. Setting inner content doesn't mark a property invalid, nor when the same value/instance is set again.
         }
 
         private static void setLoginEndpoint(Supplier supplier, UnitOfWork uow, Application.Mode mode)

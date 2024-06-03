@@ -57,8 +57,8 @@ public interface MouserSupplier extends SupplierProvider
         implements MouserSupplier
     {
         private static final String NAME = "Mouser";
-        public static final Identity IDENTITY = StringIdentity.identityOf("Supplier.Mouser");
-        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("Authentication.Mouser");
+        public static final Identity IDENTITY = StringIdentity.identityOf("supplier/Mouser");
+        public static final Identity AUTH_IDENTITY = StringIdentity.identityOf("authentication/Mouser");
 
 
         @Structure
